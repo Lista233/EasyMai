@@ -1,0 +1,44 @@
+{
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	{
+		"path" : "pages/maiupdate/maib50",
+		"style" : 
+		{
+			"navigationBarTitleText" : "舞萌查分器",
+			"hideStatusBar":true,
+			"hideBottomNavigationIndicator":true
+		}
+	},
+		{
+			"path" : "pages/maiupdate/maiupdate",
+			"style" : 
+			{
+				"navigationBarTitleText" : "水鱼传分",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
+			}
+		},
+		{
+		      "path": "pages/agreement/agreement",
+		      "style": {
+		        "navigationStyle": "custom"
+		      }
+		},
+		{
+			"path" : "pages/webview/webview",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		"hideStatusBar":true,
+		"hideBottomNavigationIndicator":true
+	},
+	"uniIdRouter": {}
+}

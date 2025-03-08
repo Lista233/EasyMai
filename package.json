@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "axios": "^1.8.1",
+    "unplugin-auto-import": "^19.1.1"
+  }
+}
