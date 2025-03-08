@@ -1,0 +1,2 @@
+# easyMai
+easyMai
