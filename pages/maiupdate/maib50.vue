@@ -146,6 +146,7 @@
 			</view>
 			
 			<view v-else>
+				
 				<view class="rating-container" :class="getRatingClass()">
 					<view class="rating-title">总 Rating</view>
 					<view class="rating-value">{{totalRating}}</view>
@@ -156,8 +157,11 @@
 				</view>
 				
 				<view class="b35box">
-					<view class="song-card" v-for="(item,index) in b35"> 
-						<view class="song-cover">
+					<view class="song-card" 
+						v-for="(item,index) in b35" 
+						@click="showRecordCard(item,index)"
+					> 
+					 	<view class="song-cover">
 							<image class="cover-image" :class="'level-' + item.level_index" :src="getCoverUrl(item.song_id)"></image>
 							<view class="ds-tag" :class="'level-' + item.level_index">{{Number(item.ds).toFixed(1)}}</view>
 						</view>
@@ -180,7 +184,10 @@
 					<view class="title-content">B15</view>
 				</view>
 				<view class="b15box">
-					<view class="song-card" v-for="(item,index) in b15"> 
+					<view class="song-card" 
+						v-for="(item,index) in b15" 
+						@click="showRecordCard(item)"
+					> 
 						<view class="song-cover">
 							<image class="cover-image" :class="'level-' + item.level_index" :src="getCoverUrl(item.song_id)"></image>
 							<view class="ds-tag" :class="'level-' + item.level_index">{{Number(item.ds).toFixed(1)}}</view>
@@ -202,7 +209,7 @@
 			</view>
 		</view>
 		
-		<canvas canvas-id="myCanvas" style="width: 750rpx; height: 1334rpx; position: fixed; left: -9999rpx;"></canvas>
+	
 		
 		<!-- 设置表单弹窗 -->
 		<view class="modal-container" v-if="showSettingsModal">
@@ -302,6 +309,15 @@
 				</view>
 			</view>
 		</view>
+
+		<!-- 添加 record-card 弹窗 -->
+		<view class="record-modal" v-if="showRecordModal" @click="closeRecordModal">
+			<record-card 
+				:record="selectedRecord.record" 
+				:index="selectedRecord.index"
+				class="record-modal-content"
+			/>
+		</view>
 	</view>
 </template>
 
@@ -326,12 +342,14 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import * as maiApi from "../../api/maiapi.js"
 import { b50adapter } from '../../util/b50adapter.js';
 import {onReady,onLoad,onInit} from '@dcloudio/uni-app'
+import {getCoverUrl,initCoverList}  from '../../util/coverManager.js'
+import RecordCard from '../../components/record-card/record-card.vue'
 
-const ossroute='https://lista233.oss-cn-beijing.aliyuncs.com/maicover/'
-const localroute= 'maicover';
-const suffix=ref('.jpg')
+// const ossroute='https://lista233.oss-cn-beijing.aliyuncs.com/maicover/'
+// const localroute= 'maicover';
+// const suffix=ref('.jpg')
 
-let coverlist=ref([])
+
 
 let b35=ref('')
 let b15=ref('')
@@ -343,17 +361,23 @@ let password=ref('')
 let nickname=ref('')
 let qqid=ref('')
 let importToken=ref('')
+let qq_channel_uid=ref('')
+
+
+let jwt_token = ref('');
+
 let records=ref('')
+
 let QrCode=ref('');
 let uid=ref(-1);
-let qq_channel_uid=ref('')
+
 let isProcessing=ref(false);
 
 const hasLoadedB50 = ref(false);
 
 onLoad(async () => {
 	console.log(1)
-	coverlist.value = await fileutil.getDirectoryFiles(localroute)
+	// coverlist.value = await fileutil.getDirectoryFiles(localroute)
 	qqid.value = uni.getStorageSync('divingFish_qqid');
 	nickname.value = uni.getStorageSync('divingFish_nickname');
 	importToken.value = uni.getStorageSync('divingFish_importToken');
@@ -361,6 +385,7 @@ onLoad(async () => {
 	uid.value = uni.getStorageSync('uid')
 	username.value = uni.getStorageSync('divingFish_username')
 	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
+	await initCoverList();
 	console.log('nickname'+nickname.value)
 	
 	// 只在首次加载且用户已登录时执行
@@ -372,50 +397,12 @@ onLoad(async () => {
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
 });
 
+// let coverlist=ref([])
 
-const loadingImages = ref(new Set()); // 记录正在加载的图片
+// const loadingImages = ref(new Set());
 
-// 用于跟踪正在下载的文件
-const downloadingFiles = new Set();
-function getCoverUrl(songId) {
+// const downloadingFiles = new Set();
 
-    const fileName = songId + suffix.value;
-    
-    // 确保 coverlist.value 是数组
-    if (Array.isArray(coverlist.value) && coverlist.value.includes(fileName)) {
-        // console.log('本地获取');
-        return '_doc/' + localroute + '/' + fileName;
-    }
-    
-    // 如果本地不存在且没有在下载中，开始下载
-    if (!downloadingFiles.has(fileName)) {
-        downloadingFiles.add(fileName);
-        loadingImages.value.add(songId); // 标记图片正在加载
-        
-        fileutil.downloadFileToDoc(ossroute + fileName, localroute)
-            .then(async () => {
-                const files = await fileutil.getDirectoryFiles(localroute);
-                coverlist.value = Array.isArray(files) ? files : [];
-                downloadingFiles.delete(fileName);
-                loadingImages.value.delete(songId); // 移除加载标记
-                
-                // 强制更新组件
-                if (coverlist.value.includes(fileName)) {
-                    const index = b35.value.findIndex(item => item.song_id + suffix.value === fileName);
-                    if (index !== -1) {
-                        b35.value = [...b35.value];
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('下载封面图片失败:', error);
-                downloadingFiles.delete(fileName);
-                loadingImages.value.delete(songId); // 出错时也移除加载标记
-            });
-    }
-    
-    return ''; // 返回空字符串，表示图片正在加载中
-}
 
 // 控制绑定表单显示状态
 const isBindFormVisible = ref(false);
@@ -424,7 +411,7 @@ const isBindFormVisible = ref(false);
 const isLoggedIn = computed(() => jwt_token.value)
 
 // 添加 jwt_token 的响应式引用
-let jwt_token = ref('');
+
 
 // 切换绑定表单显示状态
 function toggleBindForm() {
@@ -530,6 +517,7 @@ async function setProfile(jwt_token)
 	uni.setStorageSync('divingFish_importToken',importToken.value)
 	uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
 	records.value=await maiApi.divingFishGetRecords(jwt_token.value)
+	console.log(records)
 	uni.setStorageSync('divingFish_records',records.value)
 	
 }
@@ -546,7 +534,7 @@ async function confirmBind() {
 		let res = await maiApi.divingFishLogin(username.value, password.value);
 		let headerCookie = res.header['set-cookie'];
 		jwt_token.value = headerCookie.split(';', 1)[0].split('=')[1];
-		
+		console.log(jwt_token.value)
 		// 保存 jwt_token 到本地存储
 		uni.setStorageSync('divingFish_jwt_token', jwt_token.value);
 	    uni.setStorageSync('divingFish_username', username.value);
@@ -760,155 +748,7 @@ async function getb50local(){
 		// });
 	}
 }
-async function saveAsImage() {
-	try {
-		// 创建画布上下文
-		const ctx = uni.createCanvasContext('myCanvas');
-		
-		// 设置画布背景色
-		ctx.fillStyle = '#f5f5f5';
-		ctx.fillRect(0, 0, 750, 1334);
-		
-		// 获取B50容器节点信息
-		const result = await new Promise((resolve, reject) => {
-			const query = uni.createSelectorQuery();
-			query.select('.b50box')
-				.boundingClientRect(data => {
-					if (data) {
-						resolve(data);
-					} else {
-						reject(new Error('获取节点信息失败'));
-					}
-				})
-				.exec();
-		});
-		
-		// 初始化起始Y坐标
-		let startY = 20;
-		
-		// 遍历并绘制 B35 数据
-		if (b35.value && b35.value.length) {
-			// 绘制 B35 标题
-			ctx.fillStyle = '#333333';
-			ctx.font = 'bold 32px sans-serif';
-			ctx.fillText('B35', 20, 40);
-			
-			for (let i = 0; i < b35.value.length; i++) {
-				const item = b35.value[i];
-				const row = Math.floor(i / 2);
-				const col = i % 2;
-				const x = 20 + col * 355;
-				const y = startY + row * 120;
-				
-				// 绘制卡片背景
-				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(x, y, 335, 100);
-				
-				// 绘制图片
-				try {
-					const imageInfo = await new Promise((resolve, reject) => {
-						uni.getImageInfo({
-							src: route + item.song_id + '.png',
-							success: resolve,
-							fail: reject
-						});
-					});
-					ctx.drawImage(imageInfo.path, x + 10, y + 10, 80, 80);
-				} catch (err) {
-					console.error('获取图片失败:', err);
-				}
-				
-				// 绘制文字
-				ctx.fillStyle = '#333333';
-				ctx.font = '24px sans-serif';
-				ctx.fillText(item.title.substring(0, 15), x + 100, y + 35);
-				ctx.fillStyle = '#666666';
-				ctx.font = '20px sans-serif';
-				ctx.fillText(`难度: ${item.ds}`, x + 100, y + 65);
-			}
-			
-			startY += Math.ceil(b35.value.length / 2) * 120 + 40;
-		}
-		
-		// 遍历并绘制 B15 数据
-		if (b15.value && b15.value.length) {
-			// 绘制 B15 标题
-			ctx.fillStyle = '#333333';
-			ctx.font = 'bold 32px sans-serif';
-			ctx.fillText('B15', 20, startY);
-			
-			startY += 40;
-			
-			for (let i = 0; i < b15.value.length; i++) {
-				const item = b15.value[i];
-				const row = Math.floor(i / 2);
-				const col = i % 2;
-				const x = 20 + col * 355;
-				const y = startY + row * 120;
-				
-				// 绘制卡片背景
-				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(x, y, 335, 100);
-				
-				// 绘制图片
-				try {
-					const imageInfo = await new Promise((resolve, reject) => {
-						uni.getImageInfo({
-							src: route + item.song_id + '.png',
-							success: resolve,
-							fail: reject
-						});
-					});
-					ctx.drawImage(imageInfo.path, x + 10, y + 10, 80, 80);
-				} catch (err) {
-					console.error('获取图片失败:', err);
-				}
-				
-				// 绘制文字
-				ctx.fillStyle = '#333333';
-				ctx.font = '24px sans-serif';
-				ctx.fillText(item.title.substring(0, 15), x + 100, y + 35);
-				ctx.fillStyle = '#666666';
-				ctx.font = '20px sans-serif';
-				ctx.fillText(`难度: ${item.ds}`, x + 100, y + 65);
-			}
-		}
-		
-		// 绘制完成后保存
-		await new Promise((resolve) => {
-			ctx.draw(false, () => {
-				setTimeout(resolve, 300);
-			});
-		});
-		
-		// 将画布内容转换为图片
-		const tempFilePath = await new Promise((resolve, reject) => {
-			uni.canvasToTempFilePath({
-				canvasId: 'myCanvas',
-				success: (res) => resolve(res.tempFilePath),
-				fail: reject
-			});
-		});
-		
-		// 保存到相册
-		await uni.saveImageToPhotosAlbum({
-			filePath: tempFilePath
-		});
-		
-		uni.showToast({
-			title: '保存成功',
-			icon: 'success'
-		});
-		
-	} catch (error) {
-		console.error('保存图片失败:', error);
-		uni.showToast({
-			title: '保存失败，请检查相册权限',
-			icon: 'none',
-			duration: 2000
-		});
-	}
-}
+
 
 // 添加跳转函数
 function navigateToUpdate() {
@@ -1164,11 +1004,52 @@ const handleEmptyStateClick = async () => {
   }
 }
 
+// 添加状态管理
+const showRecordModal = ref(false);
+const selectedRecord = ref({record:Object,
+index:0});
 
+// 添加显示记录卡片的方法
+function showRecordCard(record,index) {
+  selectedRecord.value.record = record;
+  selectedRecord.value.index=index;
+  showRecordModal.value = true;
+}
+
+// 添加关闭记录卡片的方法
+function closeRecordModal() {
+  showRecordModal.value = false;
+  selectedRecord.value.record  = null;
+   selectedRecord.value.index=null;
+}
 
 </script>
 
 <style lang='scss'>
 @import "../../css/maib50.scss";
+
+/* 添加模态框样式 */
+.record-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.record-modal-content {
+  background: white;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  width: 90%;
+  max-width: 600rpx;
+  /* animation: slideUp 0.2s ease-out; */
+}
+
 
 </style>

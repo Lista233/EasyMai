@@ -167,5 +167,6 @@ export async function divingFishAgrement(jwt_token)
 
 export function splitJwtToken(res){
 	let headerCookie = res.header['set-cookie'];
+	console.log(headerCookie.split(';', 1)[0].split('=')[1])
 	return headerCookie.split(';', 1)[0].split('=')[1];
 }
