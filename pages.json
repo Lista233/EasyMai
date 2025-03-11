@@ -1,14 +1,52 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-	{
-		"path" : "pages/maiupdate/maib50",
-		"style" : 
+	"pages": [
 		{
-			"navigationBarTitleText" : "舞萌查分器",
-			"hideStatusBar":true,
-			"hideBottomNavigationIndicator":true
-		}
-	},
+			"path" : "pages/index/index",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		
+		{
+			"path" : "pages/Test/Test",
+			"style" : 
+			{
+				"navigationBarTitleText" : "舞萌查分器",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
+			}
+		},
+		
+		{
+			"path" : "pages/maiupdate/maib50",
+			"style" : 
+			{
+				"navigationBarTitleText" : "舞萌查分器",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
+			}
+		},
+		
+		{
+			"path" : "pages/song-detail/song-detail",
+			"style" : 
+			{
+				"navigationBarTitleText" : "舞萌查分器",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
+			}
+		},
+		{
+			"path" : "pages/song-search/song-search",
+			"style" : 
+			{
+				"navigationBarTitleText" : "舞萌查分器",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
+			}
+		},
+
 		{
 			"path" : "pages/maiupdate/maiupdate",
 			"style" : 
@@ -24,6 +62,7 @@
 		        "navigationStyle": "custom"
 		      }
 		},
+		
 		{
 			"path" : "pages/webview/webview",
 			"style" : 
