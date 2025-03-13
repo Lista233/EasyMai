@@ -13,9 +13,9 @@ import { reactive, ref } from 'vue';
 	const routelist=ref([]);
 	routelist.value=[
 		'/pages/webview/webview',
-		'/pages/maiupdate/maiupdate',
+		//'/pages/maiupdate/maiupdate',
 		'/pages/maiupdate/maib50',
-		'/pages/song-detail/song-detail',
+		//'/pages/song-detail/song-detail',
 		'/pages/song-search/song-search',
 		'/pages/Test/Test'
 	]

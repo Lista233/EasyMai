@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@dcloudio/uni-ui": "^1.5.7",
     "axios": "^1.8.1",
     "unplugin-auto-import": "^19.1.1"
   }

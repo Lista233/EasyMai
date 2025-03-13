@@ -331,11 +331,13 @@
 	水鱼相关:
 	b50;
 	musicData;
+	chart_stats
 	divingFish_qqid;
 	divingFish_username;
 	divingFish_nickname;
 	divingFish_importToken;
 	divingFish_records;
+	qq_channel_uid;
 	*/
 import * as fileutil from '../../util/fileutil.js'
 import { computed, ref, onMounted, onUnmounted } from 'vue';

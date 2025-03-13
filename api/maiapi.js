@@ -5,7 +5,7 @@ export async function maiGetUid(qrcode){
 		//data:{"qr_code":qrcode},
 	})
 	return data;
-	console.log(data);
+	// console.log(data);
 }
 export async function maiGetUserMusicData(userID){
 	
@@ -60,7 +60,7 @@ export async function divingFishLogin(username,password)
 	 }
 	})
 	
-	console.log(resp)
+	// console.log(resp)
 	return resp
 }
 
@@ -74,7 +74,7 @@ export async function divingFishGetProfile(jwt_token)
 		  "jwt-token":jwt_token
 	  }
 	})
-	console.log(resp);
+	// console.log(resp);
 	return resp;
 }
 export async function divingFishGetRecords(jwt_token)
@@ -87,7 +87,7 @@ export async function divingFishGetRecords(jwt_token)
 		  "jwt-token":jwt_token
 	  }
 	})
-	console.log(resp);
+	// console.log(resp);
 	return resp;
 }
 export async function divingFishGetJwtToken(username,password)
@@ -118,7 +118,7 @@ console.log('getProfile');
 		"nickname":nickname,
 	  }
 	})
-	console.log(resp);
+	// console.log(resp);
 	return resp;
 }
 export async function divingFishRefreshImportToken(jwt_token)
@@ -143,7 +143,7 @@ export async function divingFishRegister(username,password)
 		 "password":password,
 	 }
 	})
-	console.log(resp)
+	// console.log(resp)
 	return resp
 }
 
@@ -169,4 +169,33 @@ export function splitJwtToken(res){
 	let headerCookie = res.header['set-cookie'];
 	console.log(headerCookie.split(';', 1)[0].split('=')[1])
 	return headerCookie.split(';', 1)[0].split('=')[1];
+}
+
+export async function divingFishChartStats(){
+  
+    const response = await uni.request({
+      url: 'https://www.diving-fish.com/api/maimaidxprober/chart_stats',
+      method: 'GET'
+    })
+	// console.log(response)
+	return response;
+
+}
+
+export async function getChartStats() {
+  const resp = await uni.request({
+    url: 'https://www.diving-fish.com/api/maimaidxprober/chart_stats',
+    method: 'GET'
+  })
+  return resp.data
+}
+
+export  async function getAliasData(){
+  let resp=await uni.request({
+    url: 'https://api.yuzuchan.moe/maimaidx/maimaidxalias',
+    method: 'GET',
+  
+  })
+  // console.log(resp)
+  return resp;
 }

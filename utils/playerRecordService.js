@@ -1,10 +1,11 @@
 class PlayerRecordService {
-  constructor() {
-    this.playerData = null;
+  constructor(recordlist=[]) {
+    this.playerData = recordlist;
   }
 
   // 初始化玩家数据
   initPlayerData(data) {
+    // console.log('初始化数据:', data); // 调试日志
     this.playerData = data;
   }
 
@@ -33,19 +34,21 @@ class PlayerRecordService {
 
   // 根据歌曲ID和难度等级获取成绩记录
   getRecordBySongIdAndLevel(songId, levelIndex) {	  
-	  
-	  console.log('getRED')
-	  console.log(this.playerData.records)
-    if (!this.playerData || !this.playerData.records) {
+    if (!this.playerData || !Array.isArray(this.playerData.data.records)) {
+      // console.log('playerData 无效:', this.playerData); // 调试日志
       return null;
     }
 
     const targetId = String(songId);
-    return this.playerData.records.find(record => 
-      String(record.song_id) == targetId && 
-      record.level_index == levelIndex
-	 
-    ) || null;
+    // console.log('查找记录:', { targetId, levelIndex }); // 调试日志
+    
+    const record = this.playerData.data.records.find(record => 
+      String(record.song_id) === targetId && 
+      Number(record.level_index) === Number(levelIndex)
+    );
+    
+    // console.log('找到的记录:', record); // 调试日志
+    return record || null;
   }
 
   // 获取所有成绩记录
