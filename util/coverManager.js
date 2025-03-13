@@ -45,7 +45,7 @@ function processSongId(songId) {
     if (!songId) return '';
     
     // 转换为字符串并补齐5位
-    const paddedId = String(songId).padStart(5, '0');
+    const paddedId =String(songId);
     
     // 如果是5位数且以10开头，去除前面的10
     if (paddedId.length === 5 && paddedId.startsWith('10') ) {
@@ -80,7 +80,9 @@ export function getCoverUrl(songId, options = {}) {
     }
     
     // 如果都没有找到，返回远程URL
-    return `https://www.diving-fish.com/covers/${processedId}.png`;
+    const fixId=String(processedId).padStart(5, '0');
+	
+    return `https://www.diving-fish.com/covers/${fixId}.png`;
 }
 
 /**

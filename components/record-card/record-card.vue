@@ -3,7 +3,7 @@
 		<text class="song-id" selectable>ID:{{record.song_id}}</text>
 		<!-- 封面图片部分 -->
 		<view class="song-cover-container">
-			<text class="index-number" selectable>No.{{index}}</text>
+			<text class="index-number" selectable>No.{{index+1}}</text>
 			<view class="song-cover">
 				<image 
 					class="cover-image" 
@@ -13,6 +13,7 @@
 					]" 
 					:src="getCoverUrl(record.song_id)" 
 					mode="aspectFill"
+					@click.stop="navigateToSongDetail(record.song_id)"
 				></image>
 				<view class="ds-tag" :class="[
 					'level-' + record.level_index,
@@ -75,6 +76,17 @@
 		type: '',
 		...props.record
 	})
+
+	// 添加跳转到歌曲详情页的方法
+	const navigateToSongDetail = (songId) => {
+		if (!songId) return;
+		
+		uni.navigateTo({
+			url: `/pages/song-detail/song-detail?songId=${songId}`,
+			animationType: 'pop-in',
+			animationDuration: 200
+		});
+	}
 
 	// 计算标题样式
 	const computedTitleStyle = computed(() => {
@@ -217,31 +229,41 @@
 				border: 6rpx solid transparent;
 				box-sizing: border-box;
 				box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+				cursor: pointer;
+				transition: transform 0.2s ease;
 				
-	&.level-0 {
-		border-color: rgba(46, 204, 113, 1);
-		box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
-	}
-	
-	&.level-1 {
-		border-color: rgba(241, 196, 15, 1);
-		box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
-	}
-	
-	&.level-2 {
-		border-color: rgba(231, 76, 60, 1);
-		box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
-	}
-	
-	&.level-3 {
-		border-color: rgba(155, 89, 182, 1);
-		box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
-	}
-	
-	&.level-4 {
-		border-color: rgba(190, 170, 245, 1);
-		box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
-	}
+				&:hover {
+					transform: scale(1.05);
+				}
+				
+				&:active {
+					transform: scale(0.95);
+				}
+				
+				&.level-0 {
+					border-color: rgba(46, 204, 113, 1);
+					box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
+				}
+				
+				&.level-1 {
+					border-color: rgba(241, 196, 15, 1);
+					box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
+				}
+				
+				&.level-2 {
+					border-color: rgba(231, 76, 60, 1);
+					box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
+				}
+				
+				&.level-3 {
+					border-color: rgba(155, 89, 182, 1);
+					box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
+				}
+				
+				&.level-4 {
+					border-color: rgba(190, 170, 245, 1);
+					box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
+				}
 			}
 
 			.ds-tag {
@@ -255,30 +277,30 @@
 				color: white;
 				box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.2);
 				
-		&.level-0 {
-			border-color: rgba(46, 204, 113, 1);
-			box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
-		}
-		
-		&.level-1 {
-			border-color: rgba(241, 196, 15, 1);
-			box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
-		}
-		
-		&.level-2 {
-			border-color: rgba(231, 76, 60, 1);
-			box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
-		}
-		
-		&.level-3 {
-			border-color: rgba(155, 89, 182, 1);
-			box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
-		}
-		
-		&.level-4 {
-			border-color: rgba(190, 170, 245, 1);
-			box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
-		}
+				&.level-0 {
+					border-color: rgba(46, 204, 113, 1);
+					box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
+				}
+				
+				&.level-1 {
+					border-color: rgba(241, 196, 15, 1);
+					box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
+				}
+				
+				&.level-2 {
+					border-color: rgba(231, 76, 60, 1);
+					box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
+				}
+				
+				&.level-3 {
+					border-color: rgba(155, 89, 182, 1);
+					box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
+				}
+				
+				&.level-4 {
+					border-color: rgba(190, 170, 245, 1);
+					box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
+				}
 			}
 		}
 	}

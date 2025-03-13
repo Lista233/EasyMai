@@ -186,7 +186,7 @@
 				<view class="b15box">
 					<view class="song-card" 
 						v-for="(item,index) in b15" 
-						@click="showRecordCard(item)"
+						@click="showRecordCard(item,index)"
 					> 
 						<view class="song-cover">
 							<image class="cover-image" :class="'level-' + item.level_index" :src="getCoverUrl(item.song_id)"></image>

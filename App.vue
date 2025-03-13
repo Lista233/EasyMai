@@ -34,7 +34,7 @@ import * as maiApi from './api/maiapi.js'
 		'aliasData',
 		 'divingFish_records'// 添加别名数据的存储key
 	]
-
+   // uni.clearStorage()
 	// 初始化本地存储
 	const initStorage = () => {
 		const info = uni.getStorageInfoSync()

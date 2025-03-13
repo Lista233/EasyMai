@@ -20,8 +20,8 @@
         <view class="song-info">
           <view class="title-row">
             <view class="title-decoration"></view>
-            <text class="song-title" selectable>{{ songData?.title }}</text>
-            <text class="song-id">#{{ songData?.id }}</text>
+            <text class="song-title" @click="copyTitle">{{ songData?.title }}</text>
+            <text class="song-id" @click="copyId">#{{ songData?.id }}</text>
           </view>
           
           <view class="basic-info">
@@ -517,7 +517,7 @@ const songAliases = computed(() => {
   }
   
   try {
-    const result = songSearcher.value.getAliasById(songData.value.id)
+    const result = songSearcher.value.getAliasInfo(songData.value.id)
     return result ? result.alias : []
   } catch (err) {
     console.error('获取别名出错:', err)
@@ -532,6 +532,20 @@ const hasAliases = computed(() => {
 
 // 别名相关
 const showAliasDialog = () => {
+  // 确保别名数据已经加载
+  if (!songSearcher.value) {
+    const aliasData = uni.getStorageSync('aliasData')
+    if (aliasData) {
+      songSearcher.value = new SongSearcher(aliasData)
+    } else {
+      uni.showToast({
+        title: '别名数据加载失败',
+        icon: 'none'
+      })
+      return
+    }
+  }
+  
   if (popup.value) {
     popup.value.open()
   }
@@ -603,15 +617,18 @@ const initializeBasicData = async () => {
 }
 
 // 添加页面参数处理
-onLoad((options) => {
-  if (options.songId) {
-    song.value = options.songId
+onLoad(async (options) => {
+  song.value = options.songId
+  console.log('传入歌曲ID:',song.value)
+  
+  // 确保初始化搜索器
+  const aliasData = uni.getStorageSync('aliasData')
+  if (aliasData) {
+    songSearcher.value = new SongSearcher(aliasData)
   }
   
-  // 立即开始初始化页面
-  nextTick(() => {
-    initializeBasicData()
-  })
+  // 其他初始化逻辑...
+  initializeBasicData()
 })
 
 // 只在需要时更新数据
@@ -633,6 +650,38 @@ watch(
 onMounted(() => {
   console.log('组件挂载')
 })
+
+// 添加复制标题功能
+const copyTitle = () => {
+  if (songData.value?.title) {
+    uni.setClipboardData({
+      data: songData.value.title,
+      success: () => {
+        uni.showToast({
+          title: '歌名已复制到剪贴板',
+          icon: 'none',
+          position: 'bottom'
+        })
+      }
+    })
+  }
+}
+
+// 添加复制ID功能
+const copyId = () => {
+  if (songData.value?.id) {
+    uni.setClipboardData({
+      data: songData.value.id,
+      success: () => {
+        uni.showToast({
+          title: '歌曲ID已复制到剪贴板',
+          icon: 'none',
+          position: 'bottom'
+        })
+      }
+    })
+  }
+}
 </script>
 
 <style lang="scss">

@@ -8,9 +8,12 @@
           <input 
             v-model="searchKeyword" 
             type="text" 
-            placeholder="输入歌曲名称或别名搜索"
+            placeholder="输入歌曲名称/别名/ID进行搜索"
             @input="onSearch"
           />
+          <view class="view-toggle" @click="toggleViewMode">
+            <uni-icons :type="viewMode === 'grid' ? 'image' : 'list'" size="20" color="#ffffff"></uni-icons>
+          </view>
         </view>
       </view>
       
@@ -44,9 +47,10 @@
       </view>
     </view>
     
-    <view class="result-list">
+    <!-- 列表视图 -->
+    <view class="result-list" v-if="viewMode === 'list'">
       <view 
-        v-for="result in searchResults" 
+        v-for="(result, index) in searchResults" 
         :key="result.songId" 
         class="result-item"
         @click="navigateToDetail(result.songId)"
@@ -55,7 +59,9 @@
           <image 
             :src="getCoverUrl(result.songId)" 
             mode="aspectFill"
-           
+            lazy-load
+            :loading-priority="getLoadingPriority(index)"
+            @error="handleImageError"
           ></image>
         </view>
         <view class="song-info">
@@ -65,11 +71,33 @@
           </view>
           <view class="song-details">
             <text class="version">{{versionMap[result.basic_info?.from] || result.basic_info?.from || '未知版本'}}</text>
-            <text class="genre" v-if="result.basic_info?.genre">{{result.basic_info?.genre}}</text>
+            <text class="genre" v-if="result.basic_info?.genre">{{formatGenre(result.basic_info?.genre)}}</text>
             <text class="difficulty">{{formatLevels(result.level)}}</text>
           </view>
           <view class="matched-aliases" v-if="result.matchedAliases?.length">
             <text>{{formatAliases(result.matchedAliases)}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 网格视图 -->
+    <view class="grid-view" v-else>
+      <view class="grid-group" v-for="(group, groupIndex) in groupedResults" :key="groupIndex">
+        <view 
+          class="grid-item" 
+          v-for="(result, index) in group" 
+          :key="result ? result.songId : index"
+          @click="result && navigateToDetail(result.songId)"
+        >
+          <view class="grid-cover" v-if="result">
+            <image 
+              :src="getCoverUrl(result.songId)" 
+              mode="aspectFill"
+              lazy-load
+              :loading-priority="getLoadingPriority(groupIndex * 9 + index)"
+              @error="handleImageError"
+            ></image>
           </view>
         </view>
       </view>
@@ -91,7 +119,7 @@
               @input="onDsInput('min')"
               @focus="onInputFocus"
               @blur="onInputBlur"
-              maxlength="4"
+              maxlength="3"
             />
             <text class="range-separator">至</text>
             <input 
@@ -101,7 +129,7 @@
               @input="onDsInput('max')"
               @focus="onInputFocus"
               @blur="onInputBlur"
-              maxlength="4"
+              maxlength="3"
             />
           </view>
           <view class="range-tips">
@@ -116,7 +144,7 @@
             >
               <view class="picker-value">
                 <text class="picker-text">{{selectedDifficulty.name || '选择难度'}}</text>
-                <text class="picker-arrow">▼</text>
+                <!-- <text class="picker-arrow">▼</text> -->
               </view>
             </picker>
           </view>
@@ -209,6 +237,9 @@ const selectedDifficulty = ref({})
 const selectedType = ref('')
 const selectedGenre = ref('')
 
+// 视图模式状态
+const viewMode = ref('list') // 'list' 或 'grid'
+
 // 难度选项
 const difficulties = [
   { name: '任意难度', value: -1 },
@@ -296,6 +327,31 @@ const genres = [
   '东方Project',
   '音击&中二节奏'
 ]
+
+// 切换视图模式
+const toggleViewMode = () => {
+  viewMode.value = viewMode.value === 'list' ? 'grid' : 'list'
+}
+
+// 将搜索结果分组（每组9个，用于网格视图）
+const groupedResults = computed(() => {
+  const groups = []
+  const itemsPerGroup = 9
+  
+  for (let i = 0; i < searchResults.value.length; i += itemsPerGroup) {
+    // 获取当前组的元素，可能不足9个
+    const group = searchResults.value.slice(i, i + itemsPerGroup)
+    
+    // 如果不足9个，填充空元素保持布局
+    while (group.length < itemsPerGroup) {
+      group.push(null)
+    }
+    
+    groups.push(group)
+  }
+  
+  return groups
+})
 
 // 显示定数筛选弹窗
 const showDsFilter = () => {
@@ -395,10 +451,18 @@ const onSearch = async () => {
   
   let matchedIds = new Set()
   
-  // 1. 如果有搜索关键词，先进行关键词搜索
-  if (searchKeyword.value.trim()) {
+  // 1. 检查是否为纯数字ID搜索
+  const keyword = searchKeyword.value.trim()
+  if (keyword && /^\d+$/.test(keyword)) {
+    // 纯数字搜索，直接通过ID查找
+    const song = songService.value.getSongById(keyword)
+    if (song) {
+      matchedIds.add(song.id.toString())
+    }
+  } else if (keyword) {
+    // 关键词搜索
     const searchResults = searcher.value.search({
-      keyword: searchKeyword.value,
+      keyword: keyword,
       exactMatch: false
     })
     searchResults.forEach(result => matchedIds.add(result.id))
@@ -429,9 +493,9 @@ const onSearch = async () => {
     const aliasInfo = searcher.value.getAliasInfo(song.id)
     let matchInfo = null
     
-    if (searchKeyword.value.trim()) {
+    if (keyword && !/^\d+$/.test(keyword)) {
       matchInfo = searcher.value.search({
-        keyword: searchKeyword.value,
+        keyword: keyword,
         exactMatch: false
       }).find(r => r.id === song.id)
     }
@@ -515,23 +579,31 @@ const formatVersionText = computed(() => {
   return selectedVersion.value;
 })
 
-// 输入框获取焦点时的处理
+// 修复输入框获取焦点的处理函数
 const onInputFocus = (e) => {
-  const input = e.target;
-  if(input) {
-    input.style.backgroundColor = '#fff';
-    input.style.borderColor = '#6366f1';
-    input.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)';
+  try {
+    const input = e.target;
+    if(input && input.style) {
+      input.style.backgroundColor = '#fff';
+      input.style.borderColor = '#6366f1';
+      input.style.boxShadow = '0 0 0 2px rgba(99, 102, 241, 0.2)';
+    }
+  } catch (error) {
+    console.error('Input focus error:', error);
   }
 };
 
-// 输入框失去焦点时的处理
+// 修复输入框失去焦点的处理函数
 const onInputBlur = (e) => {
-  const input = e.target;
-  if(input) {
-    input.style.backgroundColor = '#f5f5f5';
-    input.style.borderColor = '#ddd';
-    input.style.boxShadow = 'none';
+  try {
+    const input = e.target;
+    if(input && input.style) {
+      input.style.backgroundColor = '#f5f5f5';
+      input.style.borderColor = '#ddd';
+      input.style.boxShadow = 'none';
+    }
+  } catch (error) {
+    console.error('Input blur error:', error);
   }
 };
 
@@ -545,11 +617,35 @@ const formatLevels = (levels) => {
   return 'Lv.' + validLevels.join('/');
 }
 
+// 添加格式化歌曲类别的方法
+const formatGenre = (genre) => {
+  const genreMap = {
+    'niconico & VOCALOID': 'nico&vocal',
+    '音击&中二节奏': '音击&中二',
+    '流行&动漫': '流行&动漫',
+    '东方Project': '东方',
+    '其他游戏': '其他',
+    '舞萌': '舞萌'
+  };
+  
+  return genreMap[genre] || genre;
+};
+
 // 格式化类别文本
 const formatGenreText = computed(() => {
   if (!selectedGenre.value) return '';
-  // 允许显示换行
-  return selectedGenre.value;
+  
+  // 类别映射对象
+  const genreMap = {
+    'niconico & VOCALOID': 'nico&vocal',
+    '音击&中二节奏': '音击&中二',
+    '流行&动漫': '流行&动漫',
+    '东方Project': '东方',
+    '其他游戏': '其他',
+    '舞萌': '舞萌'
+  };
+  
+  return genreMap[selectedGenre.value] || selectedGenre.value;
 });
 
 // 修改应用版本筛选方法
@@ -564,6 +660,23 @@ const applyGenreFilter = () => {
   closeGenreFilter()
   onSearch()
 }
+
+// 添加处理图片加载优先级的函数
+const getLoadingPriority = (index) => {
+  // 前20张图片设置为高优先级
+  if (index < 20) {
+    return 'high';
+  } else if (index < 40) {
+    return 'normal';
+  } else {
+    return 'low';
+  }
+};
+
+// 处理图片加载错误
+const handleImageError = (e) => {
+  console.log('图片加载失败:', e);
+};
 </script>
 
 <style lang="scss">
@@ -612,6 +725,25 @@ const applyGenreFilter = () => {
           color: #999;
         }
       }
+      
+      .view-toggle {
+        margin-left: 20rpx;
+        padding: 10rpx;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.25);
+        height: 36rpx;
+        width: 36rpx;
+        
+        &:active {
+          transform: scale(0.9);
+          box-shadow: 0 2rpx 6rpx rgba(99, 102, 241, 0.2);
+        }
+      }
     }
   }
   
@@ -633,22 +765,8 @@ const applyGenreFilter = () => {
         overflow: hidden;
         box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.15);
         min-width: 0;
-        height: 116rpx; /* 固定高度，确保一致性 */
+        height: 116rpx;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0));
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
         
         &:active {
           transform: scale(0.98) translateY(1px);
@@ -660,10 +778,8 @@ const applyGenreFilter = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: space-between;
           width: 100%;
           padding: 4rpx;
-          height: 100%;
           
           .btn-title {
             font-size: 28rpx;
@@ -672,12 +788,12 @@ const applyGenreFilter = () => {
             width: 100%;
             text-align: center;
             line-height: 1.2;
-            margin-top: 6rpx;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             padding: 0 8rpx;
             box-sizing: border-box;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           
           .filter-active {
@@ -696,7 +812,13 @@ const applyGenreFilter = () => {
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             white-space: normal;
-            margin-bottom: 6rpx;
+            margin-top: 4rpx;
+            
+            & + .btn-title {
+              flex: 0;
+              margin-bottom: auto;
+              padding-top: 6rpx;
+            }
           }
         }
       }
@@ -936,10 +1058,11 @@ const applyGenreFilter = () => {
         overflow: hidden;
         
         .picker-text {
-          flex: 1;
+          width: 150rpx;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          padding-right: 30rpx; /* 为箭头留出空间 */
         }
         
         .picker-arrow {
@@ -947,6 +1070,8 @@ const applyGenreFilter = () => {
           color: #999;
           margin-left: 10rpx;
           flex-shrink: 0;
+          position: absolute;
+          right: 20rpx;
         }
         
         &:active {
@@ -1154,6 +1279,45 @@ const applyGenreFilter = () => {
         .range-separator {
           margin: 0 10rpx;
           color: #999;
+        }
+      }
+    }
+  }
+}
+
+// 网格视图样式
+.grid-view {
+  padding: 10rpx;
+  
+  .grid-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 30rpx;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20rpx;
+    padding: 20rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+  
+  .grid-item {
+    width: calc(33.33% - 20rpx);
+    margin: 10rpx;
+    aspect-ratio: 1;
+    
+    .grid-cover {
+      width: 100%;
+      height: 100%;
+      border-radius: 16rpx;
+      overflow: hidden;
+      box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.15);
+      
+      image {
+        width: 100%;
+        height: 100%;
+        transition: transform 0.3s ease;
+        
+        &:hover {
+          transform: scale(1.08);
         }
       }
     }

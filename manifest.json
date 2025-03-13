@@ -2,8 +2,8 @@
     "name" : "easyMai",
     "appid" : "__UNI__9441491",
     "description" : "",
-    "versionName" : "0.1.0",
-    "versionCode" : 10,
+    "versionName" : "0.1.1",
+    "versionCode" : 11,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
