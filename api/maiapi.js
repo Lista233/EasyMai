@@ -348,3 +348,19 @@ export async function getAliasData() {
 		return { error };
 	}
 }
+
+export async function divingFishRecovery(qq) {
+	try {
+		const response = await request({
+			url: `https://www.diving-fish.com/api/maimaidxprober/recovery?qq=${qq}`,
+			method: 'POST',
+			data:{
+				"qq":qq,
+			}
+		});
+		return response;
+	} catch (error) {
+		console.error('该绑定QQ不存在:', error);
+		return { error };
+	}
+}

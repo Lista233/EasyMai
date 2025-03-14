@@ -892,8 +892,17 @@ async function handleSettingsSubmit() {
 }
 
 const refreshImportToken = () => {
-	maiApi.divingFishRefreshImportToken(jwt_token.value)
-	setProfile(jwt_token.value)
+	uni.showModal({
+		title:'重置导入Token',
+		content:'您确定要重置导入Token吗,这会使你原来的Token失效',
+		success:((e)=>{
+			if(e.confirm){
+		  maiApi.divingFishRefreshImportToken(jwt_token.value)
+	      setProfile(jwt_token.value)
+		  }
+		}),
+	})
+	
 };
 
 // 添加从相册导入的方法

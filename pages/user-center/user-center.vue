@@ -1,0 +1,1032 @@
+<template>
+  <view class="user-center">
+    <!-- 顶部用户信息区域 -->
+    <view class="user-info-container">
+      <view class="user-card">
+        <view class="avatar-container">
+          <image class="avatar" :src="avatar || '/static/default-avatar.png'" mode="aspectFill"></image>
+      <!--    <view class="level-badge">Lv.{{ userInfo.level || 0 }}</view> -->
+        </view>
+        <view class="user-details">
+          <view class="username">{{ nickname || username || '请先登录' }}</view>
+          <view class="user-id" v-if="uid !== -1">UID: {{ uid }}</view>
+          <view v-show='uid==(-1||null)&&isLoggedIn' class="user-id hint-text" v-else @click="handleQrCode">绑定二维码获取UID</view>
+        </view>
+        <RatingDisplay 
+          :b35rating="b35rating" 
+          :b15rating="b15rating"
+          :isLoggedIn="isLoggedIn"
+        />
+      </view>
+    </view>
+    
+    <!-- 功能模块区域 - 仅在登录后显示 -->
+    <view class="modules-container" v-if="isLoggedIn">
+      <view class="section-title has-data">
+        <view class="title-content">功能中心</view>
+      </view>
+      
+     <view class="function-grid">
+     <!--   <view class="function-item refresh-api" @click="handleRefreshAPI">
+          <view class="function-icon">🔄</view>
+          <view class="function-name">刷新数据</view>
+          <view class="function-desc">获取最新游戏记录</view>
+        </view> -->
+        
+        <!-- 账号设置 -->
+        <view class="function-item account-settings" @click="handleAccountSettings">
+          <view class="function-icon">⚙️</view>
+          <view class="function-name">账号设置</view>
+          <view class="function-desc">管理个人账号信息</view>
+        </view>
+        
+        <!-- 我的成绩 -->
+    <!--    <view class="function-item my-scores" @click="handleViewScores">
+          <view class="function-icon">🏆</view>
+          <view class="function-name">我的成绩</view>
+          <view class="function-desc">查看个人游戏成绩</view>
+        </view> -->
+        
+        <!-- 数据分析 -->
+<!--        <view class="function-item data-analysis" @click="handleDataAnalysis">
+          <view class="function-icon">📊</view>
+          <view class="function-name">数据分析</view>
+          <view class="function-desc">查看游戏数据统计</view>
+        </view -->
+
+        <!-- 连接二维码到相应功能项 -->
+        <view class="function-item qr-code" @click="handleQrCode">
+          <view class="function-icon">🔗</view>
+          <view class="function-name">绑定二维码</view>
+          <view class="function-desc">关联舞萌DX账号</view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 快捷操作区域 - 所有用户可见 -->
+    <view class="quick-actions">
+      <view class="section-title has-data">
+        <view class="title-content">快捷入口</view>
+      </view>
+      
+      <view class="actions-list">
+        <view class="action-item" @click="handleB50">
+          <view class="action-icon">🌟</view>
+          <view class="action-content">
+            <view class="action-title">Best 50</view>
+            <view class="action-desc">{{ isLoggedIn ? '查看你的 Best 50 成绩' : '登录后查看你的成绩' }}</view>
+          </view>
+          <view class="action-arrow">→</view>
+        </view>
+        
+        <view class="action-item" @click="handleRecentPlay">
+          <view class="action-icon">🔍</view>
+          <view class="action-content">
+            <view class="action-title">歌曲搜索</view>
+            <view class="action-desc">查询舞萌曲库所有歌曲</view>
+          </view>
+          <view class="action-arrow">→</view>
+        </view>
+        
+      <!--  <view class="action-item" @click="handleFavorites">
+          <view class="action-icon">❤️</view>
+          <view class="action-content">
+            <view class="action-title">收藏乐曲</view>
+            <view class="action-desc">管理你收藏的乐曲</view>
+          </view>
+          <view class="action-arrow">→</view>
+        </view> -->
+      </view>
+    </view>
+    
+    <!-- 登录/登出按钮 -->
+    <view class="login-button" @click="isLoggedIn ? handleLogout() : navigateToLogin()">
+      <view class="login-text">{{ isLoggedIn ? '退出登录' : '点击登录' }}</view>
+    </view>
+
+    <!-- 二维码绑定组件 -->
+    <QrCodeModal 
+      v-model:visible="showQrModal" 
+      @confirm="handleQrConfirm" 
+    />
+
+    <!-- 账号设置组件 -->
+    <AccountSettingsModal 
+      v-model:visible="showSettingsModal"
+      :user-data="{
+        nickname,
+        importToken,
+        bind_qq: qqid,
+        qq_channel_uid
+      }"
+      @confirm="handleSettingsConfirm"
+      @refresh-token="refreshToken"
+    />
+  </view>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import * as maiApi from '../../api/maiapi.js';
+import {onLoad} from '@dcloudio/uni-app'
+import QrCodeModal from '@/components/QrCodeModal.vue';
+import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
+import RatingDisplay from '@/components/RatingDisplay.vue';
+ 
+let b35=ref('')
+let b15=ref('')
+let b15rating=ref(0)
+let b35rating=ref(0)
+
+let username=ref('')
+let password=ref('')
+let nickname=ref('')
+let qqid=ref('')
+let importToken=ref('')
+let qq_channel_uid=ref('')
+
+
+let jwt_token = ref('');
+
+let records=ref('')
+
+let avatar=ref('../../static/maiicon/UI_Icon_000001.jpg')
+
+let QrCode=ref('');
+let uid=ref(-1);
+
+
+// 计算属性：根据rating值返回对应的样式类名
+const ratingClass = computed(() => {
+  const rating = b15rating.value+b35rating.value;
+  if (!rating) return 'default';
+  
+  if (rating >= 15000) return 'rainbow';
+  if (rating >= 14500) return 'bright-gold';
+  if (rating >= 14000) return 'gold';
+  if (rating >= 13000) return 'blue';
+  if (rating >= 12000) return 'copper';
+  return 'default';
+});
+
+// 从本地获取b50数据并计算rating
+function calculateRatingFromLocalB50() {
+  try {
+    // 尝试从本地存储获取b50数据
+    const b50Data = uni.getStorageSync('b50Data');
+    
+    if (!b50Data) {
+      console.log('本地无b50数据');
+      return null;
+    }
+    
+    // 解析b50数据
+    const musicData = JSON.parse(b50Data);
+    
+    if (!musicData || !musicData.charts || !musicData.charts.length) {
+      console.log('b50数据格式无效');
+      return null;
+    }
+    
+    // 获取新旧曲目的成绩并计算rating
+    const newChartsWithRating = [];
+    const oldChartsWithRating = [];
+    
+    musicData.charts.forEach(chart => {
+      if (chart && chart.ds && chart.ra && chart.achievements) {
+        const chartWithRating = {
+          ds: chart.ds,
+          ra: chart.ra,
+          achievements: chart.achievements
+        };
+        
+        if (chart.is_new) {
+          newChartsWithRating.push(chartWithRating);
+        } else {
+          oldChartsWithRating.push(chartWithRating);
+        }
+      }
+    });
+    
+    // 按照rating排序
+    newChartsWithRating.sort((a, b) => b.ra - a.ra);
+    oldChartsWithRating.sort((a, b) => b.ra - a.ra);
+    
+    // 取新曲最好的10首和旧曲最好的40首
+    const newChartsRating = newChartsWithRating.slice(0, 10).reduce((sum, chart) => sum + chart.ra, 0);
+    const oldChartsRating = oldChartsWithRating.slice(0, 40).reduce((sum, chart) => sum + chart.ra, 0);
+    
+    // 计算总rating
+    const totalRating = newChartsRating + oldChartsRating;
+    
+    return {
+      rating: totalRating,
+      lastUpdate: new Date(musicData.updateTime || Date.now()).toLocaleString('zh-CN', {
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    };
+  } catch (error) {
+    console.error('计算本地b50 rating失败:', error);
+    return null;
+  }
+}
+
+// 从API获取b50数据并计算rating
+
+// 加载用户资料 - 与maib50完全相同
+async function setProfile(jwt_token)
+{
+	
+	let profile = (await maiApi.divingFishGetProfile(jwt_token)).data;
+	nickname.value=profile.nickname;
+	qqid.value=profile.bind_qq;
+	importToken.value=profile.import_token;
+	qq_channel_uid.value=profile.qq_channel_uid;
+	uni.setStorageSync('divingFish_nickname',nickname.value)
+	uni.setStorageSync('divingFish_qqid',qqid.value)
+	uni.setStorageSync('divingFish_importToken',importToken.value)
+	uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
+	records.value=await maiApi.divingFishGetRecords(jwt_token.value)
+	console.log(records)
+	uni.setStorageSync('divingFish_records',records.value)
+	
+}
+onLoad(async () => {
+	console.log(1)
+	// coverlist.value = await fileutil.getDirectoryFiles(localroute)
+	qqid.value = uni.getStorageSync('divingFish_qqid');
+	nickname.value = uni.getStorageSync('divingFish_nickname');
+	importToken.value = uni.getStorageSync('divingFish_importToken');
+	records.value = uni.getStorageSync('divingFish_records');
+	uid.value = uni.getStorageSync('uid')
+	username.value = uni.getStorageSync('divingFish_username')
+	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
+	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
+	console.log('nickname'+nickname.value)
+	
+
+	if (qqid.value && nickname.value) {
+		await getb50local();
+	
+	}
+	
+
+});
+// 其他处理函数保持不变
+const handleSettings = () => {
+  uni.navigateTo({
+    url: '/pages/settings/index'
+  });
+};
+
+const handleViewScores = () => {
+  uni.navigateTo({
+    url: '/pages/scores/index'
+  });
+};
+
+const handleDataAnalysis = () => {
+  uni.navigateTo({
+    url: '/pages/analysis/index'
+  });
+};
+
+const handleB50 = () => {
+  uni.navigateTo({
+    url: '/pages/maiupdate/maib50'
+  });
+};
+
+const handleRecentPlay = () => {
+  uni.navigateTo({
+    url: '/pages/song-search/song-search'
+  });
+};
+
+const handleFavorites = () => {
+  uni.navigateTo({
+    url: '/pages/favorites/index'
+  });
+};
+
+const handleLogout = () => {
+  uni.showModal({
+    title: '确认退出',
+    content: '确定要退出登录吗？',
+    success: (res) => {
+      if (res.confirm) {
+	uni.removeStorageSync('divingFish_jwt_token');
+		uni.removeStorageSync('divingFish_nickname');
+		uni.removeStorageSync('divingFish_qqid');
+		uni.removeStorageSync('divingFish_importToken');
+		uni.removeStorageSync('divingFish_qqChannelUid');
+		uni.removeStorageSync('divingFish_records');
+		uni.removeStorageSync('b50');
+		uni.removeStorageSync('uid')
+		uni.removeStorageSync('divingFish_username');
+		uni.removeStorageSync('qq_channel_uid')
+        
+        uni.showToast({
+          title: '已退出登录',
+          icon: 'none',
+		  position:'center'
+        });
+        
+        // setTimeout(() => {
+        //   uni.navigateTo({
+        //     url: '/pages/login/login'
+        //   });
+        // }, 100);
+      }
+    }
+  });
+};
+
+async function getb50local(){
+	try {
+		uni.showLoading({
+			title: '加载中...',
+			mask: true
+		});
+		
+		let res=uni.getStorageSync('b50')
+		setb50Value(res)
+		
+		uni.hideLoading();
+	} catch (error) {
+			uni.hideLoading();
+		console.error('获取数据失败:', error);
+		// uni.showToast({
+		// 	title: '获取数据失败，请重试',
+		// 	icon: 'none'
+		// });
+	}
+}
+async function setb50Value(res) {
+	
+    if (res.data) {
+        b35.value = res.data.charts.sd;
+        b15.value = res.data.charts.dx;
+
+        // 重置 rating 值
+        b35rating.value = 0;
+        b15rating.value = 0;
+        
+        // 计算 B35 rating
+        for (let item of b35.value) {
+            b35rating.value += Number(item.ra);
+        }
+        
+        // 计算 B15 rating
+        for (let item of b15.value) {
+            b15rating.value += Number(item.ra);
+        }
+	
+    } else {
+        console.log('出错了');
+    }
+}
+
+// 添加状态变量控制显示/隐藏
+const showQrModal = ref(false);
+const showSettingsModal = ref(false);
+
+// 处理二维码绑定
+function handleQrCode() {	
+	uni.showModal({
+		title:'绑定须知',
+		content:'为了您的舞萌账号安全，玩家信息仅会在本地保存，不会上传至任何地方，退出登录后失效。且获取账号信息的功能与水鱼网站无关，最终解释权归开发者所有。',
+		confirmText:'接受并继续',
+		success:(res)=>{if(res.confirm)
+		{
+		showQrModal.value = true;
+		qrCodeInput.value = '';	}
+		}
+	})
+ 
+}
+
+// 处理二维码提交
+async function handleQrConfirm(qrContent) {
+  if (!qrContent) return;
+  
+  try {
+	  console.log('二维码'+qrContent)
+    // 这里应该有处理二维码的逻辑
+    // 假设getUidFromQrCode方法已经存在
+    const uidResult = await maiApi.maiGetUid(qrContent);
+    console.log(uidResult)
+	if(uidResult.data.userID==-1)
+	{
+		uni.showToast({
+		  title: '您输入的有误或已过期',
+		  icon: 'none'
+		});
+	}
+   else if (uidResult && (uidResult.data.userID!=-1)) {
+      uid.value = uidResult.data.userID;
+      uni.setStorageSync('uid', uidResult.data.userID);
+      
+      uni.showToast({
+        title: '二维码绑定成功',
+        icon: 'success'
+      });
+    }
+  } catch (error) {
+    console.error('二维码绑定失败:', error);
+    uni.showToast({
+      title: '绑定失败，请重试',
+      icon: 'none'
+    });
+  }
+}
+
+// 处理账号设置
+function handleAccountSettings() {
+  showSettingsModal.value = true;
+}
+
+// 处理设置提交
+function handleSettingsConfirm(formData) {
+  // 更新设置
+  nickname.value = formData.nickname;
+  importToken.value = formData.importToken;
+  qqid.value = formData.bind_qq;
+  qq_channel_uid.value = formData.qq_channel_uid;
+  
+  // 保存到本地存储
+  uni.setStorageSync('divingFish_nickname', formData.nickname);
+  uni.setStorageSync('divingFish_importToken', formData.importToken);
+  uni.setStorageSync('divingFish_qqid', formData.bind_qq);
+  uni.setStorageSync('qq_channel_uid', formData.qq_channel_uid);
+  
+  uni.showToast({
+    title: '设置已保存',
+    icon: 'success'
+  });
+}
+
+// 刷新Token
+async function refreshToken() {
+  try {
+    uni.showModal({
+    	title:'重置导入Token',
+    	content:'您确定要重置导入Token吗,这会使你原来的Token失效',
+    	success:((e)=>{
+    		if(e.confirm){
+    	  maiApi.divingFishRefreshImportToken(jwt_token.value)
+          setProfile(jwt_token.value)
+		  uni.showToast({
+		    title: 'Token已更新',
+		    icon: 'success'
+		  });
+    	  }
+    	}),
+    })
+   
+  } catch (error) {
+    console.error('刷新Token失败:', error);
+    uni.showToast({
+      title: '刷新失败',
+      icon: 'error'
+    });
+  }
+}
+
+// 计算用户是否已登录
+const isLoggedIn = computed(() => {
+  return  !(jwt_token.value=='')
+});
+
+// 登录页面跳转
+function navigateToLogin() {
+  uni.navigateTo({
+    url: '/pages/login/login'  // 目前使用maib50作为登录页面
+  });
+}
+
+</script>
+
+<style lang="scss" scoped>
+.user-center {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
+  padding: 40rpx 20rpx 60rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+  
+  .user-info-container {
+    max-width: 750rpx;
+    margin: 0 auto 40rpx;
+    
+    .user-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 24rpx;
+      padding: 40rpx 30rpx;
+      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      animation: fadeInDown 1s;
+      
+      .avatar-container {
+        position: relative;
+        margin-bottom: 20rpx;
+        
+        .avatar {
+          width: 100rpx;
+          height: 100rpx;
+          border-radius: 30%;
+		  transform: translateY(30%);
+          background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+          border: 4rpx solid white;
+          box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
+        }
+        
+        .level-badge {
+          position: absolute;
+          bottom: -10rpx;
+          right: -10rpx;
+          background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+          color: white;
+          font-size: 24rpx;
+          font-weight: bold;
+          padding: 6rpx 16rpx;
+          border-radius: 20rpx;
+          box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.3);
+        }
+      }
+      
+      .user-details {
+        text-align: center;
+        margin-bottom: 30rpx;
+        
+        .username {
+          font-size: 36rpx;
+          font-weight: 600;
+          color: #1e293b;
+          margin-bottom: 8rpx;
+        }
+        
+        .user-id {
+          font-size: 24rpx;
+          color: #64748b;
+          margin: 6rpx 0;
+        }
+      }
+      
+      .rating-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20rpx;
+        padding: 20rpx 40rpx;
+        margin: 10rpx;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+        text-align: center;
+        width: 80%;
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        position: relative;
+        
+        .rating-title {
+          font-size: 24rpx;
+          font-weight: 500;
+          letter-spacing: 2rpx;
+          opacity: 0.7;
+          text-transform: uppercase;
+          margin-bottom: 8rpx;
+          position: relative;
+          z-index: 1;
+        }
+        
+        .rating-value {
+          font-size: 56rpx;
+          font-weight: 800;
+          line-height: 1.2;
+          position: relative;
+          z-index: 1;
+          margin: 4rpx 0;
+        }
+        
+        .rating-subtitle {
+          font-size: 20rpx;
+          font-weight: 500;
+          opacity: 0.5;
+          letter-spacing: 1rpx;
+          margin-top: 4rpx;
+        }
+        
+        // 默认样式（<12000）
+        &.default {
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+          .rating-title, .rating-subtitle { color: #64748b; }
+          .rating-value { color: #1e293b; }
+        }
+        
+        // 铜色样式（12000+）
+        &.copper {
+          background: linear-gradient(135deg, #fde4cf 0%, #d6a285 100%);
+          .rating-title, .rating-subtitle { color: rgba(124, 45, 18, 0.8); }
+          .rating-value {
+              background: linear-gradient(135deg, #c2410c, #9a3412);
+              -webkit-background-clip: text;
+              color: transparent;
+          }
+        }
+        
+        // 蓝色样式（13000+）
+        &.blue {
+          background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+          .rating-title, .rating-subtitle { color: rgba(30, 58, 138, 0.8); }
+          .rating-value {
+              background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+              -webkit-background-clip: text;
+              color: transparent;
+          }
+        }
+        
+        // 金色样式（14000+）
+        &.gold {
+          background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+          .rating-title, .rating-subtitle { color: rgba(146, 64, 14, 0.8); }
+          .rating-value {
+              background: linear-gradient(135deg, #d97706, #92400e);
+              -webkit-background-clip: text;
+              color: transparent;
+          }
+        }
+        
+        // 亮金色样式（14500+）
+        &.bright-gold {
+          background: linear-gradient(135deg, #fef9c3 0%, #fde047 100%);
+          .rating-title, .rating-subtitle { color: rgba(133, 77, 14, 0.8); }
+          .rating-value {
+              background: linear-gradient(135deg, #facc15, #eab308);
+              -webkit-background-clip: text;
+              color: transparent;
+          }
+        }
+        
+        // 彩虹色样式（15000+）
+        &.rainbow {
+          background: linear-gradient(135deg, #fff8f8 0%, #fff4f4 100%);
+          &::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -50%;
+              right: -50%;
+              bottom: 0;
+              background: linear-gradient(
+                  90deg,
+                  rgba(255, 82, 82, 0.2),
+                  rgba(255, 186, 0, 0.2),
+                  rgba(0, 255, 127, 0.2),
+                  rgba(0, 191, 255, 0.2),
+                  rgba(148, 0, 211, 0.2),
+                  rgba(255, 82, 82, 0.2),
+              );
+              background-size: 400% 100%;
+              animation: rainbow-bg 16s linear infinite;
+              filter: blur(8px);
+              opacity: 0.6;
+          }
+          
+          .rating-title, .rating-subtitle { 
+              color: rgba(30, 41, 59, 0.7);
+          }
+          
+          .rating-value {
+              background: linear-gradient(
+                  90deg,
+                  #ff3232,
+                  #ffb511,
+                  #11dd88,
+                  #00bfff,
+                  #8965d3,
+                  #ff3232
+              );
+              background-size: 300% 100%;
+              -webkit-background-clip: text;
+              color: transparent;
+              animation: rainbow-text 24s linear infinite;
+          }
+        }
+      }
+    }
+  }
+  
+  .modules-container {
+    max-width: 750rpx;
+    margin: 0 auto 40rpx;
+    
+    .section-title {
+      font-size: 36rpx;
+      font-weight: 800;
+      margin: 32rpx 10rpx;
+      color: #333;
+      padding: 12rpx 20rpx;
+      border-radius: 12rpx;
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      min-width: 100rpx;
+      text-align: left;
+      background: transparent;
+      box-shadow: none;
+      transform: translateX(-20rpx);
+      opacity: 0.7;
+      
+      .title-content {
+        position: relative;
+        display: inline-block;
+        padding: 0 30rpx;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: translateX(0);
+        
+        &::before,
+        &::after {
+          content: '';
+          position: absolute;
+          top: 50%;
+          width: 0;
+          height: 70%;
+          background: linear-gradient(to bottom, #2196F3, #4CAF50);
+          border-radius: 4rpx;
+          transform: translateY(-50%);
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          opacity: 0;
+        }
+        
+        &::before {
+          left: 0;
+        }
+        
+        &::after {
+          right: 0;
+        }
+      }
+      
+      &.has-data {
+        display: block;
+        text-align: center;
+        width: calc(95% - 20rpx);
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+        box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+        backdrop-filter: blur(10px);
+        transform: translateX(0);
+        opacity: 1;
+        
+        .title-content {
+          transform: translateX(0);
+          
+          &::before,
+          &::after {
+            width: 8rpx;
+            opacity: 1;
+          }
+        }
+      }
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2rpx;
+        background: linear-gradient(to right, 
+          rgba(33, 150, 243, 0.5), 
+          rgba(76, 175, 80, 0.5),
+          rgba(33, 150, 243, 0)
+        );
+        transform: scaleX(0);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: left;
+      }
+      
+      &.has-data::after {
+        transform: scaleX(1);
+      }
+    }
+    
+    .function-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20rpx;
+      padding: 0 10rpx;
+      
+      .function-item {
+        background: white;
+        border-radius: 20rpx;
+        padding: 30rpx;
+        box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 8rpx;
+          height: 100%;
+          border-top-left-radius: 20rpx;
+          border-bottom-left-radius: 20rpx;
+        }
+        
+        .function-icon {
+          font-size: 48rpx;
+          margin-bottom: 16rpx;
+        }
+        
+        .function-name {
+          font-size: 30rpx;
+          font-weight: 600;
+          color: #1e293b;
+          margin-bottom: 8rpx;
+        }
+        
+        .function-desc {
+          font-size: 22rpx;
+          color: #64748b;
+        }
+        
+        &:active {
+          transform: translateY(4rpx);
+          box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.05);
+        }
+        
+        &.refresh-api {
+          &::before {
+            background: linear-gradient(90deg, #818cf8, #6366f1);
+          }
+          
+          .function-icon {
+            color: #6366f1;
+          }
+        }
+        
+        &.account-settings {
+          &::before {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+          }
+          
+          .function-icon {
+            color: #22c55e;
+          }
+        }
+		
+		&.qr-code {
+		  &::before {
+		    background: linear-gradient(90deg, #c4b5fd, #a78bfa);
+		  }
+		  
+		  .function-icon {
+		    color: #a78bfa;
+		  }
+		}
+        
+        &.my-scores {
+          &::before {
+            background: linear-gradient(90deg, #c4b5fd, #a78bfa);
+          }
+          
+          .function-icon {
+            color: #a78bfa;
+          }
+        }
+        
+        &.data-analysis {
+          &::before {
+            background: linear-gradient(90deg, #fca5a5, #ef4444);
+          }
+          
+          .function-icon {
+            color: #ef4444;
+          }
+        }
+      }
+    }
+  }
+  
+  .quick-actions {
+    max-width: 750rpx;
+    margin: 0 auto 40rpx;
+    
+    .actions-list {
+      padding: 0 10rpx;
+      
+      .action-item {
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: 16rpx;
+        padding: 24rpx;
+        margin-bottom: 20rpx;
+        box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        
+        .action-icon {
+          font-size: 40rpx;
+          margin-right: 20rpx;
+          width: 60rpx;
+          text-align: center;
+        }
+        
+        .action-content {
+          flex: 1;
+          
+          .action-title {
+            font-size: 28rpx;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6rpx;
+          }
+          
+          .action-desc {
+            font-size: 22rpx;
+            color: #64748b;
+          }
+        }
+        
+        .action-arrow {
+          font-size: 28rpx;
+          color: #94a3b8;
+          font-weight: bold;
+        }
+        
+        &:active {
+          transform: translateX(6rpx);
+          background: #f8fafc;
+        }
+      }
+    }
+  }
+  
+  .login-button {
+    margin: 40rpx auto;
+    width: 80%;
+    height: 88rpx;
+    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    border-radius: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
+    
+    .login-text {
+      color: white;
+      font-size: 32rpx;
+      font-weight: 600;
+    }
+    
+    &:active {
+      transform: scale(0.98);
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+  }
+  
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20rpx);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes rainbow-bg {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  
+  @keyframes rainbow-text {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  
+  @keyframes gold-shine {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+}
+
+// 添加UID提示样式
+.hint-text {
+  color: #3b82f6 !important;
+  text-decoration: underline;
+  font-weight: 500;
+  cursor: pointer;
+}
+</style>

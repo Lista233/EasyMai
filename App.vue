@@ -90,6 +90,7 @@ import * as maiApi from './api/maiapi.js'
 		if (!aliasData) {
 			try {
 				const response=await maiApi.getAliasData()
+				console.log(response)
 				if (response.data) {
 					uni.setStorageSync('aliasData', response.data)
 				}

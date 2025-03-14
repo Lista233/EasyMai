@@ -17,11 +17,14 @@ import { reactive, ref } from 'vue';
 		'/pages/maiupdate/maib50',
 		//'/pages/song-detail/song-detail',
 		'/pages/song-search/song-search',
-		'/pages/Test/Test'
+		'/pages/Test/Test',
+		'/pages/user-center/user-center',
+		'/pages/login/login'
 	]
 	
 	function navTo(url)
 	{
+		console.log(url);
 		uni.navigateTo({
 			url:url,
 		})
