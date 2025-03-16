@@ -6,7 +6,7 @@ uni.addInterceptor({
     return new Promise((resolve, reject) => {
       res.then((res) => {
         if (!res) return resolve(res) 
-        return res[0] ? reject(res[0]) : resolve(res[1])
+        return res[0] ? reject(res[0]) : resolve(res[1]);
       });
     });
   },
