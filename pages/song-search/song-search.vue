@@ -47,10 +47,10 @@
       </view>
     </view>
     
-    <!-- 列表视图 -->
+    <!-- 列表视图 - 添加分页 -->
     <view class="result-list" v-if="viewMode === 'list'">
       <view 
-        v-for="(result, index) in searchResults" 
+        v-for="(result, index) in paginatedResults" 
         :key="result.songId" 
         class="result-item"
         @click="navigateToDetail(result.songId)"
@@ -79,26 +79,85 @@
           </view>
         </view>
       </view>
+      
+      <!-- 添加分页控制 -->
+      <view class="pagination" v-if="searchResults.length > pageSize">
+        <view class="page-info">
+          <text>{{ currentPage }}/{{ totalPages }} 页</text>
+          <text class="total-count">共 {{ searchResults.length }} 条记录</text>
+        </view>
+        <view class="page-controls">
+          <button class="page-btn" 
+            :disabled="currentPage === 1"
+            @click="currentPage--">上一页</button>
+          <button class="page-btn" 
+            :disabled="currentPage === totalPages"
+            @click="currentPage++">下一页</button>
+        </view>
+      </view>
     </view>
     
-    <!-- 网格视图 -->
+    <!-- 网格视图 - 美化布局 -->
     <view class="grid-view" v-else>
-      <view class="grid-group" v-for="(group, groupIndex) in groupedResults" :key="groupIndex">
+      <!-- 改进网格布局控制 -->
+      <view class="grid-controls">
+        <text class="control-label">每行显示:</text>
+        <view class="slider-container">
+          <slider 
+            :value="gridColumns" 
+            :min="2" 
+            :max="5" 
+            :step="1" 
+            show-value 
+            @change="onGridColumnsChange"
+            activeColor="#6366f1"
+            backgroundColor="#e0e0e0"
+            block-size="24"
+            block-color="#6366f1"
+          />
+        </view>
+      </view>
+      
+      <!-- 修改网格布局样式 -->
+      <view class="grid-container" :style="{ '--grid-columns': gridColumns }">
         <view 
-          class="grid-item" 
-          v-for="(result, index) in group" 
-          :key="result ? result.songId : index"
-          @click="result && navigateToDetail(result.songId)"
+          v-for="(group, groupIndex) in paginatedGroups" 
+          :key="groupIndex"
+          class="grid-group"
         >
-          <view class="grid-cover" v-if="result">
-            <image 
-              :src="getCoverUrl(result.songId)" 
-              mode="aspectFill"
-              lazy-load
-              :loading-priority="getLoadingPriority(groupIndex * 9 + index)"
-              @error="handleImageError"
-            ></image>
+          <view 
+            class="grid-item" 
+            v-for="(result, index) in group" 
+            :key="result ? result.songId : index"
+            @click="result && navigateToDetail(result.songId)"
+          >
+            <template v-if="result">
+              <image 
+                class="grid-cover" 
+                :src="getCoverUrl(result.songId)" 
+                mode="aspectFill"
+                :loading="getLoadingPriority(groupIndex * itemsPerGroup.value + index)"
+                @error="handleImageError"
+              ></image>
+             
+            </template>
           </view>
+        </view>
+      </view>
+      
+      <!-- 分页控制保持不变 -->
+      <view class="pagination" v-if="groupedResults.length > gridPageSize">
+        <view class="page-info">
+          <text>{{ currentGridPage }}/{{ totalGridPages }} 页</text>
+          <text class="total-count">共 {{ searchResults.length }} 条记录</text>
+        </view>
+        <view class="page-controls">
+          <button class="page-btn" 
+            :disabled="currentGridPage === 1"
+            @click="currentGridPage--">上一页</button>
+          <button class="page-btn" 
+            :disabled="currentGridPage === totalGridPages"
+            @click="currentGridPage++">下一页</button>
         </view>
       </view>
     </view>
@@ -213,7 +272,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import SongSearcher from '@/utils/songSearcher.js'
 import SongService from '@/utils/songService.js'
 import {getCoverUrl,initCoverList} from '../../util/coverManager.js'
@@ -328,22 +387,29 @@ const genres = [
   '音击&中二节奏'
 ]
 
-// 切换视图模式
-const toggleViewMode = () => {
-  viewMode.value = viewMode.value === 'list' ? 'grid' : 'list'
-}
+// 添加分页相关的响应式变量
+const pageSize = ref(20) // 列表视图每页显示数量
+const currentPage = ref(1)
+const gridPageSize = ref(4) // 网格视图每页显示的组数
+const currentGridPage = ref(1)
+
+// 添加网格列数控制
+const gridColumns = ref(4) // 默认每行3个
+
+// 将网格组大小与列数关联
+const itemsPerGroup = computed(() => gridColumns.value * 3) // 每组是3行
 
 // 将搜索结果分组（每组9个，用于网格视图）
 const groupedResults = computed(() => {
   const groups = []
-  const itemsPerGroup = 9
+  const itemsPerGroupValue = itemsPerGroup.value
   
-  for (let i = 0; i < searchResults.value.length; i += itemsPerGroup) {
-    // 获取当前组的元素，可能不足9个
-    const group = searchResults.value.slice(i, i + itemsPerGroup)
+  for (let i = 0; i < searchResults.value.length; i += itemsPerGroupValue) {
+    // 获取当前组的元素
+    const group = searchResults.value.slice(i, i + itemsPerGroupValue)
     
-    // 如果不足9个，填充空元素保持布局
-    while (group.length < itemsPerGroup) {
+    // 如果不足一组，填充空元素保持布局
+    while (group.length < itemsPerGroupValue) {
       group.push(null)
     }
     
@@ -352,6 +418,11 @@ const groupedResults = computed(() => {
   
   return groups
 })
+
+// 切换视图模式
+const toggleViewMode = () => {
+  viewMode.value = viewMode.value === 'list' ? 'grid' : 'list'
+}
 
 // 显示定数筛选弹窗
 const showDsFilter = () => {
@@ -677,6 +748,71 @@ const getLoadingPriority = (index) => {
 const handleImageError = (e) => {
   console.log('图片加载失败:', e);
 };
+
+// 添加分页计算属性
+const paginatedResults = computed(() => {
+  const startIndex = (currentPage.value - 1) * pageSize.value
+  const endIndex = startIndex + pageSize.value
+  return searchResults.value.slice(startIndex, endIndex)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(searchResults.value.length / pageSize.value)
+})
+
+const paginatedGroups = computed(() => {
+  const startIndex = (currentGridPage.value - 1) * gridPageSize.value
+  const endIndex = startIndex + gridPageSize.value
+  return groupedResults.value.slice(startIndex, endIndex)
+})
+
+const totalGridPages = computed(() => {
+  return Math.ceil(groupedResults.value.length / gridPageSize.value)
+})
+
+// 监听搜索结果变化，重置页码
+watch(searchResults, () => {
+  currentPage.value = 1
+  currentGridPage.value = 1
+})
+
+// 监听视图模式变化，重置对应页码
+watch(viewMode, () => {
+  if (viewMode.value === 'list') {
+    currentPage.value = 1
+  } else {
+    currentGridPage.value = 1
+  }
+})
+
+// 处理滑动条变化
+const onGridColumnsChange = (e) => {
+  gridColumns.value = e.detail.value
+  // 重置网格分页
+  currentGridPage.value = 1
+}
+
+// 添加获取难度样式的方法
+const getDifficultyStyle = (levelIndex) => {
+  const colors = {
+    0: '#1EA15D', // Basic
+    1: '#F6B40C', // Advanced
+    2: '#E9485D', // Expert
+    3: '#9E45E2', // Master
+    4: '#BA1A1A'  // Re:Master
+  }
+  
+  return {
+    backgroundColor: `rgba(0, 0, 0, 0.6)`,
+    color: colors[levelIndex] || '#fff',
+    borderLeft: `4rpx solid ${colors[levelIndex] || '#fff'}`
+  }
+}
+
+const getDifficultyLabel = (levelIndex) => {
+  const labels = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:Master']
+  return labels[levelIndex] || ''
+}
 </script>
 
 <style lang="scss">
@@ -1289,36 +1425,116 @@ const handleImageError = (e) => {
 .grid-view {
   padding: 10rpx;
   
-  .grid-group {
+  .grid-controls {
     display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 30rpx;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 20rpx;
-    padding: 20rpx;
+    align-items: center;
+    background-color: #fff;
+    padding: 20rpx 30rpx;
+    border-radius: 16rpx;
+    margin-bottom: 20rpx;
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+    
+    .control-label {
+      font-size: 28rpx;
+      color: #333;
+      margin-right: 20rpx;
+      white-space: nowrap;
+    }
+    
+    .slider-container {
+      flex: 1;
+      padding: 0 30rpx 0 10rpx; // 增加右侧padding，让数字和滑块有更多间距
+    }
   }
   
-  .grid-item {
-    width: calc(33.33% - 20rpx);
-    margin: 10rpx;
-    aspect-ratio: 1;
+  .grid-container {
+    --grid-columns: 3; // 默认值，会被JS覆盖
     
-    .grid-cover {
-      width: 100%;
-      height: 100%;
-      border-radius: 16rpx;
-      overflow: hidden;
-      box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.15);
+    .grid-group {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-columns), 1fr);
+      gap: 16rpx;
+      margin-bottom: 20rpx;
       
-      image {
-        width: 100%;
-        height: 100%;
-        transition: transform 0.3s ease;
+      .grid-item {
+        background-color: #fff;
+        border-radius: 16rpx;
+        overflow: hidden;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        aspect-ratio: 1; // 改为正方形
+        position: relative; // 为难度标签定位
         
-        &:hover {
-          transform: scale(1.08);
+        &:active {
+          transform: scale(0.96);
+          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
         }
+        
+        .grid-cover {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        // 添加难度标签
+        .difficulty-badge {
+          position: absolute;
+          bottom: 10rpx;
+          right: 10rpx;
+          padding: 6rpx 12rpx;
+          border-radius: 8rpx;
+          background-color: rgba(0, 0, 0, 0.6);
+          color: #fff;
+          font-size: 22rpx;
+          font-weight: bold;
+          box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+}
+
+// 添加分页样式
+.pagination {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  
+  .page-info {
+    text-align: center;
+    margin-bottom: 16rpx;
+    
+    .total-count {
+      margin-left: 20rpx;
+      color: #666;
+      font-size: 24rpx;
+    }
+  }
+  
+  .page-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20rpx;
+    
+    .page-btn {
+      font-size: 28rpx;
+      padding: 12rpx 32rpx;
+      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      color: #fff;
+      border-radius: 40rpx;
+      box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
+      
+      &:disabled {
+        background: #ccc;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+      
+      &:active {
+        transform: translateY(2rpx);
+        box-shadow: 0 2rpx 6rpx rgba(99, 102, 241, 0.2);
       }
     }
   }

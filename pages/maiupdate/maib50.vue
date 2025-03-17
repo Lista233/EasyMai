@@ -519,7 +519,7 @@ async function setProfile(jwt_token)
 	uni.setStorageSync('divingFish_importToken',importToken.value)
 	uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
 	records.value=await maiApi.divingFishGetRecords(jwt_token.value)
-	console.log(records)
+	console.log(records.value)
 	uni.setStorageSync('divingFish_records',records.value)
 	
 }

@@ -19,7 +19,8 @@ import { reactive, ref } from 'vue';
 		'/pages/song-search/song-search',
 		'/pages/Test/Test',
 		'/pages/user-center/user-center',
-		'/pages/login/login'
+		'/pages/login/login',
+		'/pages/PlayerRecords/PlayerRecords'
 	]
 	
 	function navTo(url)

@@ -1,55 +1,59 @@
 <template>
 	<view class="container">
+		
+
 		<view class="test-section">
-			<text class="section-title">按ID搜索测试</text>
-			<input @blur="(e)=>changeSongValue(e)" placeholder="输入歌曲ID"> </input>
+			<text class="section-title">成绩排序测试</text>
+			<view class="button-group">
+				<button @click="testSortByRa">按RA值排序(前10)</button>
+				<button @click="testSortByAchievements">按达成率排序(前10)</button>
+			</view>
 			<view class="result">
 				<text>结果：</text>
-				<text>{{song}}</text>
+				<view v-for="(record, index) in sortResult" :key="index" class="record-item">
+					<text>{{record.title || record.song_id}} - {{record.achievements}}% (RA: {{record.ra}})</text>
+				</view>
 			</view>
 		</view>
 
 		<view class="test-section">
-			<text class="section-title">按版本搜索测试</text>
+			<text class="section-title">版本成绩统计测试</text>
 			<view class="button-group">
-				<button @click="testGetSongsByVersion('maimai')">搜索maimai版本</button>
-				<button @click="testGetSongsByVersion(['maimai', 'deluxe'])">搜索多个版本</button>
-				<button @click="testGetSongsByVersion('mai', { exact: false })">模糊搜索版本</button>
+				<button @click="testVersionStats('maimai でらっくす Splash')">Splash版本统计</button>
+				<button @click="testVersionStats('maimai でらっくす UNiVERSE')">UNiVERSE版本统计</button>
 			</view>
-			<view class="result">
-				<text>结果：</text>
-				<text>{{versionSearchResult}}</text>
+			<view class="result" v-if="versionStats">
+				<text>版本统计：</text>
+				<view class="stats-group">
+					<text>总游玩数：{{versionStats.totalSongs}}</text>
+					<view class="rate-stats">
+						<text>评级分布：</text>
+						<text>SSS+: {{versionStats.rateStats.sssp}}</text>
+						<text>SSS: {{versionStats.rateStats.sss}}</text>
+						<text>SS+: {{versionStats.rateStats.ssp}}</text>
+						<text>SS: {{versionStats.rateStats.ss}}</text>
+					</view>
+					<view class="fc-stats">
+						<text>FC统计：</text>
+						<text>AP: {{versionStats.fcStats.ap}}</text>
+						<text>FC+: {{versionStats.fcStats.fcp}}</text>
+						<text>FC: {{versionStats.fcStats.fc}}</text>
+					</view>
+				</view>
 			</view>
 		</view>
 
 		<view class="test-section">
-			<text class="section-title">按定数范围搜索测试</text>
+			<text class="section-title">定数范围成绩测试</text>
 			<view class="button-group">
-				<button @click="testGetSongsByDs({ min: 12, max: 13 })">搜索12-13定数</button>
-				<button @click="testGetSongsByDs({ min: 7, max: 8 }, { difficulty: 1 })">搜索进阶7-8定数</button>
-				<button @click="testGetSongsByDs({ min: 10 })">搜索定数≥10</button>
+				<button @click="testDsRangeRecords(13.7, 14.0)">13.7-14.0定数成绩</button>
+				<button @click="testDsRangeRecords(14.1, 14.5)">14.1-14.5定数成绩</button>
 			</view>
 			<view class="result">
 				<text>结果：</text>
-				<text>{{dsSearchResult}}</text>
-			</view>
-		</view>
-
-		<view class="test-section">
-			<text class="section-title">组合搜索测试</text>
-			<view class="button-group">
-				<button @click="testSearchSongs({
-					version: 'maimai',
-					dsRange: { min: 12, max: 13 }
-				})">maimai版本12-13定数</button>
-				<button @click="testSearchSongs({
-					version: 'maimai',
-					dsRange: { min: 7, max: 8 }
-				}, { difficulty: 1 })">maimai版本进阶7-8定数</button>
-			</view>
-			<view class="result">
-				<text>结果：</text>
-				<text>{{combinedSearchResult}}</text>
+				<view v-for="(record, index) in dsRangeResult" :key="index" class="record-item">
+					<text>{{record.title || record.song_id}} ({{record.ds}}) - {{record.achievements}}%</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -58,6 +62,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import SongService from '@/utils/songService.js'
+import playerRecordService from '@/utils/PlayerRecordService.js'
 import * as maiApi from '../../api/maiapi.js'
 import {onLoad} from '@dcloudio/uni-app'
 
@@ -67,14 +72,18 @@ const songService = ref(null)
 const versionSearchResult = ref([])
 const dsSearchResult = ref([])
 const combinedSearchResult = ref([])
+const sortResult = ref([])
+const versionStats = ref(null)
+const dsRangeResult = ref([])
 
 // 正确使用 onMounted 钩子
 onMounted(() => {
 	console.log('初始化 SongService')
 	const musicList = uni.getStorageSync('musicData')
-	// 初始化 songService
+	const playerData = uni.getStorageSync('divingFish_records')
+	console.log(playerData)
 	songService.value = new SongService(musicList)
-	// 获取歌曲信息
+	playerRecordService.initPlayerData(playerData.data)
 	song.value = songService.value.getSongById('8')
 })
 
@@ -107,6 +116,34 @@ const testSearchSongs = (query, options = {}) => {
 	console.log('测试 searchSongs:', { query, options })
 	if (songService.value) {
 		combinedSearchResult.value = songService.value.searchSongs(query, options)
+	}
+}
+
+// 测试按RA排序
+const testSortByRa = () => {
+	sortResult.value = playerRecordService.getTopRaRecords(10)
+}
+
+// 测试按达成率排序
+const testSortByAchievements = () => {
+	sortResult.value = playerRecordService.getTopAchievementsRecords(10)
+}
+
+// 测试版本统计
+const testVersionStats = (version) => {
+	if (songService.value) {
+		versionStats.value = playerRecordService.getVersionPlayStats(songService.value, version)
+	}
+}
+
+// 测试定数范围成绩
+const testDsRangeRecords = (min, max) => {
+	if (songService.value) {
+		dsRangeResult.value = playerRecordService.getBestRecordsByDs(
+			songService.value,
+			{ min, max },
+			{ limit: 10 }
+		)
 	}
 }
 </script>
