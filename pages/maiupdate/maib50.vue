@@ -170,7 +170,7 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text class="stat-item fc-fs">{{item.fc.replace('p', '+')}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc')}}</text>
+								<text class="stat-item fc-fs">{{item.fc.replace('p', '+').toUpperCase()}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc').toUpperCase()}}</text>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{
@@ -197,7 +197,7 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text class="stat-item fc-fs">{{item.fc.replace('p', '+')}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc')}}</text>
+								<text class="stat-item fc-fs">{{item.fc.replace('p', '+').toUpperCase()}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc').toUpperCase()}}</text>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{

@@ -8,19 +8,39 @@
 				<text class="rating">Rating: {{ playerRecordService.getPlayerInfo()?.rating || 0 }}</text>
 			</view>
 			
-			<!-- 统计信息 -->
+			<!-- 统计信息 - 第一行 -->
 			<view class="stats-row" v-if="currentStats">
 				<view class="stat-item">
 					<view class="stat-value">{{ currentStats.totalSongs }}</view>
 					<view class="stat-label">总曲目数</view>
 				</view>
 				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.rateStats.sssp + currentStats.rateStats.sss }}</view>
-					<view class="stat-label">SSS+/SSS</view>
+					<view class="stat-value">{{ currentStats.rateStats.sssp }}</view>
+					<view class="stat-label">SSS+</view>
 				</view>
 				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.fcStats.ap + currentStats.fcStats.fcp + currentStats.fcStats.fc }}</view>
-					<view class="stat-label">FC+</view>
+					<view class="stat-value">{{ currentStats.rateStats.sss }}</view>
+					<view class="stat-label">SSS</view>
+				</view>
+			</view>
+			
+			<!-- 统计信息 - 第二行 -->
+			<view class="stats-row fc-row" v-if="currentStats">
+				<view class="stat-item">
+					<view class="stat-value">{{ currentStats.fcStats.fc + currentStats.fcStats.fcp }}</view>
+					<view class="stat-label">FC/FC+</view>
+				</view>
+				<view class="stat-item">
+					<view class="stat-value">{{ currentStats.fcStats.ap + currentStats.fcStats.app }}</view>
+					<view class="stat-label">AP/AP+</view>
+				</view>
+				<view class="stat-item">
+					<view class="stat-value">{{ currentStats.fcStats.fs + currentStats.fcStats.fsp }}</view>
+					<view class="stat-label">FS/FS+</view>
+				</view>
+				<view class="stat-item">
+					<view class="stat-value">{{ currentStats.fcStats.fsd + currentStats.fcStats.fsdp }}</view>
+					<view class="stat-label">FSD/FSD+</view>
 				</view>
 			</view>
 		</view>
@@ -30,7 +50,7 @@
 			<button class="filter-btn" @click="showSortFilter">
 				<view class="btn-content">
 					<text class="btn-title">排序方式</text>
-					<text class="filter-active" v-if="sortBy">{{ sortBy === 'ra' ? 'RA值' : '达成率' }}</text>
+					<text class="filter-active" v-if="sortBy">{{ getSortLabel(sortBy) }}</text>
 				</view>
 			</button>
 			<button class="filter-btn" @click="showVersionFilter">
@@ -42,7 +62,9 @@
 			<button class="filter-btn" @click="showDsFilter">
 				<view class="btn-content">
 					<text class="btn-title">定数筛选</text>
-					<text class="filter-active" v-if="selectedDsRange && selectedDsRange.label !== '全部'">{{ selectedDsRange.label }}</text>
+					<text v-if="dsFilter.min || dsFilter.max" class="filter-active">
+						{{formatDsFilterText}}
+					</text>
 				</view>
 			</button>
 			<button class="filter-btn" @click="showDifficultyFilter">
@@ -53,48 +75,165 @@
 			</button>
 		</view>
 		
-		<!-- 记录列表 -->
-		<view class="record-list">
-			<view class="list-header">
-				<text class="list-title">歌曲记录</text>
-				<text class="record-count">总计: {{ filteredRecords.length }}</text>
+		<!-- 添加视图控制栏 -->
+		<view class="view-controls">
+			<view class="view-mode">
+				<text 
+					class="mode-btn"
+					:class="{ active: viewMode === 'grid' }"
+					@click="setViewMode('grid')"
+				>网格</text>
+				<text 
+					class="mode-btn"
+					:class="{ active: viewMode === 'list' }"
+					@click="setViewMode('list')"
+				>列表</text>
 			</view>
-
-			<view class="song-records">
-				<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id)">
-					<view class="song-cover">
-						<image class="cover-image" :class="`level-${record.level_index}`" :src="getSongCover(record.song_id)" mode="aspectFill"></image>
-						<view class="difficulty-badge" :class="`level-${record.level_index}`">
-							{{ getSongDs(record.song_id, record.level_index) }}
-						</view>
-					</view>
-					<view class="song-info">
-						<view class="song-title">{{ songService.getSongById(record.song_id)?.title || '未知歌曲' }}</view>
-						<view class="song-stats">
-							<view class="stat-item achievements">{{ (record.achievements).toFixed(4) }}%</view>
-							<view class="stat-item ra">RA: {{ record.ra }}</view>
-							<view v-if="record.fc" class="stat-item fc-fs">{{ record.fc.toUpperCase() }}</view>
-						</view>
-					</view>
-					<view class="rate-badge" :class="record.rate.toLowerCase()">{{ record.rate.toUpperCase() }}</view>
+			<view class="grid-options" v-if="viewMode === 'grid'">
+				<view class="grid-size">
+					<text class="size-label">{{gridSize}}列</text>
+					<slider 
+						:min="2" 
+						:max="5" 
+						:value="gridSize" 
+						:step="1"
+						:block-size="18"
+						@change="onGridSizeChange"
+						show-value
+					/>
+				</view>
+				<view class="icon-toggle">
+					<text
+						class="toggle-btn"
+						:class="{ active: iconDisplay === 'rate' }"
+						@click="setIconDisplay('rate')"
+					>评级</text>
+					<text 
+						class="toggle-btn"
+						:class="{ active: iconDisplay === 'fc' }"
+						@click="setIconDisplay('fc')"
+					>FC</text>
+					<text 
+						class="toggle-btn"
+						:class="{ active: iconDisplay === 'fs' }"
+						@click="setIconDisplay('fs')"
+					>FS</text>
+					
 				</view>
 			</view>
+		</view>
+		
+		<!-- 修改歌曲列表容器 -->
+		<view 
+			class="songs-container"
+			:class="[
+				viewMode === 'grid' ? 'grid-view' : 'list-view',
+				`grid-size-${gridSize}`
+			]"
+		>
+			<!-- 网格视图下的歌曲项 -->
+			<template v-if="viewMode === 'grid'">
+				<view 
+					v-for="record in paginatedRecords" 
+					:key="record.id"
+					class="song-item"
+					@click="navigateToDetail(record.song_id)"
+				>
+					<view class="cover-image">
+						<image :src="getSongCover(record.song_id)" mode="aspectFill" />
+						
+						<!-- 灰色遮罩 -->
+						<view class="icon-overlay" v-if="shouldShowIcon(record)"></view>
+						
+						<!-- 图标容器 - 新增 -->
+						<view class="icon-container" v-if="shouldShowIcon(record)">
+							<!-- FC图标 -->
+							<image 
+								v-if="iconDisplay === 'fc' && record.fc && record.fc !== 'none'" 
+								class="icon-badge"
+								:src="`../../static/maiFCFS/${record.fc}.png`"
+							/>
+							
+							<!-- FS图标 - 不显示sync -->
+							<image 
+								v-if="iconDisplay === 'fs' && record.fs && record.fs !== 'none' && record.fs !== 'sync'" 
+								class="icon-badge"
+								:src="`../../static/maiFCFS/${record.fs}.png`"
+							/>
+							
+							<!-- Rate图标 -->
+							<image 
+								v-if="iconDisplay === 'rate' && record.rate" 
+								class="icon-badge icon-rate"
+								:src="`../../static/maiFCFS/${record.rate}.png`"
+							/>
+						</view>
+					</view>
+				</view>
+				
+				<!-- 分页控制 -->
+				<view class="pagination" v-if="filteredRecords.length > 0">
+					<view class="page-info">
+						第 {{ currentPage }} / {{ totalPages }} 页
+						<text class="total-count">共 {{ filteredRecords.length }} 条记录</text>
+					</view>
+					<view class="page-controls">
+						<button class="page-btn" 
+							:disabled="currentPage === 1"
+							@click="currentPage--">上一页</button>
+						<button class="page-btn" 
+							:disabled="currentPage === totalPages"
+							@click="currentPage++">下一页</button>
+					</view>
+				</view>
+			</template>
 			
-			<!-- 分页控制 -->
-			<view class="pagination" v-if="filteredRecords.length > 0">
-				<view class="page-info">
-					第 {{ currentPage }} / {{ totalPages }} 页
-					<text class="total-count">共 {{ filteredRecords.length }} 条记录</text>
+			<!-- 列表视图下的歌曲项 -->
+			<template v-else>
+				<!-- 记录列表 -->
+				<view class="record-list">
+					<view class="list-header">
+						<text class="list-title">歌曲记录</text>
+						<text class="record-count">总计: {{ filteredRecords.length }}</text>
+					</view>
+
+					<view class="song-records">
+						<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id)">
+							<view class="song-cover">
+								<image class="cover-image" :class="`level-${record.level_index}`" :src="getSongCover(record.song_id)" mode="aspectFill"></image>
+								<view class="difficulty-badge" :class="`level-${record.level_index}`">
+									{{ getSongDs(record.song_id, record.level_index) }}
+								</view>
+							</view>
+							<view class="song-info">
+								<view class="song-title">{{ songService.getSongById(record.song_id)?.title || '未知歌曲' }}</view>
+								<view class="song-stats">
+									<view class="stat-item achievements">{{ (record.achievements).toFixed(4) }}%</view>
+									<view class="stat-item ra">RA: {{ record.ra }}</view>
+									<view v-if="record.fc" class="stat-item fc-fs">{{ record.fc.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').toUpperCase() }}丨{{ record.fs.replace('p', '+').toUpperCase() }}</view>
+								</view>
+							</view>
+							<view class="rate-badge" :class="record.rate.toLowerCase()">{{ record.rate.replace('p','+').toUpperCase() }}</view>
+						</view>
+					</view>
+					
+					<!-- 分页控制 -->
+					<view class="pagination" v-if="filteredRecords.length > 0">
+						<view class="page-info">
+							第 {{ currentPage }} / {{ totalPages }} 页
+							<text class="total-count">共 {{ filteredRecords.length }} 条记录</text>
+						</view>
+						<view class="page-controls">
+							<button class="page-btn" 
+								:disabled="currentPage === 1"
+								@click="currentPage--">上一页</button>
+							<button class="page-btn" 
+								:disabled="currentPage === totalPages"
+								@click="currentPage++">下一页</button>
+						</view>
+					</view>
 				</view>
-				<view class="page-controls">
-					<button class="page-btn" 
-						:disabled="currentPage === 1"
-						@click="currentPage--">上一页</button>
-					<button class="page-btn" 
-						:disabled="currentPage === totalPages"
-						@click="currentPage++">下一页</button>
-				</view>
-			</view>
+			</template>
 		</view>
 		
 		<!-- 排序弹窗 -->
@@ -108,17 +247,24 @@
 					<view class="option-list">
 						<view 
 							class="option-item"
-							:class="{ active: sortBy === 'ra' }"
+							:class="{ active: tempSortBy === 'ra' }"
 							@click="selectSortBy('ra')"
 						>
-							<text>RA值</text>
+							<text>Rating</text>
 						</view>
 						<view 
 							class="option-item"
-							:class="{ active: sortBy === 'achievements' }"
+							:class="{ active: tempSortBy === 'achievements' }"
 							@click="selectSortBy('achievements')"
 						>
 							<text>达成率</text>
+						</view>
+						<view 
+							class="option-item"
+							:class="{ active: tempSortBy === 'ds' }"
+							@click="selectSortBy('ds')"
+						>
+							<text>难度</text>
 						</view>
 					</view>
 				</view>
@@ -136,20 +282,17 @@
 					<text class="title">版本筛选</text>
 					<text class="close-btn" @click="closeVersionFilter">×</text>
 				</view>
-				<view class="popup-content version-list">
-					<scroll-view scroll-y class="version-scroll">
-						<view 
-							class="option-item"
-							:class="{ active: selectedVersion === '' }"
-							@click="selectVersion('')"
-						>
-							<text>全部</text>
-						</view>
+				<view class="popup-content">
+					<scroll-view 
+						scroll-y 
+						class="option-list"
+						:style="{ height: '500rpx' }"
+					>
 						<view 
 							v-for="version in versions" 
 							:key="version"
 							class="option-item"
-							:class="{ active: selectedVersion === version }"
+							:class="{ active: tempVersion === version }"
 							@click="selectVersion(version)"
 						>
 							<text>{{version}}</text>
@@ -171,15 +314,42 @@
 					<text class="close-btn" @click="closeDsFilter">×</text>
 				</view>
 				<view class="popup-content">
-					<view class="option-list">
-						<view 
-							v-for="range in dsRanges" 
-							:key="range.label"
-							class="option-item"
-							:class="{ active: selectedDsRange === range }"
-							@click="selectDsRange(range)"
-						>
-							<text>{{range.label}}</text>
+					<view class="form-item ds-range">
+						<input 
+							type="digit" 
+							v-model="dsFilter.min" 
+							placeholder="最小值"
+						
+							@focus="onInputFocus"
+							@blur="onInputBlur"
+							maxlength="3"
+						/>
+						<text class="range-separator">至</text>
+						<input 
+							type="digit" 
+							v-model="dsFilter.max" 
+							placeholder="最大值"
+						
+							@focus="onInputFocus"
+							@blur="onInputBlur"
+							maxlength="3"
+						/>
+					</view>
+					<view class="range-tips">
+						<text>* 定数范围: 1.0-15.0</text>
+					</view>
+					<view class="quick-select">
+						<text class="section-title">快速选择</text>
+						<view class="option-grid">
+							<view 
+								v-for="range in dsRanges" 
+								:key="range.label"
+								class="option-chip"
+								:class="{ active: isQuickRangeSelected(range) }"
+								@click="selectQuickRange(range)"
+							>
+								<text>{{range.label}}</text>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -201,7 +371,7 @@
 					<view class="option-list">
 						<view 
 							class="option-item"
-							:class="{ active: selectedDifficulty === null }"
+							:class="{ active: tempDifficulty === null }"
 							@click="selectDifficulty(null)"
 						>
 							<text>全部</text>
@@ -209,9 +379,15 @@
 						<view 
 							v-for="(label, index) in difficultyLabels" 
 							:key="index"
-							class="option-item"
-							:class="{ active: selectedDifficulty === index }"
-							:style="{ color: selectedDifficulty === index ? '#fff' : getDifficultyColor(index) }"
+							class="option-item difficulty-option"
+							:class="{ 
+								active: tempDifficulty === index,
+								basic: index === 0,
+								advanced: index === 1,
+								expert: index === 2,
+								master: index === 3,
+								remaster: index === 4
+							}"
 							@click="selectDifficulty(index)"
 						>
 							<text>{{label}}</text>
@@ -250,21 +426,86 @@ const versionPopup = ref(null)
 const dsPopup = ref(null)
 const difficultyPopup = ref(null)
 
+// 定数筛选相关
+const dsFilter = ref({
+	min: '',
+	max: ''
+})
+
 // 预定义的定数范围
 const dsRanges = [
-	{ label: '全部', min: 0, max: Infinity },
+	{ label: '全部', min: 1, max: 15 },
 	{ label: '13+', min: 13.7, max: 13.9 },
-	{ label: '14', min: 14.0, max: 14.4 },
+	{ label: '14.0', min: 14.0, max: 14.4 },
 	{ label: '14+', min: 14.5, max: 14.9 },
-	{ label: '15', min: 15.0, max: Infinity }
+	{ label: '15.0', min: 15.0, max: 15.0 }
 ]
 
-// 版本列表
+// 添加简化的版本映射
+const versionMap = {
+	'maimai': 'maimai',
+	'maimai PLUS': 'maimai+',
+	'maimai GreeN': 'Green',
+	'maimai GreeN PLUS': 'Green+',
+	'maimai ORANGE': 'Orange',
+	'maimai ORANGE PLUS': 'Orange+',
+	'maimai PiNK': 'Pink',
+	'maimai PiNK PLUS': 'Pink+',
+	'maimai MURASAKi': 'Murasaki',
+	'maimai MURASAKi PLUS': 'Murasaki+',
+	'maimai MiLK': 'Milk',
+	'MiLK PLUS': 'Milk+',
+	'maimai FiNALE': 'Finale',
+	'maimai でらっくす': '舞萌DX2020',
+	'maimai でらっくす Splash': '舞萌DX2021',
+	'maimai でらっくす UNiVERSE': '舞萌DX2022',
+	'maimai でらっくす FESTiVAL': '舞萌DX2023',
+	'maimai でらっくす BUDDiES': '舞萌DX2024'
+}
+
+// 修改反向映射关系，从显示名称映射到原始值
+const reverseVersionMap = {
+	'maimai': 'maimai',
+	'maimai+': 'maimai PLUS',
+	'Green': 'maimai GreeN',
+	'Green+': 'maimai GreeN PLUS',
+	'Orange': 'maimai ORANGE',
+	'Orange+': 'maimai ORANGE PLUS',
+	'Pink': 'maimai PiNK',
+	'Pink+': 'maimai PiNK PLUS',
+	'Murasaki': 'maimai MURASAKi',
+	'Murasaki+': 'maimai MURASAKi PLUS',
+	'Milk': 'maimai MiLK',
+	'Milk+': 'MiLK PLUS',
+	'Finale': 'maimai FiNALE',
+	'舞萌DX2020': 'maimai でらっくす',
+	'舞萌DX2021': 'maimai でらっくす Splash',
+	'舞萌DX2022': 'maimai でらっくす UNiVERSE',
+	'舞萌DX2023': 'maimai でらっくす FESTiVAL',
+	'舞萌DX2024': 'maimai でらっくす BUDDiES'
+}
+
+// 版本列表（使用显示名称）
 const versions = [
-	'maimai でらっくす Splash',
-	'maimai でらっくす UNiVERSE',
-	'maimai でらっくす FESTiVAL',
-	'maimai でらっくす BUDDiES'
+	'任意版本',
+	'maimai',
+	'maimai+',
+	'Green',
+	'Green+',
+	'Orange',
+	'Orange+',
+	'Pink',
+	'Pink+',
+	'Murasaki',
+	'Murasaki+',
+	'Milk',
+	'Milk+',
+	'Finale',
+	'舞萌DX2020',
+	'舞萌DX2021',
+	'舞萌DX2022',
+	'舞萌DX2023',
+	'舞萌DX2024'
 ]
 
 // 当前统计信息
@@ -272,10 +513,115 @@ const currentStats = ref(null)
 
 // 添加分页相关的响应式变量
 const currentPage = ref(1)
-const pageSize = ref(20)
+const pageSize = computed(() => {
+	// 根据网格大小调整每页显示的元素数量
+	switch (gridSize.value) {
+		case 2:
+			return 10; // 2列显示10个元素(5行)
+		case 3:
+			return 15; // 3列显示15个元素(5行)
+		case 4:
+			return 20; // 4列显示20个元素(5行)
+		case 5:
+			return 35; // 5列显示35个元素(7行)
+		default:
+			return 20;
+	}
+})
 
 // 添加难度相关的常量和响应式变量
 const difficultyLabels = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:Master']
+
+// 输入框焦点状态
+const inputFocused = ref(false)
+
+// 添加视图控制相关的响应式变量
+const viewMode = ref('grid') // 'grid' 或 'list'
+const gridSize = ref(5) // 默认4列
+
+// 添加图标显示控制
+const iconDisplay = ref('fc') // 'fc', 'fs', 'rate'
+
+// 检查是否选中了快速选择范围
+const isQuickRangeSelected = (range) => {
+	if (!dsFilter.value.min && !dsFilter.value.max && range.label === '全部') {
+		return true
+	}
+	
+	return parseFloat(dsFilter.value.min) === range.min && 
+		   parseFloat(dsFilter.value.max) === range.max
+}
+
+// 处理定数输入
+const onDsInput = (type) => {
+  // 简单清除非数字和小数点字符
+  let value = dsFilter.value[type];
+  value = value.replace(/[^\d.]/g, '');
+  dsFilter.value[type] = value;
+};
+
+// 输入框焦点事件
+const onInputFocus = () => {
+	inputFocused.value = true
+}
+
+const onInputBlur = () => {
+	inputFocused.value = false
+}
+
+// 快速选择定数范围
+const selectQuickRange = (range) => {
+	if (range.label === '全部') {
+		dsFilter.value.min = ''
+		dsFilter.value.max = ''
+	} else {
+		dsFilter.value.min = range.min.toString()
+		dsFilter.value.max = range.max.toString()
+	}
+}
+
+// 应用定数筛选
+const applyDsFilter = () => {
+	// 解析输入值
+	let min = dsFilter.value.min === '' ? 1 : parseFloat(dsFilter.value.min)
+	let max = dsFilter.value.max === '' ? 15 : parseFloat(dsFilter.value.max)
+	
+	// 验证范围
+	if (min > max) {
+		const temp=min
+		min=max
+		max=temp
+	}
+	
+	// 更新选中的定数范围
+	if (min === 1 && max === 15) {
+		selectedDsRange.value = null // 全部范围视为未筛选
+	} else {
+		selectedDsRange.value = { min, max }
+	}
+	
+	dsPopup.value?.close() // 确保弹窗关闭
+	currentPage.value = 1 // 重置页码
+	updateStats()
+}
+
+// 显示定数筛选弹窗
+const showDsFilter = () => {
+	dsPopup.value.open()
+}
+
+// 格式化定数筛选文本
+const formatDsFilterText = computed(() => {
+	if (!dsFilter.value.min && !dsFilter.value.max) return '';
+	
+	if (dsFilter.value.min && dsFilter.value.max) {
+		return `${dsFilter.value.min}~${dsFilter.value.max}`;
+	} else if (dsFilter.value.min) {
+		return `≥ ${dsFilter.value.min}`;
+	} else {
+		return `≤ ${dsFilter.value.max}`;
+	}
+})
 
 // 计算筛选后的记录
 const filteredRecords = computed(() => {
@@ -292,28 +638,23 @@ const filteredRecords = computed(() => {
 	})
 })
 
-// 修改计算属性
+// 计算分页后的记录
 const paginatedRecords = computed(() => {
-	const startIndex = (currentPage.value - 1) * pageSize.value
-	const endIndex = startIndex + pageSize.value
-	return filteredRecords.value.slice(startIndex, endIndex)
+	const start = (currentPage.value - 1) * pageSize.value;
+	const end = start + pageSize.value;
+	return filteredRecords.value.slice(start, end);
 })
 
+// 计算总页数
 const totalPages = computed(() => {
-	return Math.ceil(filteredRecords.value.length / pageSize.value)
+	return Math.ceil(filteredRecords.value.length / pageSize.value);
 })
 
 // 格式化版本文本
 const formatVersionText = computed(() => {
-	if (!selectedVersion.value) return '';
+	if (!selectedVersion.value) return '任意版本';
 	// 简化版本名称显示
-	const shortNames = {
-		'maimai でらっくす Splash': 'Splash',
-		'maimai でらっくす UNiVERSE': 'UNiVERSE',
-		'maimai でらっくす FESTiVAL': 'FESTiVAL',
-		'maimai でらっくす BUDDiES': 'BUDDiES'
-	};
-	return shortNames[selectedVersion.value] || selectedVersion.value;
+	return versionMap[selectedVersion.value] || selectedVersion.value;
 })
 
 // 初始化
@@ -348,10 +689,16 @@ const applySortFilter = () => {
 	sortBy.value = tempSortBy.value
 	closeSortFilter()
 	currentPage.value = 1 // 重置页码
+	updateStats()
 }
 
+// 显示版本筛选弹窗
 const showVersionFilter = () => {
-	tempVersion.value = selectedVersion.value
+	// 将原始版本值转换为显示名称
+	tempVersion.value = selectedVersion.value ? 
+		(versionMap[selectedVersion.value] || selectedVersion.value) : 
+		'任意版本'
+	
 	versionPopup.value.open()
 }
 
@@ -359,33 +706,21 @@ const closeVersionFilter = () => {
 	versionPopup.value.close()
 }
 
+// 选择版本
 const selectVersion = (version) => {
 	tempVersion.value = version
 }
 
+// 应用版本筛选
 const applyVersionFilter = () => {
-	selectedVersion.value = tempVersion.value
+	if (tempVersion.value === '任意版本') {
+		selectedVersion.value = ''
+	} else {
+		// 将显示名称转换回原始值
+		selectedVersion.value = reverseVersionMap[tempVersion.value] || tempVersion.value
+	}
+	
 	closeVersionFilter()
-	currentPage.value = 1 // 重置页码
-	updateStats()
-}
-
-const showDsFilter = () => {
-	tempDsRange.value = selectedDsRange.value
-	dsPopup.value.open()
-}
-
-const closeDsFilter = () => {
-	dsPopup.value.close()
-}
-
-const selectDsRange = (range) => {
-	tempDsRange.value = range
-}
-
-const applyDsFilter = () => {
-	selectedDsRange.value = tempDsRange.value
-	closeDsFilter()
 	currentPage.value = 1 // 重置页码
 	updateStats()
 }
@@ -412,31 +747,7 @@ const applyDifficultyFilter = () => {
 
 // 更新统计信息
 const updateStats = () => {
-	let records = []
-	
-	// 版本筛选
-	if (selectedVersion.value) {
-		records = playerRecordService.getRecordsByVersion(songService.value, selectedVersion.value)
-	} else {
-		records = playerRecordService.getAllRecords()
-	}
-	
-	// 应用难度筛选
-	if (selectedDifficulty.value !== null) {
-		records = records.filter(record => record.level_index === selectedDifficulty.value)
-	}
-	
-	// 应用定数筛选
-	if (selectedDsRange.value && selectedDsRange.value.label !== '全部') {
-		records = playerRecordService.getBestRecordsByDs(
-			songService.value,
-			{
-				min: selectedDsRange.value.min,
-				max: selectedDsRange.value.max
-			},
-			{ records } // 传入已筛选的记录
-		)
-	}
+	const records = filteredRecords.value
 	
 	currentStats.value = {
 		totalSongs: records.length,
@@ -444,12 +755,27 @@ const updateStats = () => {
 			sssp: records.filter(r => r.rate === 'sssp').length,
 			sss: records.filter(r => r.rate === 'sss').length,
 			ssp: records.filter(r => r.rate === 'ssp').length,
-			ss: records.filter(r => r.rate === 'ss').length
+			ss: records.filter(r => r.rate === 'ss').length,
+			sp: records.filter(r => r.rate === 'sp').length,
+			s: records.filter(r => r.rate === 's').length,
+			aaa: records.filter(r => r.rate === 'aaa').length,
+			aa: records.filter(r => r.rate === 'aa').length,
+			a: records.filter(r => r.rate === 'a').length,
+			bbb: records.filter(r => r.rate === 'bbb').length,
+			bb: records.filter(r => r.rate === 'bb').length,
+			b: records.filter(r => r.rate === 'b').length,
+			c: records.filter(r => r.rate === 'c').length,
+			d: records.filter(r => r.rate === 'd').length
 		},
 		fcStats: {
-			ap: records.filter(r => r.fc === 'ap').length,
+			fc: records.filter(r => r.fc === 'fc').length,
 			fcp: records.filter(r => r.fc === 'fcp').length,
-			fc: records.filter(r => r.fc === 'fc').length
+			ap: records.filter(r => r.fc === 'ap').length,
+			app: records.filter(r => r.fc === 'app').length,
+			fs: records.filter(r => r.fs === 'fs').length,
+			fsp: records.filter(r => r.fs === 'fsp').length,
+			fsd: records.filter(r => r.fs === 'fsd').length,
+			fsdp: records.filter(r => r.fs === 'fsdp').length
 		}
 	}
 }
@@ -531,9 +857,71 @@ const getSongDs = (songId, levelIndex) => {
 	if (!song || !song.ds || levelIndex >= song.ds.length) return '?';
 	return song.ds[levelIndex];
 }
+
+// 修改排序按钮显示文本
+const getSortLabel = (type) => {
+	const labels = {
+		'ra': 'Rating',
+		'achievements': '达成率',
+		'ds': '难度'
+	}
+	return labels[type] || ''
+}
+
+// 关闭定数筛选弹窗
+const closeDsFilter = () => {
+	dsPopup.value?.close() // 添加可选链操作符，防止 dsPopup 为空
+}
+
+// 设置视图模式
+const setViewMode = (mode) => {
+	viewMode.value = mode
+}
+
+// 处理网格大小变化
+const onGridSizeChange = (e) => {
+	gridSize.value = Number(e.detail.value)
+}
+
+// 设置图标显示类型
+const setIconDisplay = (type) => {
+	iconDisplay.value = type
+}
+
+// 添加判断是否应该显示图标的方法
+const shouldShowIcon = (record) => {
+	if (iconDisplay.value === 'fc' && record.fc && record.fc !== 'none') {
+		return true;
+	}
+	if (iconDisplay.value === 'fs' && record.fs && record.fs !== 'none' && record.fs !== 'sync') {
+		return true;
+	}
+	if (iconDisplay.value === 'rate' && record.rate) {
+		return true;
+	}
+	return false;
+}
+
+// 更新网格大小的方法
+const updateGridSize = (size) => {
+	gridSize.value = size;
+	// 当切换到2列时，移除滑块
+	if (size === 2) {
+		// 可以在这里添加逻辑来移除或禁用滑块
+	}
+	// 重置到第一页，避免页码超出范围
+	currentPage.value = 1;
+};
 </script>
 
 <style lang="scss">
+// 先定义文本省略混入
+@mixin text-ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .container {
 	padding: 40rpx 20rpx 20rpx 10rpx;
 	background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
@@ -588,12 +976,29 @@ const getSongDs = (songId, levelIndex) => {
 		gap: 16rpx;
 		margin-top: 16rpx;
 		
+		&.fc-row {
+			margin-top: 12rpx;
+			
+			.stat-item {
+				min-width: 120rpx;
+				padding: 12rpx;
+				
+				.stat-value {
+					font-size: 28rpx;
+				}
+				
+				.stat-label {
+					font-size: 22rpx;
+				}
+			}
+		}
+		
 		.stat-item {
 			background-color: rgba(255, 255, 255, 0.9);
 			border-radius: 16rpx;
 			padding: 16rpx;
 			flex: 1;
-			min-width: 180rpx;
+			min-width: 140rpx;
 			box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.05);
 			
 			.stat-value {
@@ -601,11 +1006,13 @@ const getSongDs = (songId, levelIndex) => {
 				font-weight: bold;
 				color: #1e293b;
 				margin-bottom: 8rpx;
+				text-align: center;
 			}
 			
 			.stat-label {
 				font-size: 24rpx;
 				color: #64748b;
+				text-align: center;
 			}
 		}
 	}
@@ -619,7 +1026,7 @@ const getSongDs = (songId, levelIndex) => {
 	
 	.filter-btn {
 		flex: 1;
-		height: 88rpx;
+		height: 100rpx;
 		border-radius: 16rpx;
 		border: none;
 		font-size: 28rpx;
@@ -650,19 +1057,248 @@ const getSongDs = (songId, levelIndex) => {
 		}
 		
 		.btn-content {
+			height: 120rpx; // 固定高度
 			display: flex;
 			flex-direction: column;
 			align-items: center;
+			justify-content: center;
+			gap: 10rpx; // 均匀分布空间
 			
 			.btn-title {
-				font-size: 26rpx;
+				margin: 0;
+				padding: 0;
+				font-size: 22rpx;
 				color: #ffffff;
+				text-align: center;
+				line-height: 1; // 设置行高为1
 			}
 			
 			.filter-active {
+				margin: 0;
+				padding: 0;
 				font-size: 22rpx;
 				color: rgba(255, 255, 255, 0.9);
-				margin-top: 4rpx;
+				text-align: center;
+				line-height: 1; // 设置行高为1
+			}
+		}
+	}
+}
+
+.view-controls {
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border-radius: 16rpx;
+	margin-bottom: 20rpx;
+	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+	
+	.view-mode {
+		display: flex;
+		gap: 20rpx;
+		padding: 20rpx 30rpx;
+		border-bottom: 1px solid #f0f0f0;
+		
+		.mode-btn {
+			padding: 12rpx 24rpx;
+			border-radius: 8rpx;
+			font-size: 26rpx;
+			color: #64748b;
+			background: #f1f5f9;
+			transition: all 0.3s ease;
+			
+			&.active {
+				color: #fff;
+				background: #6366f1;
+			}
+			
+			&:active {
+				opacity: 0.8;
+			}
+		}
+	}
+	
+	.grid-options {
+		padding: 20rpx 30rpx;
+		
+		.grid-size {
+			display: flex;
+			align-items: center;
+			gap: 20rpx;
+			margin-bottom: 20rpx;
+			
+			.size-label {
+				font-size: 24rpx;
+				color: #64748b;
+				min-width: 70rpx;
+			}
+			
+			slider {
+				flex: 1;
+			}
+		}
+		
+		.icon-toggle {
+			display: flex;
+			gap: 20rpx;
+			
+			.toggle-btn {
+				padding: 10rpx 24rpx;
+				border-radius: 8rpx;
+				font-size: 24rpx;
+				color: #64748b;
+				background: #f1f5f9;
+				transition: all 0.3s ease;
+				
+				&.active {
+					color: #fff;
+					background: #6366f1;
+				}
+				
+				&:active {
+					opacity: 0.8;
+				}
+			}
+		}
+	}
+}
+
+.songs-container {
+	&.grid-view {
+		position: relative;
+		display: grid;
+		gap: 10rpx;
+		padding: 10rpx;
+		padding-bottom: 120rpx;
+		
+		&.grid-size-2 {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		
+		&.grid-size-3 {
+			grid-template-columns: repeat(3, 1fr);
+		}
+		
+		&.grid-size-4 {
+			grid-template-columns: repeat(4, 1fr);
+		}
+		
+		&.grid-size-5 {
+			grid-template-columns: repeat(5, 1fr);
+		}
+		
+		.song-item {
+			position: relative;
+			border-radius: 8rpx;
+			overflow: hidden;
+			aspect-ratio: 1;
+			
+			.cover-image {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				
+				image {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+				}
+				
+				// 灰色遮罩
+				.icon-overlay {
+					position: absolute;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					height: 80%;
+					background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+					z-index: 5;
+				}
+				
+				// 新增图标容器
+				.icon-container {
+					position: absolute;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					z-index: 10;
+				}
+				
+				// 基础图标样式
+				.icon-badge {
+					width: 100rpx;
+					height: 100rpx;
+					//margin-top: 60%; // 向下偏移到封面下半部分
+				}
+				
+				// Rate图标特定样式 - 保持256:120的比例
+				.icon-rate {
+					width: 120rpx;
+					height: 56rpx; // 按照256:120的比例计算高度
+				}
+			}
+		}
+		
+		.pagination {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			background: rgba(255, 255, 255, 0.95);
+			backdrop-filter: blur(10px);
+			padding: 20rpx 30rpx;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
+			z-index: 100;
+		}
+	}
+	
+	&.list-view {
+		.song-item {
+			display: flex;
+			padding: 20rpx;
+			background: #fff;
+			border-radius: 12rpx;
+			margin-bottom: 20rpx;
+			box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+			
+			.cover-image {
+				width: 120rpx;
+				height: 120rpx;
+				border-radius: 8rpx;
+				overflow: hidden;
+				margin-right: 20rpx;
+				
+				image {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+				}
+			}
+			
+			.song-info {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				
+				.title {
+					font-size: 28rpx;
+					font-weight: 500;
+					color: #1e293b;
+					@include text-ellipsis;
+				}
+				
+				.difficulty {
+					font-size: 26rpx;
+					color: #64748b;
+				}
 			}
 		}
 	}
@@ -829,21 +1465,20 @@ const getSongDs = (songId, levelIndex) => {
 					color: #64748b;
 					
 					&.achievements {
-						background-color: #e0f2fe;
-						color: #0369a1;
+						color: #ffa502;
 						font-weight: 500;
+						background-color: #f5f5f5;
 					}
 					
 					&.ra {
-						background-color: #fef3c7;
-						color: #92400e;
+						color: #2196F3;
 						font-weight: 500;
+						background-color: #f5f5f5;
 					}
 					
 					&.fc-fs {
-						background-color: #dcfce7;
-						color: #166534;
-						font-weight: 500;
+						color: #2ecc71;
+						background-color: #f5f5f5;
 					}
 				}
 			}
@@ -854,54 +1489,81 @@ const getSongDs = (songId, levelIndex) => {
 			top: 16rpx;
 			right: 16rpx;
 			padding: 4rpx 12rpx;
-			border-radius: 20rpx;
+			border-radius: 8rpx;
 			font-size: 22rpx;
 			font-weight: bold;
 			color: white;
 			box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
 			
-			&.sssp {
-				background: linear-gradient(135deg, #ffd700, #daa520);
+			&.sssp, &.sss {
+				background: none;
+				background-clip: text;
+				-webkit-background-clip: text;
+				background-image: linear-gradient(45deg, 
+					#ff4757,
+					#ff7f50,
+					#ffa502,
+					#70a1ff,
+					#7f50ff,
+					#ff6b81
+				);
+				color: transparent;
+				font-weight: 800;
+				text-shadow: none;
+				background-color: rgba(255, 255, 255, 0.9);
+				box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 			}
 			
-			&.sss {
-				background: linear-gradient(135deg, #ffd700, #daa520);
+			&.ssp, &.ss {
+				background: none;
+				background-clip: text;
+				-webkit-background-clip: text;
+				background-image: linear-gradient(45deg, 
+					#ffd700,
+					#ffa500,
+					#ffd700
+				);
+				color: transparent;
+				font-weight: 800;
+				text-shadow: none;
+				background-color: rgba(255, 255, 255, 0.9);
+				box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 			}
 			
-			&.ssp {
-				background: linear-gradient(135deg, #ff9800, #f57c00);
+			&.sp, &.s {
+				background: none;
+				background-clip: text;
+				-webkit-background-clip: text;
+				background-image: linear-gradient(45deg, 
+					#ffd700,
+					#ffa500,
+					#ffd700
+				);
+				color: transparent;
+				font-weight: 800;
+				text-shadow: none;
+				background-color: rgba(255, 255, 255, 0.9);
+				box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
 			}
 			
-			&.ss {
-				background: linear-gradient(135deg, #ff9800, #f57c00);
-			}
-			
-			&.sp {
-				background: linear-gradient(135deg, #9c27b0, #7b1fa2);
-			}
-			
-			&.s {
-				background: linear-gradient(135deg, #9c27b0, #7b1fa2);
-			}
-			
-			&.aaa {
-				background: linear-gradient(135deg, #2196f3, #1976d2);
-			}
-			
-			&.aa {
-				background: linear-gradient(135deg, #2196f3, #1976d2);
+			&.aaa, &.aa {
+				color: #000;
+				background: linear-gradient(135deg, #ffffff, #ffffff);
 			}
 			
 			&.a {
-				background: linear-gradient(135deg, #4caf50, #388e3c);
+				color: #000;
+				background: linear-gradient(135deg, #ffffff, #ffffff);
 			}
 			
 			&.bbb, &.bb, &.b {
-				background: linear-gradient(135deg, #795548, #5d4037);
+				color: #000;
+				background: linear-gradient(135deg, #ffffff, #ffffff);
 			}
 			
 			&.c, &.d {
-				background: linear-gradient(135deg, #9e9e9e, #757575);
+				color: #000;
+				background: linear-gradient(135deg, #ffffff, #ffffff);
 			}
 		}
 	}
@@ -955,49 +1617,146 @@ const getSongDs = (songId, levelIndex) => {
 	}
 }
 
-// 弹窗样式
 .filter-popup {
 	width: 600rpx;
-	max-width: 90vw;
-	background: white;
-	border-radius: 24rpx;
+	background-color: #fff;
+	border-radius: 20rpx;
 	overflow: hidden;
+	max-height: 80vh;
+	box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
 	
 	.popup-header {
-		background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
-		padding: 24rpx;
-		font-size: 32rpx;
-		font-weight: 600;
-		color: #1e293b;
-		text-align: center;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 26rpx 30rpx;
+		border-bottom: 2rpx solid #f0f0f0;
+		background: linear-gradient(to bottom, #fcfcfc, #f9f9f9);
+		
+		.title {
+			font-size: 34rpx;
+			font-weight: bold;
+			color: #333;
+			text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.8);
+		}
+		
+		.close-btn {
+			font-size: 40rpx;
+			color: #999;
+			padding: 10rpx;
+			width: 60rpx;
+			height: 60rpx;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			transition: all 0.2s ease;
+			
+			&:active {
+				background-color: rgba(0, 0, 0, 0.05);
+			}
+		}
 	}
 	
 	.popup-content {
 		padding: 30rpx;
 		
-		.filter-options {
-			.option {
-				padding: 20rpx;
-				border-radius: 12rpx;
-				margin-bottom: 16rpx;
-				transition: all 0.3s ease;
-				display: flex;
-				align-items: center;
+		.option-list {
+			max-height: 500rpx;
+			overflow-y: auto;
+			
+			.option-item {
+				position: relative;
+				padding: 24rpx 40rpx;
 				
 				&.active {
-					background: rgba(99, 102, 241, 0.1);
 					color: #6366f1;
 					font-weight: bold;
-					box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.15);
+					background-color: rgba(99, 102, 241, 0.1);
+					
+					&::before {
+						content: '';
+						position: absolute;
+						left: 0;
+						top: 0;
+						bottom: 0;
+						width: 6rpx;
+						background-color: #6366f1;
+						border-radius: 0 3rpx 3rpx 0;
+					}
 				}
 			}
 		}
 		
-		.version-list {
-			max-height: 600rpx;
+		.form-item {
+			margin-bottom: 30rpx;
 			
-			.version-scroll {
-				max-height: 600rpx;
+			&.ds-range {
+				display: flex;
+				align-items: center;
+				
+				input {
+					flex: 1;
+					height: 70rpx;
+					border: 2rpx solid #ddd;
+					border-radius: 8rpx;
+					padding: 0 20rpx;
+					font-size: 28rpx;
+					background-color: #f5f5f5;
+					margin: 0 10rpx;
+					width: 120rpx;
+					transition: all 0.3s ease;
+				}
+				
+				.range-separator {
+					margin: 0 10rpx;
+					color: #999;
+				}
+			}
+		}
+		
+		.range-tips {
+			font-size: 22rpx;
+			color: #888;
+			margin: 0 10rpx 20rpx 10rpx;
+		}
+		
+		.quick-select {
+			margin-top: 20rpx;
+			
+			.section-title {
+				font-size: 28rpx;
+				font-weight: 500;
+				color: #666;
+				margin-bottom: 16rpx;
+				display: block;
+			}
+			
+			.option-grid {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 16rpx;
+				
+				.option-chip {
+					padding: 12rpx 24rpx;
+					border-radius: 40rpx;
+					font-size: 24rpx;
+					background-color: #f5f5f5;
+					color: #666;
+					text-align: center;
+					transition: all 0.3s ease;
+					
+					&.active {
+						background-color: #6366f1;
+						color: #fff;
+						box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.3);
+					}
+					
+					&:active {
+						opacity: 0.8;
+						transform: translateY(2rpx);
+					}
+				}
 			}
 		}
 	}
@@ -1005,36 +1764,38 @@ const getSongDs = (songId, levelIndex) => {
 	.popup-footer {
 		display: flex;
 		padding: 20rpx;
+		gap: 20rpx;
 		border-top: 2rpx solid #f0f0f0;
+		background: linear-gradient(to bottom, #f9f9f9, #fcfcfc);
 		
 		button {
 			flex: 1;
 			height: 80rpx;
 			border-radius: 40rpx;
-			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 			font-size: 28rpx;
-			font-weight: 500;
 			transition: all 0.3s ease;
-			margin: 0 10rpx;
 			
 			&.cancel-btn {
-				background-color: #f1f5f9;
-				color: #64748b;
+				background-color: #f5f5f5;
+				color: #666;
+				box-shadow: inset 0 0 0 1rpx rgba(0, 0, 0, 0.05);
 				
 				&:active {
-					background-color: #e5e7eb;
-					transform: translateY(2rpx);
+					background-color: #eaeaea;
+					box-shadow: inset 0 2rpx 5rpx rgba(0, 0, 0, 0.05);
 				}
 			}
 			
 			&.confirm-btn {
 				background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-				color: white;
-				box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.25);
+				color: #fff;
+				box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
 				
 				&:active {
-					background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-					box-shadow: 0 2rpx 6rpx rgba(99, 102, 241, 0.2);
+					box-shadow: inset 0 2rpx 5rpx rgba(0, 0, 0, 0.2);
 					transform: translateY(2rpx);
 				}
 			}
@@ -1042,17 +1803,22 @@ const getSongDs = (songId, levelIndex) => {
 	}
 }
 
-@keyframes float {
-	0%, 100% {
-		transform: translateY(0);
+// 难度筛选特殊样式
+.difficulty-option {
+	&.basic { color: #4cd137 !important; }
+	&.advanced { color: #fbc531 !important; }
+	&.expert { color: #e84118 !important; }
+	&.master { color: #9c88ff !important; }
+	&.remaster { color: #00a8ff !important; }
+	
+	&.active {
+		color: #fff !important;
+		
+		&.basic::before { background-color: #4cd137 !important; }
+		&.advanced::before { background-color: #fbc531 !important; }
+		&.expert::before { background-color: #e84118 !important; }
+		&.master::before { background-color: #9c88ff !important; }
+		&.remaster::before { background-color: #00a8ff !important; }
 	}
-	50% {
-		transform: translateY(-10px);
-	}
-}
-
-@keyframes rainbow-text {
-	0% { background-position: 0% 50%; }
-	100% { background-position: 300% 50%; }
 }
 </style> 

@@ -86,7 +86,7 @@ import * as maiApi from './api/maiapi.js'
 	const initAliasData = async () => {
 	   console.log(3)
 		const aliasData = uni.getStorageSync('aliasData')
-		console.log(aliasData)
+		// console.log(aliasData)
 		if (!aliasData) {
 			try {
 				const response=await maiApi.getAliasData()

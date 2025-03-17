@@ -425,8 +425,8 @@ const currentRecord = computed(() => {
 })
 
 // 修改格式化方法，添加空值处理
-const formatCombo = (fc) => fc ? fc.replace('p', '+') : ''
-const formatFS = (fs) => fs ? fs.replace('p', '+').replace('ap', 'AP').replace('app', 'AP+') : ''
+const formatCombo = (fc) => fc ? fc.replace('app', 'ap+').replace('ap', 'ap').replace('fcp', 'fc+').toUpperCase() : ''
+const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase(): ''
 const formatRate = (rate) => rate ? (rate.endsWith('p') ? rate.slice(0, -1) + '+' : rate) : ''
 
 // 修改样式类方法，添加空值处理

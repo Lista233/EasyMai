@@ -1,6 +1,8 @@
 class PlayerRecordService {
   constructor(recordlist=[]) {
-    this.playerData = recordlist;
+    this.playerData = {
+      records: recordlist
+    }
   }
 
   // 初始化玩家数据
@@ -217,19 +219,41 @@ class PlayerRecordService {
     return limit ? records.slice(0, limit) : records;
   }
 
-  // 添加一个新方法：根据多条件筛选记录
-  filterRecordsByMultipleConditions(songService, options = {}) {
-    const {
-      version = '',
-      difficultyIndex = null,
-      dsRange = null,
-      sortBy = 'ra',
-      order = 'desc'
-    } = options;
-    
-    if (!this.playerData?.records) return [];
-    
-    let records = [...this.playerData.records]; // 创建副本
+  // 按 RA 值排序
+  sortByRa(records) {
+    return [...records].sort((a, b) => {
+      const raA = parseInt(a.ra) || 0
+      const raB = parseInt(b.ra) || 0
+      return raB - raA
+    })
+  }
+
+  // 按达成率排序
+  sortByAchievement(records) {
+    return [...records].sort((a, b) => {
+      const achievementA = parseFloat(a.achievements) || 0
+      const achievementB = parseFloat(b.achievements) || 0
+      return achievementB - achievementA
+    })
+  }
+
+  // 按难度排序
+  sortByDifficulty(records) {
+    return [...records].sort((a, b) => {
+      const dsA = parseFloat(a.ds) || 0
+      const dsB = parseFloat(b.ds) || 0
+      
+      if (dsB === dsA) {
+        return parseFloat(b.achievements) - parseFloat(a.achievements)
+      }
+      
+      return dsB - dsA
+    })
+  }
+
+  // 修改现有的 filterRecordsByMultipleConditions 方法
+  filterRecordsByMultipleConditions(songService, { version, difficultyIndex, dsRange, sortBy, order = 'desc' }) {
+    let records = [...this.playerData.records]
     
     // 版本筛选
     if (version) {
@@ -264,19 +288,22 @@ class PlayerRecordService {
       });
     }
     
-    // 排序
-    records.sort((a, b) => {
-      const valueA = a[sortBy] || 0;
-      const valueB = b[sortBy] || 0;
-      
-      if (order === 'desc') {
-        return valueB - valueA;
-      } else {
-        return valueA - valueB;
-      }
-    });
-    
-    return records;
+    // 排序逻辑
+    switch (sortBy) {
+      case 'ra':
+        records = this.sortByRa(records)
+        break
+      case 'achievements':
+        records = this.sortByAchievement(records)
+        break
+      case 'ds':
+        records = this.sortByDifficulty(records)
+        break
+      default:
+        records = this.sortByRa(records)
+    }
+
+    return records
   }
 }
 

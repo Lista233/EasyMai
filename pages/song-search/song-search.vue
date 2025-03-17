@@ -394,7 +394,7 @@ const gridPageSize = ref(4) // 网格视图每页显示的组数
 const currentGridPage = ref(1)
 
 // 添加网格列数控制
-const gridColumns = ref(4) // 默认每行3个
+const gridColumns = ref(4) // 默认每行4个
 
 // 将网格组大小与列数关联
 const itemsPerGroup = computed(() => gridColumns.value * 3) // 每组是3行
@@ -1276,6 +1276,7 @@ const getDifficultyLabel = (levelIndex) => {
         color: #6366f1;
         background-color: rgba(99, 102, 241, 0.08);
         font-weight: 500;
+		width: 90%;
         box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.2);
         
         &::before {
@@ -1291,6 +1292,7 @@ const getDifficultyLabel = (levelIndex) => {
       
       &:active {
         background-color: #f5f5f5;
+	
       }
     }
   }
