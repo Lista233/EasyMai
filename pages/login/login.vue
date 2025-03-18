@@ -370,6 +370,31 @@ async function getb50(){
 		uni.hideLoading();
 	
 		uni.setStorageSync('b50', res);
+		
+		// 计算并保存 rating 值
+		if (res.data) {
+			let b35 = res.data.charts.sd;
+			let b15 = res.data.charts.dx;
+			
+			// 初始化 rating 值
+			let b35rating = 0;
+			let b15rating = 0;
+			
+			// 计算 B35 rating
+			for (let item of b35) {
+				b35rating += Number(item.ra);
+			}
+			
+			// 计算 B15 rating
+			for (let item of b15) {
+				b15rating += Number(item.ra);
+			}
+			
+			// 将计算出的 rating 存储到本地缓存
+			uni.setStorageSync('b35rating', b35rating);
+			uni.setStorageSync('b15rating', b15rating);
+			uni.setStorageSync('totalRating', b35rating + b15rating);
+		}
 	} catch (error) {
 		console.error('获取数据失败:', error);
 		uni.showToast({

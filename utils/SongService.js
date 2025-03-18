@@ -304,6 +304,54 @@ class SongService {
       return results
     }
   }
+
+  /**
+   * 根据ds范围获取歌曲难度信息的映射
+   * @param {Object} dsRange - ds范围对象
+   * @param {number} dsRange.min - 最小定数值
+   * @param {number} dsRange.max - 最大定数值
+   * @param {Object} options - 查询选项
+   * @param {boolean} options.includeEqual - 是否包含等于边界值的情况，默认为true
+   * @returns {Array} - 返回歌曲难度信息的数组
+   */
+  getDifficultiesByDsRange(dsRange, options = {}) {
+    const {
+      min = 0,
+      max = Infinity
+    } = dsRange;
+
+    const {
+      includeEqual = true
+    } = options;
+
+    const results = [];
+
+    // 遍历所有歌曲
+    this.songList.forEach(song => {
+      // 检查所有难度
+      song.ds.forEach((currentDs, difficultyIndex) => {
+        // 检查定数是否在范围内
+        const inRange = includeEqual 
+          ? currentDs >= min && currentDs <= max
+          : currentDs > min && currentDs < max;
+        
+        if (inRange) {
+          // 添加到结果集
+          results.push({
+            songId: song.id,
+            difficulty: difficultyIndex,
+            ds: currentDs,
+            level: song.level[difficultyIndex],
+            title: song.title,
+            // 仅包含基本信息，不包含charts
+            basic_info: song.basic_info || {}
+          });
+        }
+      });
+    });
+
+    return results;
+  }
 }
 
 export default SongService

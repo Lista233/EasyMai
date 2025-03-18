@@ -1,74 +1,16 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<text class="title">谱面统计与推荐测试</text>
+			<text class="title">谱面统计数据</text>
 		</view>
 		
-		<!-- Rating 输入区域 -->
-		<view class="input-section">
-			<text class="section-title">输入您的 Rating</text>
-			<input type="number" v-model="userRating" class="rating-input" placeholder="例如：12500" />
-			<button class="recommend-button" @click="generateRecommendations">获取推荐</button>
-		</view>
-		
-		<!-- 推荐结果区域 -->
-		<view class="recommendation-section" v-if="recommendations">
-			<view class="section-title">
-				推荐结果 (平均定数: {{ recommendations.averageDs.toFixed(1) }}, 范围: {{ recommendations.range.min.toFixed(1) }}-{{ recommendations.range.max.toFixed(1) }})
-			</view>
-			
-			<view class="tab-header">
-				<view 
-					class="tab-item" 
-					:class="{ active: activeTab === 'fit' }" 
-					@click="activeTab = 'fit'"
-				>
-					拟合定数推荐
-				</view>
-				<view 
-					class="tab-item" 
-					:class="{ active: activeTab === 'diff' }" 
-					@click="activeTab = 'diff'"
-				>
-					定数差值推荐
-				</view>
-			</view>
-			
-			<view class="chart-list">
-				<view 
-					v-for="(chart, index) in activeRecommendations" 
-					:key="index" 
-					class="chart-item"
-					@click="navigateToDetail(chart.songId)"
-				>
-					<view class="chart-rank">{{ index + 1 }}</view>
-					<view class="chart-info">
-						<view class="song-title">{{ chart.title }}</view>
-						<view class="chart-details">
-							<text class="difficulty-badge" :class="getDifficultyClass(chart.difficulty)">
-								{{ getDifficultyName(chart.difficulty) }}
-							</text>
-							<text class="chart-stats">
-								游玩次数: {{ chart.cnt }} | 
-								平均达成率: {{ chart.avg }}% | 
-								{{ activeTab === 'diff' ? 
-									'官方: ' + chart.ds + ' / 拟合: ' + chart.fit_diff + ' (差值: ' + chart.dsDifference + ')' : 
-									'拟合定数: ' + chart.fit_diff }}
-								{{ chart.score && activeTab !== 'diff' ? ' | 推荐得分: ' + chart.score : '' }}
-							</text>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
-		
-		<!-- 原有的谱面统计区域 -->
+		<!-- 按游玩次数排序的前20首歌曲 -->
 		<view class="stats-section">
 			<view class="section-title">按游玩次数排序的前20首歌曲</view>
 			<view class="loading-indicator" v-if="loading">加载中...</view>
 			
 			<view class="chart-list" v-else>
-				<view v-for="(chart, index) in topCharts" :key="index" class="chart-item" @click="navigateToDetail(chart.songId)">
+				<view v-for="(chart, index) in topCharts" :key="index" class="chart-item" @click="navigateToDetail(chart.songId, chart.difficulty)">
 					<view class="chart-rank">{{ index + 1 }}</view>
 					<view class="chart-info">
 						<view class="song-title">{{ getSongTitle(chart.songId) }}</view>
@@ -87,6 +29,7 @@
 			</view>
 		</view>
 		
+		<!-- 简化列表 -->
 		<view class="stats-section">
 			<view class="section-title">简化列表 (ID和难度)</view>
 			<view class="simple-list">
@@ -99,9 +42,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { sortChartStatsByPlayCount, getSortedChartList } from '@/utils/chartStatsUtils';
-import { getComprehensiveRecommendations } from '@/utils/recommendationUtils';
 import SongService from '@/utils/SongService';
 
 // 状态变量
@@ -109,69 +51,6 @@ const loading = ref(true);
 const topCharts = ref([]);
 const simpleList = ref([]);
 const songService = ref(null);
-const chartStats = ref(null);
-
-// 推荐相关变量
-const userRating = ref('');
-const recommendations = ref(null);
-const activeTab = ref('fit');
-
-// 计算属性：根据当前选中的标签返回对应的推荐列表
-const activeRecommendations = computed(() => {
-	if (!recommendations.value) return [];
-	if (activeTab.value === 'fit') return recommendations.value.fitRecommendations;
-	if (activeTab.value === 'diff') return recommendations.value.diffRecommendations;
-	return [];
-});
-
-// 生成推荐
-const generateRecommendations = async () => {
-	if (!userRating.value) {
-		uni.showToast({
-			title: '请输入 Rating',
-			icon: 'none'
-		});
-		return;
-	}
-
-	try {
-		// 获取谱面统计数据
-		const chartStats = uni.getStorageSync('chartStats');
-		if (!chartStats) {
-			uni.showToast({
-				title: '未找到谱面统计数据',
-				icon: 'none'
-			});
-			return;
-		}
-
-		// 初始化 SongService
-		if (!songService.value) {
-			const musicData = uni.getStorageSync('musicData');
-			if (!musicData) {
-				uni.showToast({
-					title: '未找到歌曲数据',
-					icon: 'none'
-				});
-				return;
-			}
-			songService.value = new SongService(musicData);
-		}
-
-		// 获取推荐结果
-		recommendations.value = getComprehensiveRecommendations(
-			parseFloat(userRating.value),
-			songService.value,
-			chartStats
-		);
-	} catch (error) {
-		console.error('生成推荐失败:', error);
-		uni.showToast({
-			title: '生成推荐失败',
-			icon: 'none'
-		});
-	}
-};
 
 // 获取歌曲标题
 const getSongTitle = (songId) => {
@@ -211,11 +90,11 @@ function getDifficultyClass(difficulty) {
 }
 
 // 跳转到歌曲详情页
-const navigateToDetail = (songId) => {
+const navigateToDetail = (songId, difficulty) => {
 	if (!songId) return;
 	
 	uni.navigateTo({
-		url: `/pages/song-detail/song-detail?songId=${songId}`,
+		url: `/pages/song-detail/song-detail?songId=${songId}&difficulty=${difficulty}`,
 		animationType: 'pop-in',
 		animationDuration: 200
 	});
@@ -235,8 +114,6 @@ const initData = async () => {
 			});
 			return;
 		}
-		
-		chartStats.value = stats;
 		
 		// 使用工具函数处理数据
 		const sortedCharts = sortChartStatsByPlayCount(stats);
@@ -281,8 +158,8 @@ onMounted(() => {
 	font-weight: bold;
 }
 
-.input-section {
-	margin-bottom: 20px;
+.stats-section {
+	margin-bottom: 30px;
 	background-color: #fff;
 	border-radius: 10px;
 	padding: 15px;
@@ -294,58 +171,6 @@ onMounted(() => {
 	font-weight: bold;
 	margin-bottom: 10px;
 	color: #333;
-}
-
-.rating-input {
-	height: 40px;
-	border: 1px solid #ddd;
-	border-radius: 5px;
-	padding: 0 10px;
-	margin: 10px 0;
-}
-
-.recommend-button {
-	background-color: #007AFF;
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 10px 0;
-	margin-top: 10px;
-}
-
-.recommendation-section {
-	margin-bottom: 30px;
-	background-color: #fff;
-	border-radius: 10px;
-	padding: 15px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.tab-header {
-	display: flex;
-	border-bottom: 1px solid #eee;
-	margin-bottom: 15px;
-}
-
-.tab-item {
-	flex: 1;
-	text-align: center;
-	padding: 10px 0;
-	font-size: 14px;
-	color: #666;
-}
-
-.tab-item.active {
-	color: #007AFF;
-	border-bottom: 2px solid #007AFF;
-}
-
-.stats-section {
-	margin-bottom: 30px;
-	background-color: #fff;
-	border-radius: 10px;
-	padding: 15px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .loading-indicator {
@@ -426,17 +251,13 @@ onMounted(() => {
 	background-color: #BA1A1A;
 }
 
-.chart-stats {
-	flex: 1;
-}
-
 .simple-list {
 	margin-top: 10px;
 }
 
 .simple-item {
-	padding: 8px;
+	padding: 8px 0;
 	border-bottom: 1px solid #eee;
 	font-size: 14px;
 }
-</style>
+</style> 

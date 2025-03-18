@@ -137,9 +137,9 @@
 					v-for="record in paginatedRecords" 
 					:key="record.id"
 					class="song-item"
-					@click="navigateToDetail(record.song_id)"
+					@click="navigateToDetail(record.song_id, record.level_index)"
 				>
-					<view class="cover-image">
+					<view class="cover-image" :class="`level-${record.level_index}`">
 						<image :src="getSongCover(record.song_id)" mode="aspectFill" />
 						
 						<!-- 灰色遮罩 -->
@@ -198,7 +198,7 @@
 					</view>
 
 					<view class="song-records">
-						<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id)">
+						<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id, record.level_index)">
 							<view class="song-cover">
 								<image class="cover-image" :class="`level-${record.level_index}`" :src="getSongCover(record.song_id)" mode="aspectFill"></image>
 								<view class="difficulty-badge" :class="`level-${record.level_index}`">
@@ -834,14 +834,12 @@ const getSongCover = (songId) => {
 	return getCoverUrl(songId)
 }
 
-// 添加跳转到歌曲详情页的方法
-const navigateToDetail = (songId) => {
-	if (!songId) return;
-	
+// 修改 navigateToDetail 函数，添加难度索引参数
+const navigateToDetail = (songId, levelIndex) => {
 	uni.navigateTo({
-		url: `/pages/song-detail/song-detail?songId=${songId}`,
+		url: `/pages/song-detail/song-detail?songId=${songId}&difficulty=${levelIndex}`,
 		animationType: 'pop-in',
-		animationDuration: 0
+		animationDuration: 200
 	});
 }
 
@@ -1374,7 +1372,7 @@ const updateGridSize = (size) => {
 				border-radius: 8rpx;
 				object-fit: cover;
 				background-color: #f5f5f5;
-				border: 6rpx solid transparent;
+				border: 2px solid transparent;
 				box-sizing: border-box;
 				box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
 				
@@ -1820,5 +1818,42 @@ const updateGridSize = (size) => {
 		&.master::before { background-color: #9c88ff !important; }
 		&.remaster::before { background-color: #00a8ff !important; }
 	}
+}
+
+/* 网格视图中的封面图片难度边框 */
+.grid-view .cover-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+
+/* 不同难度的边框颜色 */
+.grid-view .cover-image.level-0 {
+  border-color: #1EA15D; /* Basic - 绿色 */
+}
+
+.grid-view .cover-image.level-1 {
+  border-color: #F6B40C; /* Advanced - 黄色 */
+}
+
+.grid-view .cover-image.level-2 {
+  border-color: #E9485D; /* Expert - 红色 */
+}
+
+.grid-view .cover-image.level-3 {
+  border-color: #9E45E2; /* Master - 紫色 */
+}
+
+.grid-view .cover-image.level-4 {
+  border-color: #FF9EFF; /* Re:Master - 更亮更鲜艳的紫粉色 */
+}
+
+/* 确保图片填满容器 */
+.grid-view .cover-image image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style> 

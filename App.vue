@@ -32,7 +32,10 @@ import * as maiApi from './api/maiapi.js'
 		'divingFish_password',
 		'chartStats',
 		'aliasData',
-		 'divingFish_records'// 添加别名数据的存储key
+		'divingFish_records', // 添加别名数据的存储key
+		'b35rating',         // 添加 B35 rating 存储
+		'b15rating',         // 添加 B15 rating 存储
+		'totalRating'        // 添加总 rating 存储
 	]
    // uni.clearStorage()
 	// 初始化本地存储

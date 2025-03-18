@@ -318,21 +318,27 @@ const handleLogout = () => {
     content: '确定要退出登录吗？',
     success: (res) => {
       if (res.confirm) {
-	uni.removeStorageSync('divingFish_jwt_token');
-		uni.removeStorageSync('divingFish_nickname');
-		uni.removeStorageSync('divingFish_qqid');
-		uni.removeStorageSync('divingFish_importToken');
-		uni.removeStorageSync('divingFish_qqChannelUid');
-		uni.removeStorageSync('divingFish_records');
-		uni.removeStorageSync('b50');
-		uni.removeStorageSync('uid')
-		uni.removeStorageSync('divingFish_username');
-		uni.removeStorageSync('qq_channel_uid')
+        // 清除用户凭证
+        uni.removeStorageSync('divingFish_jwt_token');
+        uni.removeStorageSync('divingFish_nickname');
+        uni.removeStorageSync('divingFish_qqid');
+        uni.removeStorageSync('divingFish_importToken');
+        uni.removeStorageSync('divingFish_qqChannelUid');
+        uni.removeStorageSync('divingFish_records');
+        uni.removeStorageSync('b50');
+        uni.removeStorageSync('uid')
+        uni.removeStorageSync('divingFish_username');
+        uni.removeStorageSync('qq_channel_uid')
+        
+        // 清除 rating 相关数据
+        uni.removeStorageSync('b35rating');
+        uni.removeStorageSync('b15rating');
+        uni.removeStorageSync('totalRating');
         
         uni.showToast({
           title: '已退出登录',
           icon: 'none',
-		  position:'center'
+          position:'center'
         });
         
         // setTimeout(() => {

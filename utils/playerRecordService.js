@@ -53,6 +53,95 @@ class PlayerRecordService {
     return record || null;
   }
 
+  /**
+   * 检查特定歌曲和难度的达成率是否在指定范围内
+   * @param {string|number} songId - 歌曲ID
+   * @param {number} levelIndex - 难度等级索引
+   * @param {object} achievementRange - 达成率范围对象 {min, max}
+   * @returns {boolean} - 如果达成率在范围内或没有记录则返回true，否则返回false
+   */
+  isAchievementInRange(songId, levelIndex, achievementRange) {
+    if (!this.playerData || !this.playerData.records) {
+      return true; // 如果没有玩家数据，默认返回true
+    }
+
+    const targetId = String(songId);
+    const record = this.playerData.records.find(record => 
+      String(record.song_id) === targetId && 
+      Number(record.level_index) === Number(levelIndex)
+    );
+    
+    // 如果没有找到记录，返回true（表示没有达成率记录）
+    if (!record) return true;
+    
+    const achievement = parseFloat(record.achievements);
+    
+    // 如果只有最小值限制
+    if (achievementRange.min !== undefined && achievementRange.max === undefined) {
+      return achievement < achievementRange.min;
+    }
+    
+    // 如果只有最大值限制
+    if (achievementRange.min === undefined && achievementRange.max !== undefined) {
+      return achievement <= achievementRange.max;
+    }
+    
+    // 如果有最小值和最大值限制
+    if (achievementRange.min !== undefined && achievementRange.max !== undefined) {
+      return achievement >= achievementRange.min && achievement <= achievementRange.max;
+    }
+    
+    // 如果没有限制，返回true
+    return true;
+  }
+
+  /**
+   * 获取特定歌曲和难度的达成率
+   * @param {string|number} songId - 歌曲ID
+   * @param {number} levelIndex - 难度等级索引
+   * @returns {number|null} - 返回达成率，如果没有记录则返回null
+   */
+  getAchievement(songId, levelIndex) {
+    if (!this.playerData || !this.playerData.records) {
+      return null;
+    }
+
+    const targetId = String(songId);
+    const record = this.playerData.records.find(record => 
+      String(record.song_id) === targetId && 
+      Number(record.level_index) === Number(levelIndex)
+    );
+    
+    return record ? parseFloat(record.achievements) : null;
+  }
+
+  /**
+   * 筛选出达成率在指定范围内的记录
+   * @param {object} options - 筛选选项
+   * @param {number} [options.minAchievement] - 最小达成率
+   * @param {number} [options.maxAchievement] - 最大达成率
+   * @returns {array} - 符合条件的记录数组
+   */
+  filterRecordsByAchievementRange({ minAchievement, maxAchievement } = {}) {
+    if (!this.playerData?.records) return [];
+    
+    return this.playerData.records.filter(record => {
+      const achievement = parseFloat(record.achievements);
+      
+      // 检查最小达成率
+      if (minAchievement !== undefined && achievement < minAchievement) {
+        return false;
+      }
+      
+      // 检查最大达成率
+      if (maxAchievement !== undefined && achievement > maxAchievement) {
+        return false;
+      }
+      
+      return true;
+    });
+  }
+
   // 获取所有成绩记录
   getAllRecords() {
     return this.playerData?.records || [];

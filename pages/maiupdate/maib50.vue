@@ -387,13 +387,17 @@ onLoad(async () => {
 	uid.value = uni.getStorageSync('uid')
 	username.value = uni.getStorageSync('divingFish_username')
 	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
+	
+	// 从本地缓存读取 rating
+	b35rating.value = uni.getStorageSync('b35rating') || 0;
+	b15rating.value = uni.getStorageSync('b15rating') || 0;
+	
 	await initCoverList();
 	console.log('nickname'+nickname.value)
 	
 	// 只在首次加载且用户已登录时执行
 	if (qqid.value && nickname.value) {
 		await getb50local();
-	
 	}
 	
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
@@ -685,9 +689,8 @@ async function divingFishUpdate()
 	}
 	
 
-// 修改 setb50Value 函数，确保正确计算 rating
+// 修改 setb50Value 函数，确保正确计算 rating 并存储到本地
 async function setb50Value(res) {
-	
     if (res.data) {
         b35.value = res.data.charts.sd;
         b15.value = res.data.charts.dx;
@@ -705,7 +708,11 @@ async function setb50Value(res) {
         for (let item of b15.value) {
             b15rating.value += Number(item.ra);
         }
-	
+        
+        // 将计算出的 rating 存储到本地缓存
+        uni.setStorageSync('b35rating', b35rating.value);
+        uni.setStorageSync('b15rating', b15rating.value);
+        uni.setStorageSync('totalRating', b35rating.value + b15rating.value);
     } else {
         console.log('出错了');
     }
@@ -769,9 +776,15 @@ async function handleLogout() {
 		uni.removeStorageSync('divingFish_qqChannelUid');
 		uni.removeStorageSync('divingFish_records');
 		uni.removeStorageSync('b50');
-		uni.removeStorageSync('uid')
+		uni.removeStorageSync('uid');
 		uni.removeStorageSync('divingFish_username');
-		uni.removeStorageSync('qq_channel_uid')
+		uni.removeStorageSync('qq_channel_uid');
+		
+		// 清除 rating 相关缓存
+		uni.removeStorageSync('b35rating');
+		uni.removeStorageSync('b15rating');
+		uni.removeStorageSync('totalRating');
+		
 		// 重置响应式数据
 		jwt_token.value = '';
 		username.value = '';
@@ -784,7 +797,8 @@ async function handleLogout() {
 		b15.value = '';
 		b35rating.value = 0;
 		b15rating.value = 0;
-		uid.value=-1;
+		uid.value = -1;
+		
 		// 显示提示
 		uni.showToast({
 			title: '已退出登录',

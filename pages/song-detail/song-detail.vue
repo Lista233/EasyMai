@@ -316,6 +316,25 @@ const difficulties = [
   { name: 'Re:Mas', class: 'remaster', level_index: 4 }
 ]
 
+
+
+// 初始化 SongService
+const initSongService = async () => {
+  if (songService.value) return
+  
+  try {
+    const musicData = uni.getStorageSync('musicData')
+    if (musicData) {
+      songService.value = new SongService(musicData)
+      songSearcher.value = new SongSearcher(musicData)
+      return true
+    }
+  } catch (error) {
+    console.error('初始化 SongService 失败:', error)
+  }
+  return false
+}
+
 // Note类型
 const noteTypes = ['TAP', 'HOLD', 'SLIDE', 'BREAK', 'TOUCH']
 
@@ -620,7 +639,15 @@ const initializeBasicData = async () => {
 onLoad(async (options) => {
   song.value = options.songId
   console.log('传入歌曲ID:',song.value)
-  
+  // 如果有难度索引参数，更新当前选中的难度
+  if (options.difficulty !== undefined) {
+    const difficultyIndex = Number(options.difficulty)
+    // 确保难度索引在有效范围内
+    if (!isNaN(difficultyIndex) && difficultyIndex >= 0 && difficultyIndex <= 4) {
+      currentDiffIndex.value = difficultyIndex
+      console.log('设置难度索引为:', difficultyIndex)
+    }
+  }
   // 确保初始化搜索器
   const aliasData = uni.getStorageSync('aliasData')
   if (aliasData) {

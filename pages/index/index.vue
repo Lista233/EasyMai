@@ -20,7 +20,8 @@ import { reactive, ref } from 'vue';
 		'/pages/Test/Test',
 		'/pages/user-center/user-center',
 		'/pages/login/login',
-		'/pages/PlayerRecords/PlayerRecords'
+		'/pages/PlayerRecords/PlayerRecords',
+		'/pages/song-recommend/song-recommend'
 	]
 	
 	function navTo(url)
