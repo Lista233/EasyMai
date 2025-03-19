@@ -317,6 +317,9 @@ const handleLogout = () => {
     title: '确认退出',
     content: '确定要退出登录吗？',
     success: (res) => {
+		if(res.cancel){
+			return
+		}
       if (res.confirm) {
         // 清除用户凭证
         uni.removeStorageSync('divingFish_jwt_token');
@@ -334,6 +337,23 @@ const handleLogout = () => {
         uni.removeStorageSync('b35rating');
         uni.removeStorageSync('b15rating');
         uni.removeStorageSync('totalRating');
+        
+        // 重置响应式变量
+        b35.value = '';
+        b15.value = '';
+        b15rating.value = 0;
+        b35rating.value = 0;
+        username.value = '';
+        password.value = '';
+        nickname.value = '';
+        qqid.value = '';
+        importToken.value = '';
+        qq_channel_uid.value = '';
+        jwt_token.value = '';
+        records.value = '';
+        avatar.value = '../../static/maiicon/UI_Icon_000001.jpg';
+        QrCode.value = '';
+        uid.value = -1;
         
         uni.showToast({
           title: '已退出登录',

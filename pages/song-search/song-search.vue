@@ -97,9 +97,9 @@
       </view>
     </view>
     
-    <!-- 网格视图 - 美化布局 -->
+    <!-- 网格视图 - 简化封面显示 -->
     <view class="grid-view" v-else>
-      <!-- 改进网格布局控制 -->
+      <!-- 控制部分保持不变 -->
       <view class="grid-controls">
         <text class="control-label">每行显示:</text>
         <view class="slider-container">
@@ -112,44 +112,37 @@
             @change="onGridColumnsChange"
             activeColor="#6366f1"
             backgroundColor="#e0e0e0"
-            block-size="24"
+            block-size="18"
             block-color="#6366f1"
           />
         </view>
       </view>
       
-      <!-- 修改网格布局样式 -->
+      <!-- 修改网格容器结构 -->
       <view class="grid-container" :style="{ '--grid-columns': gridColumns }">
-        <view 
-          v-for="(group, groupIndex) in paginatedGroups" 
-          :key="groupIndex"
-          class="grid-group"
-        >
+        <view class="grid-items-wrapper">
           <view 
-            class="grid-item" 
-            v-for="(result, index) in group" 
-            :key="result ? result.songId : index"
-            @click="result && navigateToDetail(result.songId)"
+            v-for="(result, index) in filteredGridResults" 
+            :key="result.songId" 
+            class="grid-item"
+            @click="navigateToDetail(result.songId)"
           >
-            <template v-if="result">
-              <image 
-                class="grid-cover" 
-                :src="getCoverUrl(result.songId)" 
-                mode="aspectFill"
-                :loading="getLoadingPriority(groupIndex * itemsPerGroup.value + index)"
-                @error="handleImageError"
-              ></image>
-             
-            </template>
+            <image 
+              :src="getCoverUrl(result.songId)" 
+              mode="aspectFill" 
+              class="grid-cover"
+              :loading="getLoadingPriority(index)"
+              @error="handleImageError"
+            />
           </view>
         </view>
       </view>
       
       <!-- 分页控制保持不变 -->
-      <view class="pagination" v-if="groupedResults.length > gridPageSize">
+      <view class="pagination" v-if="filteredGridResults.length > 0">
         <view class="page-info">
           <text>{{ currentGridPage }}/{{ totalGridPages }} 页</text>
-          <text class="total-count">共 {{ searchResults.length }} 条记录</text>
+          <text class="total-count">共 {{ filteredSearchResults.length }} 条记录</text>
         </view>
         <view class="page-controls">
           <button class="page-btn" 
@@ -178,7 +171,7 @@
               @input="onDsInput('min')"
               @focus="onInputFocus"
               @blur="onInputBlur"
-              maxlength="3"
+              maxlength="4"
             />
             <text class="range-separator">至</text>
             <input 
@@ -188,7 +181,7 @@
               @input="onDsInput('max')"
               @focus="onInputFocus"
               @blur="onInputBlur"
-              maxlength="3"
+              maxlength="4"
             />
           </view>
           <view class="range-tips">
@@ -480,10 +473,9 @@ const selectGenre = (genre) => {
 
 // 简化定数输入处理方法
 const onDsInput = (type) => {
-  // 简单清除非数字和小数点字符
   let value = dsFilter.value[type];
-  value = value.replace(/[^\d.]/g, '');
-  dsFilter.value[type] = value;
+ //value = value.replace(/[^\d.]/g, '');
+  //dsFilter.value[type] = value;
 };
 
 // 修改应用定数筛选方法，在提交时校验
@@ -493,15 +485,15 @@ const applyDsFilter = () => {
   let max = dsFilter.value.max ? parseFloat(dsFilter.value.max) : null;
   
   // 确保值在1.0-15.0范围内
-  if (min !== null) {
-    min = Math.max(1.0, Math.min(15.0, min));
-    dsFilter.value.min = min.toFixed(1);
-  }
+  // if (min !== null) {
+  //   min = Math.max(1.0, Math.min(15.0, min));
+  //   dsFilter.value.min = min.toFixed(1);
+  // }
   
-  if (max !== null) {
-    max = Math.max(1.0, Math.min(15.0, max));
-    dsFilter.value.max = max.toFixed(1);
-  }
+  // if (max !== null) {
+  //   max = Math.max(1.0, Math.min(15.0, max));
+  //   dsFilter.value.max = max.toFixed(1);
+  // }
   
   // 确保最小值不大于最大值
   if (min !== null && max !== null && min > max) {
@@ -760,15 +752,40 @@ const totalPages = computed(() => {
   return Math.ceil(searchResults.value.length / pageSize.value)
 })
 
-const paginatedGroups = computed(() => {
-  const startIndex = (currentGridPage.value - 1) * gridPageSize.value
-  const endIndex = startIndex + gridPageSize.value
-  return groupedResults.value.slice(startIndex, endIndex)
-})
+// 添加新的计算属性，用于处理网格视图的数据
+const filteredSearchResults = computed(() => {
+  return searchResults.value.filter(result => {
+    return Number(result.songId) < 100000; // 过滤掉6位数及以上的ID
+  });
+});
 
+// 根据列数动态设置每页显示数量
+const getItemsPerPage = computed(() => {
+  switch(gridColumns.value) {
+    case 2: return 8;  // 2列模式：8个封面
+    case 3: return 18; // 3列模式：24个封面
+    case 4: return 28; // 4列模式：32个封面
+    case 5: return 40; // 5列模式：50个封面
+    default: return 24;
+  }
+});
+
+// 更新过滤后的网格结果计算属性
+const filteredGridResults = computed(() => {
+  const startIndex = (currentGridPage.value - 1) * getItemsPerPage.value;
+  const endIndex = startIndex + getItemsPerPage.value;
+  return filteredSearchResults.value.slice(startIndex, endIndex);
+});
+
+// 更新总页数计算
 const totalGridPages = computed(() => {
-  return Math.ceil(groupedResults.value.length / gridPageSize.value)
-})
+  return Math.ceil(filteredSearchResults.value.length / getItemsPerPage.value);
+});
+
+// 监听网格列数变化，重置当前页码
+watch(gridColumns, () => {
+  currentGridPage.value = 1; // 列数变化时重置为第一页
+});
 
 // 监听搜索结果变化，重置页码
 watch(searchResults, () => {
@@ -1446,50 +1463,40 @@ const getDifficultyLabel = (levelIndex) => {
     .slider-container {
       flex: 1;
       padding: 0 30rpx 0 10rpx; // 增加右侧padding，让数字和滑块有更多间距
+	  margin-left: 30rpx;
     }
   }
   
   .grid-container {
     --grid-columns: 3; // 默认值，会被JS覆盖
     
-    .grid-group {
-      display: grid;
-      grid-template-columns: repeat(var(--grid-columns), 1fr);
-      gap: 16rpx;
+    .grid-items-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10rpx;
       margin-bottom: 20rpx;
       
       .grid-item {
+        width: calc((100% - (var(--grid-columns) - 1) * 10rpx) / var(--grid-columns));
         background-color: #fff;
-        border-radius: 16rpx;
+        border-radius: 6rpx;
         overflow: hidden;
         box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        aspect-ratio: 1; // 改为正方形
-        position: relative; // 为难度标签定位
+        position: relative; // 保留相对定位
         
-        &:active {
-          transform: scale(0.96);
-          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+        &::before {
+          content: "";
+          display: block;
+          padding-top: 100%; // 保持1:1的宽高比
         }
         
         .grid-cover {
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-        }
-        
-        // 添加难度标签
-        .difficulty-badge {
-          position: absolute;
-          bottom: 10rpx;
-          right: 10rpx;
-          padding: 6rpx 12rpx;
-          border-radius: 8rpx;
-          background-color: rgba(0, 0, 0, 0.6);
-          color: #fff;
-          font-size: 22rpx;
-          font-weight: bold;
-          box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
         }
       }
     }

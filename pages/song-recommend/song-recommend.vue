@@ -7,43 +7,47 @@
 		
 		<!-- 输入部分 -->
 		<view class="input-section">
-			<view class="section-title">输入您的 Rating</view>
-			<input 
-				class="rating-input" 
-				type="number" 
-				v-model="userRating" 
-				placeholder="请输入您的 Rating"
-			/>
+			<view class="section-title">输入您的目标 Rating</view>
+			<view class="rating-input-container">
+				<input 
+					class="rating-input" 
+					type="number" 
+					v-model="userRating" 
+					placeholder="请输入您的目标 Rating"
+				/>
+				<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
+			</view>
 			
 			<!-- 添加筛选选项 -->
 			<view class="filter-options">
-				<view class="filter-title">筛选选项：</view>
-				<view class="filter-row">
-					<checkbox :checked="filterCompleted" @click="toggleFilterCompleted" />
-					<text class="filter-label">筛选乐曲</text>
-					<picker 
-						:value="completionThresholdIndex" 
-						:range="completionThresholds" 
-						@change="onThresholdChange"
-						:disabled="!filterCompleted"
-						class="threshold-picker"
-					>
-						<view class="picker-text" :class="{ 'disabled': !filterCompleted }">
-							隐藏达成率 ≥ {{ completionThresholds[completionThresholdIndex] }}%的乐曲
-						</view>
-					</picker>
+				<view class="filter-header">
+					<view class="filter-title">筛选选项：</view>
+					<view class="filter-controls">
+						<checkbox :checked="filterCompleted" @click="toggleFilterCompleted" />
+						<text class="filter-label">筛选乐曲</text>
+					</view>
 				</view>
+				<picker 
+					:value="completionThresholdIndex" 
+					:range="completionThresholds" 
+					@change="onThresholdChange"
+					:disabled="!filterCompleted"
+					class="threshold-picker"
+				>
+					<view class="picker-text" :class="{ 'disabled': !filterCompleted }">
+						隐藏达成率 ≥ {{ completionThresholds[completionThresholdIndex] }}%的乐曲
+					</view>
+				</picker>
 			</view>
-			
-			<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
 		</view>
 		
 		<!-- 推荐结果部分 -->
 		<view class="recommendation-section" v-if="recommendations">
 			<view class="section-title">
-				推荐结果 (平均定数: {{ recommendations.averageDs.toFixed(1) }}, 范围: {{ recommendations.range.min.toFixed(1) }}-{{ recommendations.range.max.toFixed(1) }})
+				推荐结果 
+				(定数范围: {{ recommendations.range.min.toFixed(1) }}-{{ recommendations.range.max.toFixed(1) }})
 				<text class="result-count" v-if="filteredRecommendations.length !== activeRecommendations.length">
-					(已筛选: {{ filteredRecommendations.length }}/{{ activeRecommendations.length }})
+				<p>	(已筛选: {{ filteredRecommendations.length }}/{{ activeRecommendations.length }})</p>
 				</text>
 			</view>
 			
@@ -72,8 +76,10 @@
 					@click="navigateToDetail(chart.songId, chart.difficulty)"
 				>
 					<view class="chart-rank">{{ (currentPage - 1) * pageSize + index + 1 }}</view>
-					<view class="song-cover">
-						<image :src="getSongCover(chart.songId)" mode="aspectFill" class="cover-image" :class="`level-${chart.difficulty}`"></image>
+					<view class="song-cover-container" :class="getDifficultyClass(chart.difficulty)">
+						<view class="song-cover">
+							<image :src="getSongCover(chart.songId)" mode="aspectFill" class="cover-image"></image>
+						</view>
 						<view class="difficulty-badge" :class="getDifficultyClass(chart.difficulty)">
 							{{ chart.ds }}
 						</view>
@@ -122,10 +128,10 @@
 					</view>
 					<view class="page-controls">
 						<button class="page-btn" 
-							:disabled="currentPage === 1"
+							
 							@click="currentPage--">上一页</button>
 						<button class="page-btn" 
-							:disabled="currentPage === totalPages"
+						
 							@click="currentPage++">下一页</button>
 					</view>
 				</view>
@@ -430,7 +436,7 @@ onMounted(() => {
 
 .header {
 	margin-bottom: 20rpx;
-	background: rgba(255, 255, 255, 0.95);
+	background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(240, 244, 255, 0.95));
 	backdrop-filter: blur(10px);
 	border-radius: 20rpx;
 	padding: 32rpx 40rpx;
@@ -445,6 +451,19 @@ onMounted(() => {
 	font-weight: bold;
 	margin-bottom: 16rpx;
 	color: #1e293b;
+	position: relative;
+	display: inline-block;
+}
+
+.header-title::after {
+	content: "";
+	position: absolute;
+	bottom: -8rpx;
+	left: 0;
+	width: 230rpx;
+	height: 6rpx;
+	background: linear-gradient(to right, #6366f1, #818cf8);
+	border-radius: 3rpx;
 }
 
 .input-section {
@@ -463,76 +482,34 @@ onMounted(() => {
 	color: #1e293b;
 }
 
-.result-count {
-	font-size: 24rpx;
-	color: #64748b;
-	font-weight: normal;
-	margin-left: 10rpx;
+.rating-input-container {
+	display: flex;
+	gap: 20rpx;
+	margin-bottom: 20rpx;
 }
 
 .rating-input {
-	height: 80rpx;
-	border: 1px solid #ddd;
-	border-radius: 10rpx;
-	padding: 0 20rpx;
-	margin: 20rpx 0;
-	font-size: 28rpx;
+	flex: 1;
+	height: 88rpx;
+	border: 2px solid #e2e8f0;
+	border-radius: 16rpx;
+	padding: 0 24rpx;
+	font-size: 32rpx;
+	font-weight: 500;
+	color: #1e293b;
 	transition: all 0.3s ease;
+	background-color: #f8fafc;
 }
 
 .rating-input:focus {
-	border-color: #a5b4fc;
-	box-shadow: 0 0 0 4px rgba(165, 180, 252, 0.1);
+	border-color: #6366f1;
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 	background: white;
 }
 
-/* 筛选选项样式 */
-.filter-options {
-	margin: 20rpx 0;
-	padding: 20rpx;
-	background-color: #f8fafc;
-	border-radius: 10rpx;
-	border: 1px solid #e2e8f0;
-}
-
-.filter-title {
-	font-size: 28rpx;
-	font-weight: 500;
-	margin-bottom: 16rpx;
-	color: #1e293b;
-}
-
-.filter-row {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 16rpx;
-}
-
-.filter-label {
-	font-size: 26rpx;
-	color: #475569;
-}
-
-.threshold-picker {
-	margin-left: auto;
-}
-
-.picker-text {
-	font-size: 26rpx;
-	color: #475569;
-	padding: 8rpx 16rpx;
-	background-color: #e2e8f0;
-	border-radius: 6rpx;
-	transition: all 0.3s ease;
-}
-
-.picker-text.disabled {
-	opacity: 0.5;
-}
-
+/* 美化按钮样式 */
 .recommend-button {
-	margin-top: 30rpx;
+	flex-basis: 180rpx;
 	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
 	color: white;
 	border: none;
@@ -543,171 +520,236 @@ onMounted(() => {
 	font-weight: 500;
 	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
 	transition: all 0.3s ease;
+	text-align: center;
+	padding: 0;
 }
 
 .recommend-button:active {
-	transform: scale(0.98) translateY(1px);
+	transform: translateY(2rpx);
 	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
+/* 优化筛选选项部分 */
+.filter-options {
+	margin-top: 30rpx;
+	padding: 24rpx;
+	background-color: #f1f5f9;
+	border-radius: 16rpx;
+	border: 1px solid #e2e8f0;
+}
+
+.filter-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16rpx;
+}
+
+.filter-controls {
+	display: flex;
+	align-items: center;
+	gap: 10rpx;
+}
+
+.filter-title {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #475569;
+}
+
+.filter-label {
+	font-size: 26rpx;
+	color: #475569;
+	font-weight: 500;
+}
+
+.threshold-picker {
+	width: 100%;
+}
+
+.picker-text {
+	font-size: 26rpx;
+	padding: 10rpx 16rpx;
+	border-radius: 8rpx;
+	background-color: white;
+	color: #1e293b;
+	border: 1px solid #e2e8f0;
+}
+
+.picker-text.disabled {
+	color: #94a3b8;
+	background-color: #f8fafc;
+}
+
+/* 美化推荐结果部分 */
 .recommendation-section {
 	background-color: #fff;
 	border-radius: 20rpx;
 	padding: 32rpx 40rpx;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
 	border: 1px solid rgba(255, 255, 255, 0.7);
-	margin-bottom: 20rpx;
+}
+
+.result-count {
+	font-size: 24rpx;
+	color: #64748b;
+	font-weight: normal;
+	margin-left: 10rpx;
 }
 
 .tab-header {
 	display: flex;
-	border-bottom: 1px solid #e2e8f0;
 	margin-bottom: 20rpx;
+	border-radius: 12rpx;
+	overflow: hidden;
+	background-color: #f1f5f9;
+	padding: 4rpx;
 }
 
 .tab-item {
-	padding: 16rpx 30rpx;
+	flex: 1;
+	text-align: center;
+	padding: 16rpx 0;
 	font-size: 28rpx;
 	color: #64748b;
-	position: relative;
-	cursor: pointer;
 	transition: all 0.3s ease;
+	border-radius: 8rpx;
 }
 
 .tab-item.active {
-	color: #6366f1;
+	background-color: #6366f1;
+	color: white;
 	font-weight: 500;
+	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
 }
 
-.tab-item.active::after {
-	content: '';
-	position: absolute;
-	bottom: -1px;
-	left: 0;
-	right: 0;
-	height: 3px;
-	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-	border-radius: 3px 3px 0 0;
-}
-
+/* 美化歌曲卡片样式 */
 .chart-list {
 	margin-top: 20rpx;
 }
 
 .chart-item {
 	display: flex;
-	align-items: center;
-	padding: 24rpx;
-	border-bottom: 1px solid #f1f5f9;
-	position: relative;
-	gap: 20rpx;
-	transition: all 0.3s ease;
+	background-color: white;
 	border-radius: 16rpx;
-	margin-bottom: 16rpx;
-	background: white;
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
-}
-
-.chart-item:hover {
-	transform: translateY(-2rpx);
-	box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.05);
-}
-
-.chart-item:active {
-	transform: scale(0.99);
-	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+	overflow: hidden;
+	margin-bottom: 20rpx;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+	border: 1px solid #f1f5f9;
+	
 }
 
 .chart-rank {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 60rpx;
 	font-size: 28rpx;
-	font-weight: bold;
+	font-weight: 600;
 	color: #64748b;
-	width: 40rpx;
-	text-align: center;
-	background: #f8fafc;
-	height: 40rpx;
-	line-height: 40rpx;
-	border-radius: 50%;
-	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+/* 	background-color: #f8fafc; */
+	/* border-right: 1px solid #f1f5f9; */
 }
 
-.song-cover {
+.song-cover-container {
+	width: 144rpx;
 	position: relative;
-	width: 120rpx;
-	height: 150rpx; /* 增加高度以容纳难度标签 */
-	margin-right: 16rpx;
+	padding: 2rpx;
+	border-radius: 12rpx 12rpx 0 0;
+	overflow: hidden;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	flex-shrink: 0;
+	justify-content: center;
 }
 
+/* 修改封面样式，添加边框 */
+.song-cover {
+	width: 140rpx;
+	height: 140rpx;
+	border-radius: 8rpx 8rpx 0 0;
+	overflow: hidden;
+	background-color: #000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	
+	border: 3rpx solid transparent; /* 添加透明边框 */
+}
+
+/* 根据难度设置封面边框颜色 */
+.song-cover-container.basic .song-cover {
+	border-color: #16a34a;
+}
+
+.song-cover-container.advanced .song-cover {
+	border-color: #ca8a04;
+}
+
+.song-cover-container.expert .song-cover {
+	border-color: #dc2626;
+}
+
+.song-cover-container.master .song-cover {
+	border-color: #7c3aed;
+}
+
+.song-cover-container.remaster .song-cover {
+	background-color: #d4a3ff;
+}
+
+/* 保持图片样式不变 */
 .cover-image {
-	width: 120rpx;
-	height: 120rpx;
+	width: 100%;
+	height: 100%;
 	object-fit: cover;
-	border: 6rpx solid transparent;
-	border-radius: 8rpx;
-	box-sizing: border-box;
-	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
-/* 不同难度的边框颜色 */
-.cover-image.level-0 {
-	border-color: rgba(46, 204, 113, 1);
-	box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
-}
-
-.cover-image.level-1 {
-	border-color: rgba(241, 196, 15, 1);
-	box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
-}
-
-.cover-image.level-2 {
-	border-color: rgba(231, 76, 60, 1);
-	box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
-}
-
-.cover-image.level-3 {
-	border-color: rgba(155, 89, 182, 1);
-	box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
-}
-
-.cover-image.level-4 {
-	border-color: rgba(190, 170, 245, 1);
-	box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
-}
-
+/* 保持难度标签样式不变 */
 .difficulty-badge {
-	position: absolute;
-	bottom: 0;
-	left: 50%;
-	transform: translateX(-50%);
-	padding: 4rpx 12rpx;
-	border-radius: 6rpx;
-	font-size: 20rpx;
-	color: white;
-	display: inline-block;
-	font-weight: 500;
-	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-	white-space: nowrap;
-	width: 90%;
+	width: 101%;
 	text-align: center;
+	padding: 6rpx 0;
+	font-size: 22rpx;
+	font-weight: bold;
+	xorm: translateY(0%); 
+	border-radius: 0rpx 0rpx 20rpx 20rpx;
+	color: white;
+}
+
+/* 保持难度标签背景色不变 */
+.difficulty-badge.basic {
+	background-color: #16a34a;
+}
+
+.difficulty-badge.advanced {
+	background-color: #ca8a04;
+}
+
+.difficulty-badge.expert {
+	background-color: #dc2626;
+}
+
+.difficulty-badge.master {
+	background-color: #7c3aed;
+}
+
+.difficulty-badge.remaster {
+	background-color: #d4a3ff;
 }
 
 .chart-info {
 	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 8rpx;
+	padding: 24rpx 24rpx;
 	overflow: hidden;
+	margin-bottom: 20rpx;
 }
 
 .song-title {
-	font-weight: bold;
-	margin-bottom: 10rpx;
 	font-size: 28rpx;
+	font-weight: 600;
 	color: #1e293b;
+	margin-bottom: 12rpx;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -716,156 +758,103 @@ onMounted(() => {
 .chart-details {
 	display: flex;
 	flex-direction: column;
-	font-size: 24rpx;
-	color: #64748b;
 	gap: 8rpx;
 }
 
+/* 美化统计项目，使用不同背景色 */
 .stat-item {
 	display: flex;
 	align-items: center;
-	background-color: #f8fafc;
 	padding: 6rpx 12rpx;
-	border-radius: 6rpx;
-	margin-bottom: 4rpx;
+	border-radius: 8rpx;
+	font-size: 24rpx;
 }
 
 .stat-label {
 	color: #64748b;
-	margin-right: 8rpx;
-	font-size: 22rpx;
+	margin-right: 0rpx;
+	font-weight: 500;
+	min-width: 80rpx;
 }
 
 .stat-value {
 	color: #1e293b;
-	font-weight: 500;
+	font-weight: 600;
 }
 
 .player-achievement {
-	margin-left: 8rpx;
+	margin-left: 12rpx;
 	color: #6366f1;
-	font-weight: 500;
+	font-weight: 600;
 }
 
+/* 为不同类型的统计项使用不同的背景色 */
 .sample-count {
-	background-color: #f1f5f9;
+	color: #2196F3;
+						font-weight: 600;
+						background: rgba(33, 150, 243, 0.1);
 }
 
 .achievement {
-	background-color: #f0f9ff;
+	color: #ffa502;
+						font-weight: 600;
+						background: rgba(255, 165, 2, 0.1);
 }
 
 .difficulty {
-	background-color: #f0fdf4;
+		color: #2ecc71;
+						font-weight: 500;
+						background: rgba(46, 204, 113, 0.1);
+					
 }
 
 .score {
-	background-color: #fef2f2;
+	background-color: #fef3c7; /* 浅黄色 */
 }
 
-.basic {
-	background: linear-gradient(135deg, #2ecc71, #27ae60);
-}
+/* 难度标签颜色 */
 
-.advanced {
-	background: linear-gradient(135deg, #f1c40f, #f39c12);
-}
-
-.expert {
-	background: linear-gradient(135deg, #e74c3c, #c0392b);
-}
-
-.master {
-	background: linear-gradient(135deg, #9b59b6, #8e44ad);
-}
-
-.remaster {
-	background: linear-gradient(135deg, #d6c0ff, #c4b0ff);
-}
-
-/* 无结果提示 */
-.no-results {
-	padding: 40rpx;
-	text-align: center;
-	color: #64748b;
-	font-size: 28rpx;
-	background-color: #f8fafc;
-	border-radius: 16rpx;
-	margin: 20rpx 0;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
-}
 
 /* 分页样式 */
 .pagination {
-	margin-top: 40rpx;
+	margin-top: 30rpx;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 20rpx;
 }
 
 .page-info {
-	font-size: 26rpx;
-	color: #64748b;
-	background: rgba(248, 250, 252, 0.8);
-	padding: 8rpx 20rpx;
-	border-radius: 20rpx;
+	font-size: 24rpx;
+	color: #6366f1;
+	margin-bottom: 16rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .total-count {
-	margin-left: 10rpx;
-	color: #94a3b8;
+	font-size: 22rpx;
+	color: #818cf8;
+	margin-top: 4rpx;
 }
 
 .page-controls {
 	display: flex;
-	gap: 20rpx;
+	gap: 24rpx;
+	margin-top: 12rpx;
 }
 
 .page-btn {
-	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-	color: #64748b;
-	border: 1px solid #e2e8f0;
-	border-radius: 12rpx;
-	padding: 12rpx 32rpx;
-	font-size: 26rpx;
-	font-weight: 500;
-	transition: all 0.3s ease;
-	box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
-}
-
-.page-btn:not(:disabled):active {
-	transform: scale(0.98) translateY(1px);
-	background: #e2e8f0;
-}
-
-.page-btn:not(:disabled):hover {
-	background: #e2e8f0;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-}
-
-.page-btn:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.navigation-section {
-	margin-bottom: 20px;
-}
-
-.nav-button {
-	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
 	color: white;
 	border: none;
-	border-radius: 16rpx;
-	padding: 20rpx 0;
+	border-radius: 12rpx;
+	padding: 12rpx 36rpx;
+	font-size: 26rpx;
 	font-weight: 500;
-	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-	transition: all 0.3s ease;
+	box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
+	transition: all 0.2s ease;
 }
 
-.nav-button:active {
-	transform: scale(0.98) translateY(1px);
-	box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
-}
+
 </style>

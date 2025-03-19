@@ -322,7 +322,7 @@
 						
 							@focus="onInputFocus"
 							@blur="onInputBlur"
-							maxlength="3"
+							maxlength="5"
 						/>
 						<text class="range-separator">至</text>
 						<input 
@@ -332,7 +332,7 @@
 						
 							@focus="onInputFocus"
 							@blur="onInputBlur"
-							maxlength="3"
+							maxlength="5"
 						/>
 					</view>
 					<view class="range-tips">
@@ -435,10 +435,10 @@ const dsFilter = ref({
 // 预定义的定数范围
 const dsRanges = [
 	{ label: '全部', min: 1, max: 15 },
+	{ label: '13', min: 13.0, max: 13.6 },
 	{ label: '13+', min: 13.7, max: 13.9 },
-	{ label: '14.0', min: 14.0, max: 14.4 },
-	{ label: '14+', min: 14.5, max: 14.9 },
-	{ label: '15.0', min: 15.0, max: 15.0 }
+	{ label: '14', min: 14.0, max: 14.6 },
+	{ label: '14+', min: 14.7, max: 14.9 },
 ]
 
 // 添加简化的版本映射
@@ -1810,7 +1810,7 @@ const updateGridSize = (size) => {
 	&.remaster { color: rgba(190, 170, 245, 1) !important; }
 	
 	&.active {
-		color: #fff !important;
+		
 		
 		&.basic::before { background-color: #4cd137 !important; }
 		&.advanced::before { background-color: #fbc531 !important; }
