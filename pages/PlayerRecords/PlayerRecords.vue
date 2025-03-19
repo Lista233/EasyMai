@@ -1807,7 +1807,7 @@ const updateGridSize = (size) => {
 	&.advanced { color: #fbc531 !important; }
 	&.expert { color: #e84118 !important; }
 	&.master { color: #9c88ff !important; }
-	&.remaster { color: #00a8ff !important; }
+	&.remaster { color: rgba(190, 170, 245, 1) !important; }
 	
 	&.active {
 		color: #fff !important;
@@ -1816,7 +1816,7 @@ const updateGridSize = (size) => {
 		&.advanced::before { background-color: #fbc531 !important; }
 		&.expert::before { background-color: #e84118 !important; }
 		&.master::before { background-color: #9c88ff !important; }
-		&.remaster::before { background-color: #00a8ff !important; }
+		&.remaster::before { background-color: rgba(190, 170, 245, 1) !important; }
 	}
 }
 
@@ -1847,7 +1847,7 @@ const updateGridSize = (size) => {
 }
 
 .grid-view .cover-image.level-4 {
-  border-color: #FF9EFF; /* Re:Master - 更亮更鲜艳的紫粉色 */
+  border-color: rgba(190, 170, 245, 1); /* Re:Master - 更亮更鲜艳的紫粉色 */
 }
 
 /* 确保图片填满容器 */

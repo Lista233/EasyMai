@@ -109,7 +109,8 @@ export function recommendSongsByFitDs(rating, songService, chartStats, limit = 2
         allCharts.forEach(stat => {
 			
       if (stat.songId==difficulty.songId&&stat.difficulty==difficulty.difficulty) {
-        recommendedCharts.push(stat)
+        recommendedCharts.push({...stat,
+		                        'ds':difficulty.ds})
 		return;
       }
     });
@@ -152,16 +153,16 @@ export function recommendSongsByFitDs(rating, songService, chartStats, limit = 2
     
     if (song) {
       title = song.title || title;
-      
-      if (song.difficulties && 
-          chart.difficulty >= 0 && 
-          chart.difficulty < song.difficulties.length && 
-          song.difficulties[chart.difficulty]) {
-        
-        level = song.difficulties[chart.difficulty].level || level;
-        ds = song.difficulties[chart.difficulty].ds || ds;
-        totalNotes = song.difficulties[chart.difficulty].totalNotes || totalNotes;
-      }
+      ds = chart.ds || ds;
+      // if (song.difficulties && 
+      //     chart.difficulty >= 0 && 
+      //     chart.difficulty < song.difficulties.length && 
+      //     song.difficulties[chart.difficulty]) {
+      //   console.log('歌',song)
+      //   level = song.difficulties[chart.difficulty].level || level;
+       
+      //   totalNotes = song.difficulties[chart.difficulty].totalNotes || totalNotes;
+      // }
     }
     
     return {

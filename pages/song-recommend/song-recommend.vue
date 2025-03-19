@@ -2,7 +2,7 @@
 	<view class="container">
 		<!-- 头部信息 -->
 		<view class="header">
-			<view class="header-title">歌曲推荐</view>
+			<view class="header-title">推分乐曲推荐</view>
 		</view>
 		
 		<!-- 输入部分 -->
@@ -20,7 +20,7 @@
 				<view class="filter-title">筛选选项：</view>
 				<view class="filter-row">
 					<checkbox :checked="filterCompleted" @click="toggleFilterCompleted" />
-					<text class="filter-label">隐藏已完成歌曲</text>
+					<text class="filter-label">筛选乐曲</text>
 					<picker 
 						:value="completionThresholdIndex" 
 						:range="completionThresholds" 
@@ -29,7 +29,7 @@
 						class="threshold-picker"
 					>
 						<view class="picker-text" :class="{ 'disabled': !filterCompleted }">
-							达成率 ≥ {{ completionThresholds[completionThresholdIndex] }}%
+							隐藏达成率 ≥ {{ completionThresholds[completionThresholdIndex] }}%的乐曲
 						</view>
 					</picker>
 				</view>
@@ -74,22 +74,37 @@
 					<view class="chart-rank">{{ (currentPage - 1) * pageSize + index + 1 }}</view>
 					<view class="song-cover">
 						<image :src="getSongCover(chart.songId)" mode="aspectFill" class="cover-image" :class="`level-${chart.difficulty}`"></image>
+						<view class="difficulty-badge" :class="getDifficultyClass(chart.difficulty)">
+							{{ chart.ds }}
+						</view>
 					</view>
 					<view class="chart-info">
 						<view class="song-title">{{ chart.title }}</view>
 						<view class="chart-details">
-							<text class="difficulty-badge" :class="getDifficultyClass(chart.difficulty)">
-								{{ getDifficultyName(chart.difficulty) }}
-							</text>
-							<text class="chart-stats">
-								游玩次数: {{ chart.cnt }} | 
-								平均达成率: {{ chart.avg }}% | 
-								{{ activeTab === 'diff' ? 
-									'官方: ' + chart.ds + ' / 拟合: ' + chart.fit_diff + ' (差值: ' + chart.dsDifference + ')' : 
-									'拟合定数: ' + chart.fit_diff }}
-								{{ chart.score && activeTab !== 'diff' ? ' | 推荐得分: ' + chart.score : '' }}
-								{{ chart.playerAchievement ? ' | 您的达成率: ' + chart.playerAchievement + '%' : '' }}
-							</text>
+							<view class="stat-item sample-count">
+								<text class="stat-label">统计样本:</text>
+								<text class="stat-value">{{ chart.cnt }}</text>
+							</view>
+							<view class="stat-item achievement">
+								<text class="stat-label">平均达成:</text>
+								<text class="stat-value">{{ chart.avg }}%</text>
+								<text v-if="chart.playerAchievement" class="player-achievement">
+									(您: {{ chart.playerAchievement.toFixed(2) }}%)
+								</text>
+							</view>
+							<view class="stat-item difficulty">
+								<text class="stat-label">{{ activeTab === 'diff' ? '拟合定数:' : '拟合定数:' }}</text>
+								<text class="stat-value">
+									{{ activeTab === 'diff' ? 
+										// chart.ds + ' / ' + 
+										chart.fit_diff + ' (差值: ' + chart.dsDifference + ')' : 
+										chart.fit_diff }}
+								</text>
+							</view>
+							<!-- <view class="stat-item score" v-if="chart.score && activeTab !== 'diff'">
+								<text class="stat-label">推荐得分:</text>
+								<text class="stat-value">{{ chart.score }}</text>
+							</view> -->
 						</view>
 					</view>
 				</view>
@@ -142,8 +157,8 @@ const activeTab = ref('fit');
 
 // 筛选相关变量
 const filterCompleted = ref(true); // 默认启用筛选
-const completionThresholds = ['100.0', '100.5']; // 达成率阈值选项
-const completionThresholdIndex = ref(0); // 默认选择100.0%
+const completionThresholds = ['99.0','99.5','100.0', '100.5']; // 达成率阈值选项
+const completionThresholdIndex = ref(3); // 默认选择100.0%
 
 // 分页相关变量
 const currentPage = ref(1);
@@ -269,7 +284,7 @@ const generateRecommendations = async () => {
 				const achievement = playerRecordService.getAchievement(chart.songId, chart.difficulty);
 				if (achievement !== null) {
 					chart.playerAchievement = achievement;
-					console.log(`歌曲 ${chart.title} 达成率: ${achievement}%`);
+					// console.log(`歌曲 ${chart.title} 达成率: ${achievement}%`);
 				}
 			});
 			
@@ -462,6 +477,13 @@ onMounted(() => {
 	padding: 0 20rpx;
 	margin: 20rpx 0;
 	font-size: 28rpx;
+	transition: all 0.3s ease;
+}
+
+.rating-input:focus {
+	border-color: #a5b4fc;
+	box-shadow: 0 0 0 4px rgba(165, 180, 252, 0.1);
+	background: white;
 }
 
 /* 筛选选项样式 */
@@ -502,6 +524,7 @@ onMounted(() => {
 	padding: 8rpx 16rpx;
 	background-color: #e2e8f0;
 	border-radius: 6rpx;
+	transition: all 0.3s ease;
 }
 
 .picker-text.disabled {
@@ -510,14 +533,21 @@ onMounted(() => {
 
 .recommend-button {
 	margin-top: 30rpx;
-	background-color: #3b82f6;
+	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
 	color: white;
 	border: none;
-	border-radius: 10rpx;
-	height: 80rpx;
-	line-height: 80rpx;
+	border-radius: 16rpx;
+	height: 88rpx;
+	line-height: 88rpx;
 	font-size: 28rpx;
 	font-weight: 500;
+	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+	transition: all 0.3s ease;
+}
+
+.recommend-button:active {
+	transform: scale(0.98) translateY(1px);
+	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
 
 .recommendation-section {
@@ -541,10 +571,11 @@ onMounted(() => {
 	color: #64748b;
 	position: relative;
 	cursor: pointer;
+	transition: all 0.3s ease;
 }
 
 .tab-item.active {
-	color: #3b82f6;
+	color: #6366f1;
 	font-weight: 500;
 }
 
@@ -554,8 +585,9 @@ onMounted(() => {
 	bottom: -1px;
 	left: 0;
 	right: 0;
-	height: 2px;
-	background-color: #3b82f6;
+	height: 3px;
+	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+	border-radius: 3px 3px 0 0;
 }
 
 .chart-list {
@@ -565,14 +597,25 @@ onMounted(() => {
 .chart-item {
 	display: flex;
 	align-items: center;
-	padding: 20rpx;
+	padding: 24rpx;
 	border-bottom: 1px solid #f1f5f9;
 	position: relative;
 	gap: 20rpx;
+	transition: all 0.3s ease;
+	border-radius: 16rpx;
+	margin-bottom: 16rpx;
+	background: white;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
 }
 
-.chart-item:last-child {
-	border-bottom: none;
+.chart-item:hover {
+	transform: translateY(-2rpx);
+	box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.05);
+}
+
+.chart-item:active {
+	transform: scale(0.99);
+	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
 }
 
 .chart-rank {
@@ -581,48 +624,83 @@ onMounted(() => {
 	color: #64748b;
 	width: 40rpx;
 	text-align: center;
+	background: #f8fafc;
+	height: 40rpx;
+	line-height: 40rpx;
+	border-radius: 50%;
+	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
 }
 
 .song-cover {
-	width: 100rpx;
-	height: 100rpx;
-	border-radius: 10rpx;
-	overflow: hidden;
 	position: relative;
+	width: 120rpx;
+	height: 150rpx; /* 增加高度以容纳难度标签 */
+	margin-right: 16rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	flex-shrink: 0;
 }
 
 .cover-image {
-	width: 100%;
-	height: 100%;
+	width: 120rpx;
+	height: 120rpx;
 	object-fit: cover;
-	border: 3px solid transparent;
+	border: 6rpx solid transparent;
 	border-radius: 8rpx;
 	box-sizing: border-box;
+	box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 不同难度的边框颜色 */
 .cover-image.level-0 {
-	border-color: #1EA15D; /* Basic - 绿色 */
+	border-color: rgba(46, 204, 113, 1);
+	box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
 }
 
 .cover-image.level-1 {
-	border-color: #F6B40C; /* Advanced - 黄色 */
+	border-color: rgba(241, 196, 15, 1);
+	box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
 }
 
 .cover-image.level-2 {
-	border-color: #E9485D; /* Expert - 红色 */
+	border-color: rgba(231, 76, 60, 1);
+	box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
 }
 
 .cover-image.level-3 {
-	border-color: #9E45E2; /* Master - 紫色 */
+	border-color: rgba(155, 89, 182, 1);
+	box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
 }
 
 .cover-image.level-4 {
-	border-color: #FF9EFF; /* Re:Master - 偏白的紫粉色 */
+	border-color: rgba(190, 170, 245, 1);
+	box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
+}
+
+.difficulty-badge {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 4rpx 12rpx;
+	border-radius: 6rpx;
+	font-size: 20rpx;
+	color: white;
+	display: inline-block;
+	font-weight: 500;
+	box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+	white-space: nowrap;
+	width: 90%;
+	text-align: center;
 }
 
 .chart-info {
 	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 8rpx;
+	overflow: hidden;
 }
 
 .song-title {
@@ -630,6 +708,9 @@ onMounted(() => {
 	margin-bottom: 10rpx;
 	font-size: 28rpx;
 	color: #1e293b;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .chart-details {
@@ -640,38 +721,66 @@ onMounted(() => {
 	gap: 8rpx;
 }
 
-.difficulty-badge {
-	padding: 4rpx 12rpx;
+.stat-item {
+	display: flex;
+	align-items: center;
+	background-color: #f8fafc;
+	padding: 6rpx 12rpx;
 	border-radius: 6rpx;
-	margin-right: 8px;
-	font-size: 20rpx;
-	color: white;
-	display: inline-block;
+	margin-bottom: 4rpx;
+}
+
+.stat-label {
+	color: #64748b;
+	margin-right: 8rpx;
+	font-size: 22rpx;
+}
+
+.stat-value {
+	color: #1e293b;
 	font-weight: 500;
 }
 
+.player-achievement {
+	margin-left: 8rpx;
+	color: #6366f1;
+	font-weight: 500;
+}
+
+.sample-count {
+	background-color: #f1f5f9;
+}
+
+.achievement {
+	background-color: #f0f9ff;
+}
+
+.difficulty {
+	background-color: #f0fdf4;
+}
+
+.score {
+	background-color: #fef2f2;
+}
+
 .basic {
-	background-color: #1EA15D;
+	background: linear-gradient(135deg, #2ecc71, #27ae60);
 }
 
 .advanced {
-	background-color: #F6B40C;
+	background: linear-gradient(135deg, #f1c40f, #f39c12);
 }
 
 .expert {
-	background-color: #E9485D;
+	background: linear-gradient(135deg, #e74c3c, #c0392b);
 }
 
 .master {
-	background-color: #9E45E2;
+	background: linear-gradient(135deg, #9b59b6, #8e44ad);
 }
 
 .remaster {
-	background-color: #FF9EFF;
-}
-
-.chart-stats {
-	line-height: 1.5;
+	background: linear-gradient(135deg, #d6c0ff, #c4b0ff);
 }
 
 /* 无结果提示 */
@@ -681,13 +790,14 @@ onMounted(() => {
 	color: #64748b;
 	font-size: 28rpx;
 	background-color: #f8fafc;
-	border-radius: 10rpx;
+	border-radius: 16rpx;
 	margin: 20rpx 0;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
 }
 
 /* 分页样式 */
 .pagination {
-	margin-top: 30rpx;
+	margin-top: 40rpx;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -697,6 +807,9 @@ onMounted(() => {
 .page-info {
 	font-size: 26rpx;
 	color: #64748b;
+	background: rgba(248, 250, 252, 0.8);
+	padding: 8rpx 20rpx;
+	border-radius: 20rpx;
 }
 
 .total-count {
@@ -710,17 +823,25 @@ onMounted(() => {
 }
 
 .page-btn {
-	background-color: #f1f5f9;
+	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 	color: #64748b;
 	border: 1px solid #e2e8f0;
-	border-radius: 8rpx;
-	padding: 10rpx 30rpx;
-	font-size: 24rpx;
-	transition: all 0.2s;
+	border-radius: 12rpx;
+	padding: 12rpx 32rpx;
+	font-size: 26rpx;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.02);
 }
 
 .page-btn:not(:disabled):active {
-	background-color: #e2e8f0;
+	transform: scale(0.98) translateY(1px);
+	background: #e2e8f0;
+}
+
+.page-btn:not(:disabled):hover {
+	background: #e2e8f0;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
 .page-btn:disabled {
@@ -733,10 +854,18 @@ onMounted(() => {
 }
 
 .nav-button {
-	background-color: #4CAF50;
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
 	color: white;
 	border: none;
-	border-radius: 5px;
-	padding: 10px 0;
+	border-radius: 16rpx;
+	padding: 20rpx 0;
+	font-weight: 500;
+	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+	transition: all 0.3s ease;
+}
+
+.nav-button:active {
+	transform: scale(0.98) translateY(1px);
+	box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
 }
 </style>
