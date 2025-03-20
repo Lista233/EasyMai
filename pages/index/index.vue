@@ -21,7 +21,8 @@ import { reactive, ref } from 'vue';
 		'/pages/user-center/user-center',
 		'/pages/login/login',
 		'/pages/PlayerRecords/PlayerRecords',
-		'/pages/song-recommend/song-recommend'
+		'/pages/song-recommend/song-recommend',
+		'/pages/bilibili/bilibili'
 	]
 	
 	function navTo(url)

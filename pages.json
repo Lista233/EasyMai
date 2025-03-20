@@ -1,6 +1,12 @@
 {
 	"pages": [
 		{
+			"path": "pages/splash/splash",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path" : "pages/index/index",
 			"style" : 
 			{
@@ -71,6 +77,15 @@
 				"navigationBarTitleText" : ""
 			}
 		},
+		
+		{
+			"path" : "pages/webview/update",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		
 		{
 			"path" : "pages/user-center/user-center",
 			"style" : 
@@ -94,6 +109,13 @@
 		},
 		{
 			"path" : "pages/song-recommend/song-recommend",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/bilibili/bilibili",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""

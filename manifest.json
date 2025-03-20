@@ -2,8 +2,8 @@
     "name" : "easyMai",
     "appid" : "__UNI__9441491",
     "description" : "",
-    "versionName" : "0.1.2",
-    "versionCode" : 12,
+    "versionName" : "0.1.3",
+    "versionCode" : 13,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -12,7 +12,7 @@
         "compilerVersion" : 3,
         "splashscreen" : {
             "alwaysShowBeforeRender" : true,
-            "waiting" : true,
+            "waiting" : false,
             "autoclose" : true,
             "delay" : 0
         },
@@ -79,6 +79,9 @@
                         "spotlight@3x" : "unpackage/res/icons/120x120.png"
                     }
                 }
+            },
+            "splashscreen" : {
+                "androidStyle" : "common"
             }
         }
     },

@@ -1,6 +1,10 @@
 <script setup>
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
 import * as maiApi from './api/maiapi.js'
+import {addAPICount} from '@/api/myapi.js'
+import { ref, onMounted } from 'vue'
+// 导入 uni-popup 组件
+import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
 
 	/*
 	本地存储:
@@ -103,18 +107,24 @@ import * as maiApi from './api/maiapi.js'
 		}
 	}
 
+
+
+
+
 	// App 生命周期
 	onLaunch(() => {
 		console.log('App Launch')
 		//uni.clearStorageSync()
 		// 初始化所有数据
+		addAPICount('launch')
 		initStorage()
 		initUid()
 		initMusicData()
 		initChartStats()
 		initAliasData() // 添加别名数据初始化
-	
 	})
+
+
 
 	onShow(() => {
 		console.log('App Show')
@@ -125,6 +135,10 @@ import * as maiApi from './api/maiapi.js'
 		console.log('App Hide')
 	})
 </script>
+
+<template>
+
+</template>
 
 <style>
 	/*每个页面公共css */

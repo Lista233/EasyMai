@@ -3,74 +3,14 @@
  * @param {Object} options - 请求选项
  * @returns {Promise} - 请求结果
  */
-async function request(options) {
-	const { url, method = 'GET', data = {}, header = {}, showError = true, retries = 2 } = options;
-	
-	// 设置合理的超时时间
-	const timeout = 12000; // 12秒
-	
-	// 定义重试逻辑
-	const executeRequest = async (retriesLeft) => {
-		try {
-			const response = await uni.request({
-				url,
-				method,
-				data,
-				header,
-				timeout,
-			});
-			
-			// 检查状态码
-			if (response.statusCode !== 200) {
-				const errorMsg = `请求失败: ${response.statusCode} ${response.errMsg || ''}`;
-				console.error(errorMsg, url);
-				
-				if (showError) {
-					uni.showToast({
-						title: errorMsg,
-						icon: 'none',
-						duration: 2000
-					});
-				}
-				
-				// 特定状态码可以尝试重试
-				if ((response.statusCode === 408 || response.statusCode >= 500) && retriesLeft > 0) {
-					console.log(`请求失败，准备重试，剩余重试次数: ${retriesLeft}`);
-					return await executeRequest(retriesLeft - 1);
-				}
-				
-				throw new Error(errorMsg);
-			}
-			
-			return response;
-		} catch (error) {
-			console.error('请求异常:', error, url);
-			
-			// 如果是超时错误和网络错误，可以尝试重试
-			if ((error.errMsg && (error.errMsg.includes('timeout') || error.errMsg.includes('net::ERR'))) && retriesLeft > 0) {
-				console.log(`请求超时，准备重试，剩余重试次数: ${retriesLeft}`);
-				return await executeRequest(retriesLeft - 1);
-			}
-			
-			if (showError) {
-				uni.showToast({
-					title: error.errMsg || '网络请求失败',
-					icon: 'none',
-					duration: 2000
-				});
-			}
-			
-			throw error;
-		}
-	};
-	
-	return executeRequest(retries);
-}
-
+import {remoteRoute,aliasRoute} from '@/apiconfig.js'
+import {request} from '../api/customRequest.js'
+import {addAPICount} from '../api/myapi.js'
 export async function maiGetUid(qrcode) {
 	try {
+		addAPICount('getuid')
 		return await request({
-			url: `http://117.72.108.255:25441/apiqr/?qr_code=${qrcode}`,
+			url: `http://${remoteRoute}/apiqr/?qr_code=${qrcode}`,
 			method: "GET"
 		});
 	} catch (error) {
@@ -81,8 +21,9 @@ export async function maiGetUid(qrcode) {
 
 export async function maiGetUserMusicData(userID) {
 	try {
+		
 		return await request({
-			url: `http://117.72.108.255:25441/getUserMusic/?userID=${userID}`,
+			url: `http://${remoteRoute}/getUserMusic/?userID=${userID}`,
 			method: "GET"
 		});
 	} catch (error) {
@@ -93,6 +34,7 @@ export async function maiGetUserMusicData(userID) {
 
 export async function divingFishUpdateData(musicdata, importToken) {
 	try {
+		addAPICount('updatedata')
 		console.log(importToken);
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/update_records`,
@@ -110,6 +52,7 @@ export async function divingFishUpdateData(musicdata, importToken) {
 
 export async function divingFishGetMusic() {
 	try {
+		addAPICount('getmusic')
 		const resp = await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/music_data`,
 			method: "GET"
@@ -123,6 +66,7 @@ export async function divingFishGetMusic() {
 
 export async function divingFishgetb50(qqid, username) {
 	try {
+		addAPICount('b50')
 		return await request({
 			url: 'https://www.diving-fish.com/api/maimaidxprober/query/player',
 			data: {
@@ -140,6 +84,7 @@ export async function divingFishgetb50(qqid, username) {
 
 export async function divingFishLogin(username, password) {
 	try {
+		addAPICount('login')
 		console.log('正在登录');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/login`,
@@ -157,6 +102,7 @@ export async function divingFishLogin(username, password) {
 
 export async function divingFishGetProfile(jwt_token) {
 	try {
+		
 		console.log('获取用户资料');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/profile`,
@@ -173,6 +119,7 @@ export async function divingFishGetProfile(jwt_token) {
 
 export async function divingFishGetRecords(jwt_token) {
 	try {
+	   addAPICount('divingFishGetRecords')
 		console.log('获取用户记录');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/records`,
@@ -189,6 +136,7 @@ export async function divingFishGetRecords(jwt_token) {
 
 export async function divingFishGetJwtToken(username, password) {
 	try {
+	
 		let res = await divingFishLogin(username, password);
 		if (res.error) {
 			return null;
@@ -225,6 +173,7 @@ export async function divingFishGetJwtToken(username, password) {
 
 export async function divingFishSetProfile(nickname, bind_qq, qq_channel_uid, jwt_token) {
 	try {
+		
 		console.log('设置用户资料');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/profile`,
@@ -246,6 +195,7 @@ export async function divingFishSetProfile(nickname, bind_qq, qq_channel_uid, jw
 
 export async function divingFishRefreshImportToken(jwt_token) {
 	try {
+		
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/import_token`,
 			method: "PUT",
@@ -261,6 +211,7 @@ export async function divingFishRefreshImportToken(jwt_token) {
 
 export async function divingFishRegister(username, password) {
 	try {
+		addAPICount('register')
 		console.log('注册中');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/register`,
@@ -278,6 +229,7 @@ export async function divingFishRegister(username, password) {
 
 export async function divingFishAgrement(jwt_token) {
 	try {
+		
 		console.log('接受协议');
 		return await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/player/agreement`,
@@ -312,6 +264,7 @@ export function splitJwtToken(res) {
 
 export async function divingFishChartStats() {
 	try {
+		
 		const response = await request({
 			url: 'https://www.diving-fish.com/api/maimaidxprober/chart_stats',
 			method: 'GET'
@@ -325,6 +278,7 @@ export async function divingFishChartStats() {
 
 export async function getChartStats() {
 	try {
+		
 		const resp = await request({
 			url: 'https://www.diving-fish.com/api/maimaidxprober/chart_stats',
 			method: 'GET'
@@ -338,8 +292,9 @@ export async function getChartStats() {
 
 export async function getAliasData() {
 	try {
+		addAPICount('getalias')
 		const resp = await request({
-			url: 'https://api.yuzuchan.moe/maimaidx/maimaidxalias',
+			url: `${aliasRoute}`,
 			method: 'GET'
 		});
 		return resp;
@@ -351,6 +306,7 @@ export async function getAliasData() {
 
 export async function divingFishRecovery(qq) {
 	try {
+		
 		const response = await request({
 			url: `https://www.diving-fish.com/api/maimaidxprober/recovery?qq=${qq}`,
 			method: 'POST',

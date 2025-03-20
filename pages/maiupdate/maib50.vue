@@ -605,6 +605,9 @@ const getRatingClass = () => {
 	//传入歌曲数据进行水鱼传分
 	async function updateMusicData(musicScoreList){
 		let res=await maiApi.divingFishUpdateData(musicScoreList,importToken.value)
+		records.value=await maiApi.divingFishGetRecords(jwt_token.value)
+		// console.log(records.value)
+		uni.setStorageSync('divingFish_records',records.value)
 		return res;
 	}
 	

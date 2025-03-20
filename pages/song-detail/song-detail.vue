@@ -171,14 +171,15 @@
         <!-- 工具栏模块 -->
         <view class="tools-section">
           <view class="tools-container">
+			  <button class="tool-btn" :class="difficulties[currentDiffIndex].class" @click="navToBiliBili(songData.title)">
+			      <text class="iconfont icon-alias"></text>
+			      跳转B站查看视频
+			</button>
             <button class="tool-btn alias-btn" @click="showAliasDialog" :class="difficulties[currentDiffIndex].class">
               <text class="iconfont icon-alias"></text>
               查看别名
             </button>
-    <!--       <button class="tool-btn" :class="difficulties[currentDiffIndex].class">
-              <text class="iconfont icon-alias"></text>
-              查看视频
-            </button> -->
+    
           </view>
         </view>
       </view>
@@ -211,9 +212,10 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import SongService from '@/utils/songService.js'
 import playerRecordService from '@/utils/playerRecordService.js'
 import * as maiApi from '../../api/maiapi.js'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onHide, onShow } from '@dcloudio/uni-app'
 import { getCoverUrl, isLoading } from '@/util/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
+import {openBiliSearch} from '@/utils/biliUtils.js'
 
 // 加载状态控制
 const pageLoaded = ref(false)  // 页面基础结构是否加载完成
@@ -693,6 +695,49 @@ const copyTitle = () => {
     })
   }
 }
+
+function navToBiliBili(keyword) {
+  // 显示加载弹窗
+  uni.showLoading({
+    title: '正在跳转B站...',
+    mask: true
+  });
+  
+  // 设置超时自动关闭
+  const timeout = setTimeout(() => {
+    uni.hideLoading();
+  }, 10000);
+
+  // 使用 uni-app 的页面生命周期来处理隐藏和显示
+  const hideCallback = () => {
+    // 页面隐藏时不关闭loading
+    clearTimeout(timeout);
+  };
+
+  const showCallback = () => {
+    // 页面再次显示时关闭loading
+    uni.hideLoading();
+    // 清除事件监听
+    uni.$off('page-show', showCallback);
+    uni.$off('page-hide', hideCallback);
+  };
+
+  // 注册页面隐藏和显示的监听
+  uni.$once('page-hide', hideCallback);
+  uni.$once('page-show', showCallback);
+  
+  // 跳转到B站
+  openBiliSearch(keyword);
+}
+
+// 在页面的生命周期钩子中
+onHide(() => {
+  uni.$emit('page-hide');
+});
+
+onShow(() => {
+  uni.$emit('page-show');
+});
 
 // 添加复制ID功能
 const copyId = () => {
@@ -2152,7 +2197,7 @@ const copyId = () => {
      
       
       .tool-btn {
-        min-height: 260rpx;
+        min-height: 130rpx;
         padding: 12rpx;
         width: 100%;
         text-align: center;
@@ -2161,7 +2206,7 @@ const copyId = () => {
         align-items: center;
         justify-content: center;
         gap: 6rpx;
-        
+        line-height: 30rpx;
         border-radius: 8rpx;
         transition: all 0.3s ease;
         padding: 12rpx;

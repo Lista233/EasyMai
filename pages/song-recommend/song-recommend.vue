@@ -22,20 +22,18 @@
 			<view class="filter-options">
 				<view class="filter-header">
 					<view class="filter-title">筛选选项：</view>
-					<view class="filter-controls">
-						<checkbox :checked="filterCompleted" @click="toggleFilterCompleted" />
-						<text class="filter-label">筛选乐曲</text>
-					</view>
 				</view>
 				<picker 
 					:value="completionThresholdIndex" 
 					:range="completionThresholds" 
 					@change="onThresholdChange"
-					:disabled="!filterCompleted"
 					class="threshold-picker"
 				>
-					<view class="picker-text" :class="{ 'disabled': !filterCompleted }">
-						隐藏达成率 ≥ {{ completionThresholds[completionThresholdIndex] }}%的乐曲
+					<view class="picker-text">
+						{{ completionThresholds[completionThresholdIndex] === '不筛选' ? 
+							'不筛选乐曲' : 
+							`隐藏达成率 ≥ ${completionThresholds[completionThresholdIndex]}%的乐曲` 
+						}}
 					</view>
 				</picker>
 			</view>
@@ -162,9 +160,8 @@ const recommendations = ref(null);
 const activeTab = ref('fit');
 
 // 筛选相关变量
-const filterCompleted = ref(true); // 默认启用筛选
-const completionThresholds = ['99.0','99.5','100.0', '100.5']; // 达成率阈值选项
-const completionThresholdIndex = ref(3); // 默认选择100.0%
+const completionThresholds = ['不筛选', '99.0', '99.5', '100.0', '100.5']; // 修改"0"为"不筛选"
+const completionThresholdIndex = ref(4); // 默认选择不筛选
 
 // 分页相关变量
 const currentPage = ref(1);
@@ -182,8 +179,10 @@ const activeRecommendations = computed(() => {
 const filteredRecommendations = computed(() => {
 	if (!activeRecommendations.value) return [];
 	
-	// 如果不启用筛选或玩家数据未初始化，返回全部推荐
-	if (!filterCompleted.value || !isPlayerDataInitialized.value) return activeRecommendations.value;
+	// 如果选择了"不筛选"或玩家数据未初始化，返回全部推荐
+	if (completionThresholds[completionThresholdIndex.value] === '不筛选' || !isPlayerDataInitialized.value) {
+		return activeRecommendations.value;
+	}
 	
 	// 获取选中的达成率阈值
 	const threshold = parseFloat(completionThresholds[completionThresholdIndex.value]);
@@ -191,15 +190,10 @@ const filteredRecommendations = computed(() => {
 	
 	// 筛选掉已达到阈值的歌曲
 	const filtered = activeRecommendations.value.filter(chart => {
-		// 获取玩家对该歌曲的达成率
 		const achievement = playerRecordService.getAchievement(chart.songId, chart.difficulty);
-		// console.log(`歌曲 ${chart.title} (${chart.songId}, 难度 ${chart.difficulty}) 达成率: ${achievement}`);
-		
-		// 如果没有达成率记录，或者达成率低于阈值，则保留该推荐
 		return achievement === null || achievement < threshold;
 	});
 	
-	// console.log(`筛选前: ${activeRecommendations.value.length} 首, 筛选后: ${filtered.length} 首`);
 	return filtered;
 });
 
@@ -225,15 +219,9 @@ watch(activeTab, () => {
 });
 
 // 监听筛选条件变化，重置页码
-watch([filterCompleted, completionThresholdIndex], () => {
+watch([completionThresholdIndex], () => {
 	currentPage.value = 1;
 });
-
-// 切换筛选开关
-const toggleFilterCompleted = () => {
-	filterCompleted.value = !filterCompleted.value;
-	console.log('筛选状态:', filterCompleted.value ? '启用' : '禁用');
-};
 
 // 更改达成率阈值
 const onThresholdChange = (e) => {
@@ -252,9 +240,16 @@ const generateRecommendations = async () => {
 	}
 
 	try {
+		// 显示加载框
+		uni.showLoading({
+			title: '生成推荐中...',
+			mask: true // 添加遮罩防止重复点击
+		});
+
 		// 获取谱面统计数据
 		const chartStats = uni.getStorageSync('chartStats');
 		if (!chartStats) {
+			uni.hideLoading();
 			uni.showToast({
 				title: '未找到谱面统计数据',
 				icon: 'none'
@@ -266,6 +261,7 @@ const generateRecommendations = async () => {
 		if (!songService.value) {
 			const musicData = uni.getStorageSync('musicData');
 			if (!musicData) {
+				uni.hideLoading();
 				uni.showToast({
 					title: '未找到歌曲数据',
 					icon: 'none'
@@ -280,7 +276,7 @@ const generateRecommendations = async () => {
 			parseFloat(userRating.value),
 			songService.value,
 			chartStats,
-			200 // 增加返回的记录数量
+			200
 		);
 		
 		// 为每个推荐添加玩家达成率信息
@@ -290,7 +286,6 @@ const generateRecommendations = async () => {
 				const achievement = playerRecordService.getAchievement(chart.songId, chart.difficulty);
 				if (achievement !== null) {
 					chart.playerAchievement = achievement;
-					// console.log(`歌曲 ${chart.title} 达成率: ${achievement}%`);
 				}
 			});
 			
@@ -306,7 +301,13 @@ const generateRecommendations = async () => {
 		
 		// 重置页码
 		currentPage.value = 1;
+
+		// 隐藏加载框
+		uni.hideLoading();
+
 	} catch (error) {
+		// 发生错误时隐藏加载框
+		uni.hideLoading();
 		console.error('生成推荐失败:', error);
 		uni.showToast({
 			title: '生成推荐失败',
