@@ -9,8 +9,8 @@
         </view>
         <view class="user-details">
           <view class="username">{{ nickname || username || '请先登录' }}</view>
-          <view class="user-id" v-if="uid !== -1">UID: {{ uid }}</view>
-          <view v-show='uid==(-1||null)&&isLoggedIn' class="user-id hint-text" v-else @click="handleQrCode">绑定二维码获取UID</view>
+          <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">UID: {{ uid }}</view>
+          <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码获取UID</view>
         </view>
         <RatingDisplay 
           :b35rating="b35rating" 
@@ -262,6 +262,9 @@ onLoad(async () => {
 	importToken.value = uni.getStorageSync('divingFish_importToken');
 	records.value = uni.getStorageSync('divingFish_records');
 	uid.value = uni.getStorageSync('uid')
+	// 判断uid是否为数字，如果不是则设置为-1
+	uid.value = typeof uid.value === 'number' ? uid.value : -1;
+	console.log('uid', uid.value)
 	username.value = uni.getStorageSync('divingFish_username')
 	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
@@ -476,23 +479,55 @@ function handleAccountSettings() {
 }
 
 // 处理设置提交
-function handleSettingsConfirm(formData) {
+ async function handleSettingsConfirm(formData) {
   // 更新设置
-  nickname.value = formData.nickname;
-  importToken.value = formData.importToken;
-  qqid.value = formData.bind_qq;
-  qq_channel_uid.value = formData.qq_channel_uid;
-  
-  // 保存到本地存储
-  uni.setStorageSync('divingFish_nickname', formData.nickname);
-  uni.setStorageSync('divingFish_importToken', formData.importToken);
-  uni.setStorageSync('divingFish_qqid', formData.bind_qq);
-  uni.setStorageSync('qq_channel_uid', formData.qq_channel_uid);
-  
-  uni.showToast({
-    title: '设置已保存',
-    icon: 'success'
-  });
+try {
+		if (!jwt_token.value) {
+			uni.showToast({
+				title: '登录已过期，请重新登录',
+				icon: 'none',
+				duration: 2000
+			});
+			return;
+		}
+		
+		const res = await maiApi.divingFishSetProfile(formData.nickname,formData.bind_qq,formData.qq_channel_uid,jwt_token.value)
+		console.log(res);
+		if (res.statusCode==200) {  // 成功时会返回用户信息
+			// 更新本地存储和响应式数据
+			nickname.value = res.data.nickname;
+			qqid.value = res.data.bind_qq;
+			importToken.value = res.data.import_token;
+			qq_channel_uid.value =res.data.qq_channel_uid
+			uni.setStorageSync('divingFish_nickname', nickname.value);
+			uni.setStorageSync('divingFish_qqid', qqid.value);
+			uni.setStorageSync('divingFish_importToken', importToken.value);
+			uni.setStorageSync('qq_channel_uid', res.data.qq_channel_uid);
+			
+			// 显示成功提示
+			uni.showToast({
+				title: '设置已更新',
+				icon: 'success',
+				duration: 2000
+			});
+			  showSettingsModal.value = false;
+			
+		}else
+		{
+			throw(res.data);
+		}
+		
+	
+	} catch (error) {
+		
+		uni.showModal({
+			title: '更新失败',
+			content: '网络请求失败或QQ/频道ID已被绑定',
+			showCancel: false,
+			confirmText: '知道了',
+			confirmColor: '#818cf8'
+		});
+	}
 }
 
 // 刷新Token
@@ -501,10 +536,11 @@ async function refreshToken() {
     uni.showModal({
     	title:'重置导入Token',
     	content:'您确定要重置导入Token吗,这会使你原来的Token失效',
-    	success:((e)=>{
+    	success:(async(e)=>{
     		if(e.confirm){
-    	  maiApi.divingFishRefreshImportToken(jwt_token.value)
-          setProfile(jwt_token.value)
+    	   let res=await maiApi.divingFishRefreshImportToken(jwt_token.value)
+    	
+    	   importToken.value=res.data.token;
 		  uni.showToast({
 		    title: 'Token已更新',
 		    icon: 'success'

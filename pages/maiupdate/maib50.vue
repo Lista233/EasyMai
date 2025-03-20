@@ -1,12 +1,12 @@
 <template>
 	<view id="index">
 		<view class="button-group">
-			<button class="nav-btn refresh-btn" @click="handleRefresh">生成B50</button>
+			<button class="nav-btn refresh-btn" v-show="jwt_token" @click="handleRefresh">生成B50</button>
 			<!-- <button class="save-btn" @click="saveAsImage()">保存为图片</button> -->
 			<button class="nav-btn bind-btn" @click="toggleBindForm"> 
 			<text class="btn-text">{{ jwt_token ? '账号设置' : '绑定账号' }}</text>
 			</button>
-			<button class="nav-btn update-btn" @click="navigateToUpdate">音游地图</button>
+			<button class="nav-btn update-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
 		</view>
 		
 		<!-- 绑定账号表单（下拉式） -->
@@ -604,10 +604,9 @@ const getRatingClass = () => {
 	
 	//传入歌曲数据进行水鱼传分
 	async function updateMusicData(musicScoreList){
-		let res=await maiApi.divingFishUpdateData(musicScoreList,importToken.value)
-		records.value=await maiApi.divingFishGetRecords(jwt_token.value)
-		// console.log(records.value)
-		uni.setStorageSync('divingFish_records',records.value)
+		
+		let res = await maiApi.divingFishUpdateData(musicScoreList, importToken.value);
+		
 		return res;
 	}
 	
@@ -652,25 +651,28 @@ async function divingFishUpdate()
 			})
 			
 			let muiscList=await getUserMusicData();
-			uni.hideLoading();
+		
 			console.log("muiscList:"+muiscList);
 			if(!muiscList) {
+				uni.hideLoading();
 				uni.showToast({
 					title:"用户信息错误",
-					icon:"none",
+					icon:"fail",
 					position:"center"
 				})
 				return
 			}
-			
+				
 			let res=await updateMusicData(muiscList)
 			console.log(res)
-			
+			records.value = await maiApi.divingFishGetRecords(jwt_token.value);
+			console.log(records.value);
+			uni.setStorageSync('divingFish_records', records.value);
+			uni.hideLoading();
 			if(res.data.message=="更新成功"){
 				uni.showToast({
 					title:"上传成功",
-					icon:"none",
-					position:"center"
+					icon:"success"
 				})
 			} else {
 				uni.showToast({
@@ -681,8 +683,8 @@ async function divingFishUpdate()
 			}
 		} catch (error) {
 			uni.showToast({
-				title:"网络错误，请重试",
-				icon:"none",
+				title:"网络错误或token失效,请尝试重新登录",
+				icon:"fail",
 				position:"center"
 			})
 		} finally {
@@ -908,14 +910,15 @@ async function handleSettingsSubmit() {
 	}
 }
 
-const refreshImportToken = () => {
+ const refreshImportToken = () => {
 	uni.showModal({
 		title:'重置导入Token',
 		content:'您确定要重置导入Token吗,这会使你原来的Token失效',
-		success:((e)=>{
+		success:(async(e)=>{
 			if(e.confirm){
-		  maiApi.divingFishRefreshImportToken(jwt_token.value)
-	      setProfile(jwt_token.value)
+		  let res=await maiApi.divingFishRefreshImportToken(jwt_token.value)
+		  console.log(res);
+	      importToken.value=res.data.token;
 		  }
 		}),
 	})

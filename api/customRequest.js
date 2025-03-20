@@ -49,7 +49,7 @@ export async function request(options) {
 			
 			if (showError) {
 				uni.showToast({
-					title: error.errMsg || '网络请求失败',
+					title: '网络请求失败,请检查网络连接'+error.errMsg || '网络请求失败',
 					icon: 'none',
 					duration: 2000
 				});
