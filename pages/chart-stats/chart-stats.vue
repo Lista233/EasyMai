@@ -1,17 +1,16 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<text class="title">谱面统计数据</text>
+			<text class="title">热门乐曲排行榜</text>
 		</view>
 		
-		<!-- 按游玩次数排序的前20首歌曲 -->
 		<view class="stats-section">
-			<view class="section-title">按游玩次数排序的前20首歌曲</view>
+			<view class="section-title">按游玩次数排序的歌曲</view>
 			<view class="loading-indicator" v-if="loading">加载中...</view>
 			
 			<view class="chart-list" v-else>
-				<view v-for="(chart, index) in topCharts" :key="index" class="chart-item" @click="navigateToDetail(chart.songId, chart.difficulty)">
-					<view class="chart-rank">{{ index + 1 }}</view>
+				<view v-for="(chart, index) in paginatedCharts" :key="index" class="chart-item" @click="navigateToDetail(chart.songId, chart.difficulty)">
+					<view class="chart-rank">{{ (currentPage - 1) * pageSize + index + 1 }}</view>
 					<view class="chart-info">
 						<view class="song-title">{{ getSongTitle(chart.songId) }}</view>
 						<view class="chart-details">
@@ -27,14 +26,33 @@
 					</view>
 				</view>
 			</view>
-		</view>
-		
-		<!-- 简化列表 -->
-		<view class="stats-section">
-			<view class="section-title">简化列表 (ID和难度)</view>
-			<view class="simple-list">
-				<view v-for="(item, index) in simpleList.slice(0, 10)" :key="index" class="simple-item">
-					歌曲ID: {{ item.songId }}, 难度: {{ getDifficultyName(item.difficulty) }}
+
+			<!-- 分页组件 -->
+			<view class="pagination-container" v-if="!loading && topCharts.length > 0">
+				<view class="pagination-wrapper">
+					<view class="page-controls">
+						<view class="page-input-container">
+							<input 
+								type="number" 
+								v-model="inputPage"
+								class="page-input"
+								@blur="handlePageInputChange"
+							/>
+							<text class="page-total">/ {{ totalPages }}</text>
+						</view>
+						
+						<button class="page-btn" 
+							:disabled="currentPage === 1"
+							@click="onPageChange({ current: currentPage - 1 })">
+							上一页
+						</button>
+						
+						<button class="page-btn" 
+							:disabled="currentPage === totalPages"
+							@click="onPageChange({ current: currentPage + 1 })">
+							下一页
+						</button>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -42,15 +60,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { sortChartStatsByPlayCount, getSortedChartList } from '@/utils/chartStatsUtils';
 import SongService from '@/utils/SongService';
 
 // 状态变量
 const loading = ref(true);
 const topCharts = ref([]);
-const simpleList = ref([]);
 const songService = ref(null);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const inputPage = ref('1');
 
 // 获取歌曲标题
 const getSongTitle = (songId) => {
@@ -105,7 +125,6 @@ const initData = async () => {
 	loading.value = true;
 	
 	try {
-		// 从本地存储获取谱面统计数据
 		const stats = uni.getStorageSync('chartStats');
 		if (!stats) {
 			uni.showToast({
@@ -115,14 +134,9 @@ const initData = async () => {
 			return;
 		}
 		
-		// 使用工具函数处理数据
 		const sortedCharts = sortChartStatsByPlayCount(stats);
-		topCharts.value = sortedCharts.slice(0, 20); // 只显示前20个
+		topCharts.value = sortedCharts;
 		
-		// 获取简化列表
-		simpleList.value = getSortedChartList(stats);
-		
-		// 使用静态导入的 SongService
 		const musicData = uni.getStorageSync('musicData');
 		if (musicData) {
 			songService.value = new SongService(musicData);
@@ -142,11 +156,48 @@ const initData = async () => {
 onMounted(() => {
 	initData();
 });
+
+// 分页相关逻辑
+const paginatedCharts = computed(() => {
+	const start = (currentPage.value - 1) * pageSize.value;
+	const end = start + pageSize.value;
+	return topCharts.value.slice(start, end);
+});
+
+const totalPages = computed(() => Math.ceil(topCharts.value.length / pageSize.value));
+
+const handlePageInputChange = () => {
+	let page = parseInt(inputPage.value);
+	
+	// 验证输入的页码
+	if (isNaN(page) || page < 1) {
+		page = 1;
+	} else if (page > totalPages.value) {
+		page = totalPages.value;
+	}
+	
+	// 更新当前页码和输入框的值
+	currentPage.value = page;
+	inputPage.value = String(page);
+};
+
+const onPageChange = (e) => {
+	currentPage.value = e.current
+	inputPage.value = String(e.current)
+}
+
+// 监听当前页变化,同步输入框的值
+watch(currentPage, (newPage) => {
+	inputPage.value = String(newPage);
+});
 </script>
 
 <style>
 .container {
 	padding: 20px;
+	padding-bottom: 100px;
+	background-color: #f5f5f5;
+	min-height: 100vh;
 }
 
 .header {
@@ -248,7 +299,7 @@ onMounted(() => {
 }
 
 .remaster {
-	background-color: #BA1A1A;
+	background-color: rgba(190, 170, 245, 1);
 }
 
 .simple-list {
@@ -259,5 +310,65 @@ onMounted(() => {
 	padding: 8px 0;
 	border-bottom: 1px solid #eee;
 	font-size: 14px;
+}
+
+.pagination-container {
+	position: fixed;
+	bottom: 20px;
+	left: 0;
+	right: 0;
+	display: flex;
+	justify-content: center;
+	z-index: 100;
+}
+
+.pagination-wrapper {
+	background: rgba(255, 255, 255, 0.9);
+	backdrop-filter: blur(10px);
+	padding: 10px 20px;
+	border-radius: 40px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+	transform: scale(0.9);
+}
+
+.page-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.page-btn {
+	background: #6366f1;
+	color: white;
+	border: none;
+	padding: 6px 16px;
+	border-radius: 20px;
+	font-size: 14px;
+	min-width: 80px;
+}
+
+.page-btn:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+}
+
+.page-input-container {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.page-input {
+	width: 50px;
+	height: 30px;
+	text-align: center;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+.page-total {
+	font-size: 14px;
+	color: #666;
 }
 </style> 

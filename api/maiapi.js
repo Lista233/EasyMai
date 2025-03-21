@@ -320,3 +320,65 @@ export async function divingFishRecovery(qq) {
 		return { error };
 	}
 }
+
+/**
+ * 刷新所有基础数据 API
+ * 包括：音乐数据、别名数据、谱面统计数据
+ * @returns {Promise<Object>} 包含刷新结果的对象
+ */
+export async function refreshAllBaseData() {
+	const results = {
+		success: true,
+		musicData: false,
+		aliasData: false,
+		chartStats: false,
+		errors: []
+	};
+
+	try {
+		// 刷新音乐数据
+		try {
+			const musicData = await divingFishGetMusic();
+			uni.setStorageSync('musicData', musicData);
+			results.musicData = true;
+		} catch (error) {
+			console.error('刷新音乐数据失败:', error);
+			results.errors.push({ type: 'musicData', error });
+			results.success = false;
+		}
+
+		// 刷新别名数据
+		try {
+			const response = await getAliasData();
+			if (response.data) {
+				uni.setStorageSync('aliasData', response.data);
+				results.aliasData = true;
+			} else {
+				results.errors.push({ type: 'aliasData', error: '返回数据为空' });
+				results.success = false;
+			}
+		} catch (error) {
+			console.error('刷新别名数据失败:', error);
+			results.errors.push({ type: 'aliasData', error });
+			results.success = false;
+		}
+
+		// 刷新谱面统计数据
+		try {
+			const chartStats = await getChartStats();
+			uni.setStorageSync('chartStats', chartStats);
+			results.chartStats = true;
+		} catch (error) {
+			console.error('刷新谱面统计数据失败:', error);
+			results.errors.push({ type: 'chartStats', error });
+			results.success = false;
+		}
+
+		return results;
+	} catch (error) {
+		console.error('刷新基础数据失败:', error);
+		results.success = false;
+		results.errors.push({ type: 'general', error });
+		return results;
+	}
+}

@@ -26,12 +26,63 @@
         <view class="title-content">功能中心</view>
       </view>
       
-     <view class="function-grid">
-     <!--   <view class="function-item refresh-api" @click="handleRefreshAPI">
-          <view class="function-icon">🔄</view>
-          <view class="function-name">刷新数据</view>
-          <view class="function-desc">获取最新游戏记录</view>
-        </view> -->
+      <view class="function-grid">
+        <!-- 乐曲搜索 -->
+        <view class="function-item song-search" @click="handleSongSearch">
+          <view class="function-icon">🔍</view>
+          <view class="function-name">乐曲搜索</view>
+          <view class="function-desc">查询舞萌曲库所有歌曲</view>
+        </view>
+        
+        <!-- 成绩查询 -->
+        <view class="function-item my-scores" @click="handlePlayerRecords">
+          <view class="function-icon">🏆</view>
+          <view class="function-name">成绩查询</view>
+          <view class="function-desc">查看你的游玩数据</view>
+        </view>
+        
+        <!-- 歌曲推荐 -->
+        <view class="function-item song-recommend" @click="navigateToRecommend">
+          <view class="function-icon">✨</view>
+          <view class="function-name">歌曲推荐</view>
+          <view class="function-desc">基于你的水平推荐歌曲</view>
+        </view>
+        
+		<!-- 数据分析 -->
+		<view class="function-item data-analysis" @click="handleB50">
+		  <view class="function-icon">📈</view>
+		  <view class="function-name">B50查询</view>
+		  <view class="function-desc">查看游戏数据统计</view>
+		</view>
+		
+        <!-- 热门乐曲排行 -->
+        <view class="function-item chart-stats" @click="navigateToChartStats">
+          <view class="function-icon">📊</view>
+          <view class="function-name">热门乐曲</view>
+          <view class="function-desc">查看热门乐曲排行榜</view>
+        </view>
+        
+        <!-- 工具箱 -->
+        <view class="function-item toolbox" @click="navigateToToolbox">
+          <view class="function-icon">🧰</view>
+          <view class="function-name">工具箱</view>
+          <view class="function-desc">实用工具与小功能</view>
+        </view>
+        
+   
+      </view>
+      
+      <view class="section-title has-data">
+        <view class="title-content">账号相关</view>
+      </view>
+      
+      <view class="function-grid account-grid">
+        <!-- 绑定二维码 -->
+        <view class="function-item qr-code" @click="handleQrCode">
+          <view class="function-icon">🔗</view>
+          <view class="function-name">绑定二维码</view>
+          <view class="function-desc">关联舞萌DX账号</view>
+        </view>
         
         <!-- 账号设置 -->
         <view class="function-item account-settings" @click="handleAccountSettings">
@@ -40,62 +91,12 @@
           <view class="function-desc">管理个人账号信息</view>
         </view>
         
-        <!-- 我的成绩 -->
-    <!--    <view class="function-item my-scores" @click="handleViewScores">
-          <view class="function-icon">🏆</view>
-          <view class="function-name">我的成绩</view>
-          <view class="function-desc">查看个人游戏成绩</view>
-        </view> -->
-        
-        <!-- 数据分析 -->
-<!--        <view class="function-item data-analysis" @click="handleDataAnalysis">
-          <view class="function-icon">📊</view>
-          <view class="function-name">数据分析</view>
-          <view class="function-desc">查看游戏数据统计</view>
-        </view -->
-
-        <!-- 连接二维码到相应功能项 -->
-        <view class="function-item qr-code" @click="handleQrCode">
-          <view class="function-icon">🔗</view>
-          <view class="function-name">绑定二维码</view>
-          <view class="function-desc">关联舞萌DX账号</view>
+        <!-- 刷新API -->
+        <view class="function-item refresh-api" @click="handleRefreshAPI">
+          <view class="function-icon">🔄</view>
+          <view class="function-name">刷新数据</view>
+          <view class="function-desc">获取最新游戏记录</view>
         </view>
-      </view>
-    </view>
-    
-    <!-- 快捷操作区域 - 所有用户可见 -->
-    <view class="quick-actions">
-      <view class="section-title has-data">
-        <view class="title-content">快捷入口</view>
-      </view>
-      
-      <view class="actions-list">
-        <view class="action-item" @click="handleB50">
-          <view class="action-icon">🌟</view>
-          <view class="action-content">
-            <view class="action-title">Best 50</view>
-            <view class="action-desc">{{ isLoggedIn ? '查看你的 Best 50 成绩' : '登录后查看你的成绩' }}</view>
-          </view>
-          <view class="action-arrow">→</view>
-        </view>
-        
-        <view class="action-item" @click="handleRecentPlay">
-          <view class="action-icon">🔍</view>
-          <view class="action-content">
-            <view class="action-title">歌曲搜索</view>
-            <view class="action-desc">查询舞萌曲库所有歌曲</view>
-          </view>
-          <view class="action-arrow">→</view>
-        </view>
-        
-      <!--  <view class="action-item" @click="handleFavorites">
-          <view class="action-icon">❤️</view>
-          <view class="action-content">
-            <view class="action-title">收藏乐曲</view>
-            <view class="action-desc">管理你收藏的乐曲</view>
-          </view>
-          <view class="action-arrow">→</view>
-        </view> -->
       </view>
     </view>
     
@@ -291,9 +292,9 @@ const handleViewScores = () => {
   });
 };
 
-const handleDataAnalysis = () => {
+const handlePlayerRecords = () => {
   uni.navigateTo({
-    url: '/pages/analysis/index'
+    url: '/pages/PlayerRecords/PlayerRecords'
   });
 };
 
@@ -303,7 +304,7 @@ const handleB50 = () => {
   });
 };
 
-const handleRecentPlay = () => {
+const handleSongSearch = () => {
   uni.navigateTo({
     url: '/pages/song-search/song-search'
   });
@@ -569,6 +570,67 @@ function navigateToLogin() {
     url: '/pages/login/login'  // 目前使用maib50作为登录页面
   });
 }
+
+// 添加新的导航函数
+const navigateToRecommend = () => {
+  uni.navigateTo({
+    url: '/pages/song-recommend/song-recommend'
+  });
+};
+
+const navigateToChartStats = () => {
+  uni.navigateTo({
+    url: '/pages/chart-stats/chart-stats'
+  });
+};
+
+const navigateToToolbox = () => {
+  uni.navigateTo({
+    url: '/pages/toolbox/toolbox'
+  });
+};
+
+// 刷新API数据
+const handleRefreshAPI = async () => {
+  try {
+    uni.showLoading({
+      title: '刷新中...',
+      mask: true
+    });
+    
+    // 刷新基础数据
+    const baseDataResults = await maiApi.refreshAllBaseData();
+    
+    
+    uni.hideLoading();
+    
+    if (baseDataResults.success) {
+      uni.showToast({
+        title: '数据已全部更新',
+        icon: 'success'
+      });
+    } else {
+      // 部分更新成功
+      const successCount = [
+        baseDataResults.musicData,
+        baseDataResults.aliasData, 
+        baseDataResults.chartStats
+      ].filter(Boolean).length;
+      
+      uni.showToast({
+        title: `部分数据更新成功(${successCount}/3)`,
+        icon: 'none'
+      });
+    }
+  } catch (error) {
+    console.error('刷新数据失败:', error);
+    uni.hideLoading();
+    uni.showToast({
+      title: '刷新失败',
+      icon: 'none'
+    });
+  }
+};
 
 </script>
 
@@ -883,7 +945,11 @@ function navigateToLogin() {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20rpx;
-      padding: 0 10rpx;
+      margin-bottom: 40rpx;
+      
+      &.account-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
       
       .function-item {
         background: white;
@@ -976,59 +1042,45 @@ function navigateToLogin() {
             color: #ef4444;
           }
         }
-      }
-    }
-  }
-  
-  .quick-actions {
-    max-width: 750rpx;
-    margin: 0 auto 40rpx;
-    
-    .actions-list {
-      padding: 0 10rpx;
-      
-      .action-item {
-        display: flex;
-        align-items: center;
-        background: white;
-        border-radius: 16rpx;
-        padding: 24rpx;
-        margin-bottom: 20rpx;
-        box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
         
-        .action-icon {
-          font-size: 40rpx;
-          margin-right: 20rpx;
-          width: 60rpx;
-          text-align: center;
-        }
-        
-        .action-content {
-          flex: 1;
-          
-          .action-title {
-            font-size: 28rpx;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 6rpx;
+        &.song-search {
+          &::before {
+            background: linear-gradient(90deg, #60a5fa, #3b82f6);
           }
           
-          .action-desc {
-            font-size: 22rpx;
-            color: #64748b;
+          .function-icon {
+            color: #3b82f6;
           }
         }
         
-        .action-arrow {
-          font-size: 28rpx;
-          color: #94a3b8;
-          font-weight: bold;
+        &.song-recommend {
+          &::before {
+            background: linear-gradient(90deg, #f472b6, #ec4899);
+          }
+          
+          .function-icon {
+            color: #ec4899;
+          }
         }
         
-        &:active {
-          transform: translateX(6rpx);
-          background: #f8fafc;
+        &.chart-stats {
+          &::before {
+            background: linear-gradient(90deg, #34d399, #10b981);
+          }
+          
+          .function-icon {
+            color: #10b981;
+          }
+        }
+        
+        &.toolbox {
+          &::before {
+            background: linear-gradient(90deg, #fb923c, #f97316);
+          }
+          
+          .function-icon {
+            color: #f97316;
+          }
         }
       }
     }
