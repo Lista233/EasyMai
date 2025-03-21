@@ -44,7 +44,7 @@ const handleError = (error) => {
 // 跳转到主页
 const navigateToMain = () => {
   uni.reLaunch({
-    url: '/pages/index/index'
+    url: '/pages/user-center/user-center'
   })
 }
 

@@ -122,7 +122,28 @@
 			}
 		},
 		{
+			"path" : "pages/toolbox/toolbox",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
 			"path" : "pages/chart-stats/chart-stats",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/rank-calculator/rank-calculator",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+			}
+		},
+		{
+			"path" : "pages/song-lottery/song-lottery",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""

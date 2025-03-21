@@ -57,9 +57,9 @@
 		
         <!-- 热门乐曲排行 -->
         <view class="function-item chart-stats" @click="navigateToChartStats">
-          <view class="function-icon">📊</view>
-          <view class="function-name">热门乐曲</view>
-          <view class="function-desc">查看热门乐曲排行榜</view>
+          <view class="function-icon">🎲</view>
+          <view class="function-name">Mai什么</view>
+          <view class="function-desc">抽取1~4首随机乐曲进行游玩</view>
         </view>
         
         <!-- 工具箱 -->
@@ -88,15 +88,22 @@
         <view class="function-item account-settings" @click="handleAccountSettings">
           <view class="function-icon">⚙️</view>
           <view class="function-name">账号设置</view>
-          <view class="function-desc">管理个人账号信息</view>
+          <view class="function-desc">管理个人账号</view>
         </view>
         
         <!-- 刷新API -->
         <view class="function-item refresh-api" @click="handleRefreshAPI">
           <view class="function-icon">🔄</view>
-          <view class="function-name">刷新数据</view>
-          <view class="function-desc">获取最新游戏记录</view>
+          <view class="function-name">刷新API</view>
+          <view class="function-desc">重新从API获取数据(功能异常时使用)</view>
         </view>
+		
+		
+		<view class="function-item refresh-api" @click="divingFishUpdate">
+		  <view class="function-icon">⬆</view>
+		  <view class="function-name">更新成绩</view>
+		  <view class="function-desc">更新水鱼查分器成绩</view>
+		</view>
       </view>
     </view>
     
@@ -133,7 +140,7 @@ import {onLoad} from '@dcloudio/uni-app'
 import QrCodeModal from '@/components/QrCodeModal.vue';
 import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
 import RatingDisplay from '@/components/RatingDisplay.vue';
- 
+import {b50adapter} from '@/util/b50adapter.js'
 let b35=ref('')
 let b15=ref('')
 let b15rating=ref(0)
@@ -580,7 +587,7 @@ const navigateToRecommend = () => {
 
 const navigateToChartStats = () => {
   uni.navigateTo({
-    url: '/pages/chart-stats/chart-stats'
+    url: '/pages/song-lottery/song-lottery'
   });
 };
 
@@ -632,6 +639,108 @@ const handleRefreshAPI = async () => {
   }
 };
 
+	async function getUserMusicData(){
+		let resp=await maiApi.maiGetUserMusicData(uid.value)
+		console.log(resp)
+		uni.setStorageSync('',resp.data)
+		if(resp.data.userId==null)
+		 {
+			return null;
+		 }
+		let a=await b50adapter(resp.data)
+	
+		return a
+		
+	}
+	async function updateMusicData(musicScoreList){
+		
+		let res = await maiApi.divingFishUpdateData(musicScoreList, importToken.value);
+		console.log(res)
+		return res;
+	}
+	const timeCutDown=4000;
+		let cutDownTime=0;
+		let isProcessing=ref(false);
+async function divingFishUpdate()
+	{
+		if(isProcessing.value) return;
+		isProcessing.value = true;
+		
+		let time=new Date().getTime()
+		if(cutDownTime-time>0)
+		{
+			uni.hideToast()
+			uni.showToast({
+				title:`操作过于频繁，请${Math.floor((cutDownTime-time)/1000)+1}秒后再试`,
+				icon:'none'
+			})
+			isProcessing.value = false;
+			return;
+		}
+		
+		try {
+
+			
+			if(uid.value<=0)
+			{
+				uni.showToast({
+					title:"您还未绑定二维码获取UID",
+					icon:"none",
+					position:"center"
+				})
+				cutDownTime=new Date().getTime()+timeCutDown
+				return
+			}
+			
+		
+			
+			uni.showLoading({
+				title:"上传中",
+				mask:true,
+			})
+			
+			let muiscList=await getUserMusicData();
+		
+			console.log("muiscList:"+muiscList);
+			if(!muiscList) {
+				uni.hideLoading();
+				uni.showToast({
+					title:"用户信息错误",
+					icon:"fail",
+					position:"center"
+				})
+				return
+			}
+				
+			let res=await updateMusicData(muiscList)
+			console.log(res)
+			records.value = await maiApi.divingFishGetRecords(jwt_token.value);
+			console.log(records.value);
+			uni.setStorageSync('divingFish_records', records.value);
+			uni.hideLoading();
+			if(res.data.message=="更新成功"){
+				uni.showToast({
+					title:"上传成功",
+					icon:"success"
+				})
+			} else {
+				uni.showToast({
+					title:"上传失败(出BUG了o(╥﹏╥)o)",
+					icon:"none",
+					position:"center"
+				})
+			}
+		} catch (error) {
+			uni.showToast({
+				title:'网络异常或导入Token失效,请尝试重新登录',
+				icon:"fail",
+				position:"center"
+			})
+		} finally {
+			isProcessing.value = false;
+			cutDownTime=new Date().getTime()+timeCutDown;
+		}
+	}
 </script>
 
 <style lang="scss" scoped>
@@ -948,7 +1057,7 @@ const handleRefreshAPI = async () => {
       margin-bottom: 40rpx;
       
       &.account-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
       
       .function-item {
