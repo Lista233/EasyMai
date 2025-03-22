@@ -976,11 +976,11 @@ async function divingFishUpdate()
     margin: 0 auto 40rpx;
     
     .section-title {
-      font-size: 36rpx;
+      font-size: 32rpx;
       font-weight: 800;
-      margin: 32rpx 10rpx;
-      color: #333;
-      padding: 12rpx 20rpx;
+      margin: 28rpx 10rpx;
+      color: #4f46e5;
+      padding: 10rpx 20rpx;
       border-radius: 12rpx;
       position: relative;
       overflow: hidden;
@@ -1027,8 +1027,8 @@ async function divingFishUpdate()
         display: block;
         text-align: center;
         width: calc(95% - 20rpx);
-        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
-        box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,246,255,0.4));
+        box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.08);
         backdrop-filter: blur(10px);
         transform: translateX(0);
         opacity: 1;
@@ -1052,9 +1052,9 @@ async function divingFishUpdate()
         width: 100%;
         height: 2rpx;
         background: linear-gradient(to right, 
-          rgba(33, 150, 243, 0.5), 
-          rgba(76, 175, 80, 0.5),
-          rgba(33, 150, 243, 0)
+          rgba(99, 102, 241, 0.5), 
+          rgba(192, 132, 252, 0.5),
+          rgba(99, 102, 241, 0)
         );
         transform: scaleX(0);
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1078,46 +1078,74 @@ async function divingFishUpdate()
       
       .function-item {
         background: white;
-        border-radius: 20rpx;
-        padding: 30rpx;
-        box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+        border-radius: 16rpx;
+        padding: 30rpx 20rpx 40rpx;
+        box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.08);
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
         
         &::before {
           content: '';
           position: absolute;
           top: 0;
           left: 0;
-          width: 8rpx;
-          height: 100%;
-          border-top-left-radius: 20rpx;
-          border-bottom-left-radius: 20rpx;
+          width: 100%;
+          height: 140rpx;
+          border-top-left-radius: 16rpx;
+          border-top-right-radius: 16rpx;
+          opacity: 0.25;
+          z-index: 0;
         }
         
         .function-icon {
           font-size: 48rpx;
-          margin-bottom: 16rpx;
+          margin-bottom: 20rpx;
+          background: transparent;
+          width: 100rpx;
+          height: 100rpx;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 16rpx;
+          position: relative;
+          box-shadow: none;
+          z-index: 1;
+          color: #ffffff;
+          
+          &::after, &::before {
+            display: none;
+          }
         }
         
         .function-name {
-          font-size: 30rpx;
+          font-size: 32rpx;
           font-weight: 600;
           color: #1e293b;
           margin-bottom: 8rpx;
+          position: relative;
+          z-index: 1;
         }
         
         .function-desc {
-          font-size: 22rpx;
+          font-size: 24rpx;
           color: #64748b;
+          line-height: 1.4;
+          position: relative;
+          z-index: 1;
         }
         
         &:active {
-          transform: translateY(4rpx);
-          box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.05);
+          transform: translateY(2rpx) scale(0.98);
+          box-shadow: 0 2rpx 6rpx rgba(99,102,241,0.05);
         }
         
+        // 统一使用蓝紫粉色调
         &.refresh-api {
           &::before {
             background: linear-gradient(90deg, #818cf8, #6366f1);
@@ -1125,56 +1153,62 @@ async function divingFishUpdate()
           
           .function-icon {
             color: #6366f1;
+            background: rgba(224, 231, 255, 0.6);
           }
         }
         
         &.account-settings {
           &::before {
-            background: linear-gradient(90deg, #4ade80, #22c55e);
+            background: linear-gradient(90deg, #a78bfa, #8b5cf6);
           }
           
           .function-icon {
-            color: #22c55e;
+            color: #8b5cf6;
+            background: rgba(237, 233, 254, 0.6);
           }
         }
-		
-		&.qr-code {
-		  &::before {
-		    background: linear-gradient(90deg, #c4b5fd, #a78bfa);
-		  }
-		  
-		  .function-icon {
-		    color: #a78bfa;
-		  }
-		}
-        
-        &.my-scores {
+      
+        &.qr-code {
           &::before {
             background: linear-gradient(90deg, #c4b5fd, #a78bfa);
           }
           
           .function-icon {
             color: #a78bfa;
+            background: rgba(243, 232, 255, 0.6);
+          }
+        }
+        
+        &.my-scores {
+          &::before {
+            background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+          }
+          
+          .function-icon {
+            color: #8b5cf6;
+            background: rgba(237, 233, 254, 0.6);
           }
         }
         
         &.data-analysis {
           &::before {
-            background: linear-gradient(90deg, #fca5a5, #ef4444);
+            background: linear-gradient(90deg, #e879f9, #d946ef);
           }
           
           .function-icon {
-            color: #ef4444;
+            color: #d946ef;
+            background: rgba(250, 232, 255, 0.6);
           }
         }
         
         &.song-search {
           &::before {
-            background: linear-gradient(90deg, #60a5fa, #3b82f6);
+            background: linear-gradient(90deg, #818cf8, #6366f1);
           }
           
           .function-icon {
-            color: #3b82f6;
+            color: #6366f1;
+            background: rgba(224, 231, 255, 0.6);
           }
         }
         
@@ -1185,26 +1219,40 @@ async function divingFishUpdate()
           
           .function-icon {
             color: #ec4899;
+            background: rgba(252, 231, 243, 0.6);
           }
         }
         
         &.chart-stats {
           &::before {
-            background: linear-gradient(90deg, #34d399, #10b981);
+            background: linear-gradient(90deg, #c084fc, #a855f7);
           }
           
           .function-icon {
-            color: #10b981;
+            color: #a855f7;
+            background: rgba(243, 232, 255, 0.6);
           }
         }
         
         &.toolbox {
           &::before {
-            background: linear-gradient(90deg, #fb923c, #f97316);
+            background: linear-gradient(90deg, #f9a8d4, #f472b6);
           }
           
           .function-icon {
-            color: #f97316;
+            color: #f472b6;
+            background: rgba(252, 231, 243, 0.6);
+          }
+        }
+        
+        &.update-data {
+          &::before {
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+          }
+          
+          .function-icon {
+            color: #7c3aed;
+            background: rgba(237, 233, 254, 0.6);
           }
         }
       }
