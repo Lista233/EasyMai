@@ -74,8 +74,10 @@
             <text class="genre" v-if="result.basic_info?.genre">{{formatGenre(result.basic_info?.genre)}}</text>
             <text class="difficulty">{{formatLevels(result.level)}}</text>
           </view>
-          <view class="matched-aliases" v-if="result.matchedAliases?.length">
-            <text>{{formatAliases(result.matchedAliases)}}</text>
+          <view class="matched-aliases" v-if="result.matchedAliases?.length || result.matchedCharter || result.matchedArtist">
+            <text v-if="result.matchedAliases?.length">别名: {{formatAliases(result.matchedAliases)}}</text>
+            <text v-if="result.matchedCharter">谱师: {{result.matchedCharter}}</text>
+            <text v-if="result.matchedArtist">艺术家: {{result.matchedArtist}}</text>
           </view>
         </view>
       </view>
@@ -523,12 +525,25 @@ const onSearch = async () => {
       matchedIds.add(song.id.toString())
     }
   } else if (keyword) {
-    // 关键词搜索
+    // 关键词搜索 - 包括歌曲名称和别名
     const searchResults = searcher.value.search({
       keyword: keyword,
       exactMatch: false
     })
     searchResults.forEach(result => matchedIds.add(result.id))
+    
+    // 添加谱师搜索
+    const charterResults = songService.value.getSongsByCharter(keyword, {
+      exact: false,
+      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined
+    })
+    charterResults.forEach(song => matchedIds.add(song.id.toString()))
+    
+    // 添加艺术家搜索
+    const artistResults = songService.value.getSongsByArtist(keyword, {
+      exact: false
+    })
+    artistResults.forEach(song => matchedIds.add(song.id.toString()))
   } else {
     // 如果没有关键词，获取所有歌曲ID
     searcher.value.getAllIds().forEach(id => matchedIds.add(id))
@@ -563,14 +578,34 @@ const onSearch = async () => {
       }).find(r => r.id === song.id)
     }
     
+    // 检查是否匹配谱师
+    let matchedCharter = null
+    if (keyword) {
+      const charterMatch = song.charts?.find(chart => 
+        chart?.charter?.toLowerCase()?.includes(keyword.toLowerCase())
+      )
+      if (charterMatch) {
+        matchedCharter = charterMatch.charter
+      }
+    }
+    
+    // 检查是否匹配艺术家
+    let matchedArtist = null
+    if (keyword && song.basic_info?.artist?.toLowerCase()?.includes(keyword.toLowerCase())) {
+      matchedArtist = song.basic_info.artist
+    }
+    
     return {
       songId: song.id,
       name: song.title || aliasInfo?.name || '',
       matchedAliases: matchInfo?.matchedAliases || [],
       matchFields: matchInfo?.matchFields || [],
+      matchedCharter: matchedCharter,
+      matchedArtist: matchedArtist,
       ds: song.ds,
       level: song.level,
-      basic_info: song.basic_info
+      basic_info: song.basic_info,
+      charts: song.charts
     }
   })
   

@@ -83,7 +83,7 @@
               {{ (dataLoading || statsLoading) ? '' : songData.ds[currentDiffIndex] }}
             </text>
           </view>
-		  <view class="info-pair">
+		  <view class="info-pair" @click="copyCharter(songData.charts[currentDiffIndex]?.charter)">
 		    <text class="label">谱面谱师:</text>
 		    <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
 		      {{ (dataLoading || statsLoading) ? '' : (songData.charts[currentDiffIndex]?.charter || '-') }}
@@ -696,6 +696,20 @@ const copyTitle = () => {
       success: () => {
         uni.showToast({
           title: '歌名已复制到剪贴板',
+          icon: 'none',
+          position: 'bottom'
+        })
+      }
+    })
+  }
+}
+const copyCharter = (charter) => {
+  if (charter) {
+    uni.setClipboardData({
+      data: charter,
+      success: () => {
+        uni.showToast({
+          title: '谱师名已复制到剪贴板',
           icon: 'none',
           position: 'bottom'
         })

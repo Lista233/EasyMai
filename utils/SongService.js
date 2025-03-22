@@ -139,6 +139,112 @@ class SongService {
   }
 
   /**
+   * 根据谱师名称搜索歌曲
+   * @param {string|Array<string>} charter - 谱师名称或谱师名称数组
+   * @param {Object} options - 查询选项
+   * @param {boolean} options.exact - 是否进行精确匹配，默认为true
+   * @param {number} options.difficulty - 指定难度等级(0-4)，不指定则搜索所有难度
+   * @returns {Array} - 返回匹配的歌曲列表
+   */
+  getSongsByCharter(charter, options = {}) {
+    const {
+      exact = true,
+      difficulty = null
+    } = options
+
+    // 将单个谱师名称转换为数组
+    const charters = Array.isArray(charter) ? charter : [charter]
+
+    return this.songList.filter(song => {
+      // 如果指定了难度，只检查该难度的谱师
+      if (difficulty !== null && difficulty >= 0 && difficulty < song.charts.length) {
+        const targetCharter = song.charts[difficulty]?.charter?.toLowerCase() || ''
+        
+        if (exact) {
+          // 精确匹配：谱师名称必须完全相同
+          return charters.some(c => targetCharter === c.toLowerCase())
+        } else {
+          // 模糊匹配：谱师名称包含搜索词即可
+          return charters.some(c => targetCharter.includes(c.toLowerCase()))
+        }
+      }
+
+      // 否则检查所有难度的谱师
+      return song.charts.some(chart => {
+        const chartCharter = chart?.charter?.toLowerCase() || ''
+        
+        if (exact) {
+          // 精确匹配：谱师名称必须完全相同
+          return charters.some(c => chartCharter === c.toLowerCase())
+        } else {
+          // 模糊匹配：谱师名称包含搜索词即可
+          return charters.some(c => chartCharter.includes(c.toLowerCase()))
+        }
+      })
+    }).map(song => {
+      // 返回歌曲信息和匹配的难度
+      return {
+        id: song.id,
+        title: song.title,
+        ds: song.ds,
+        level: song.level,
+        basic_info: song.basic_info,
+        matchingDifficulties: song.charts.map((chart, index) => {
+          const chartCharter = chart?.charter?.toLowerCase() || ''
+          const matches = charters.some(c => 
+            exact ? chartCharter === c.toLowerCase() : chartCharter.includes(c.toLowerCase())
+          )
+          
+          return {
+            difficulty: index,
+            ds: song.ds[index],
+            level: song.level[index],
+            charter: chart?.charter || '',
+            matches: matches
+          }
+        }).filter(diff => diff.matches)
+      }
+    })
+  }
+
+  /**
+   * 根据艺术家名称搜索歌曲
+   * @param {string|Array<string>} artist - 艺术家名称或艺术家名称数组
+   * @param {Object} options - 查询选项
+   * @param {boolean} options.exact - 是否进行精确匹配，默认为true
+   * @returns {Array} - 返回匹配的歌曲列表
+   */
+  getSongsByArtist(artist, options = {}) {
+    const {
+      exact = true
+    } = options
+
+    // 将单个艺术家名称转换为数组
+    const artists = Array.isArray(artist) ? artist : [artist]
+
+    return this.songList.filter(song => {
+      // 获取艺术家信息
+      const songArtist = song.basic_info?.artist?.toLowerCase() || ''
+      
+      if (exact) {
+        // 精确匹配：艺术家名称必须完全相同
+        return artists.some(a => songArtist === a.toLowerCase())
+      } else {
+        // 模糊匹配：艺术家名称包含搜索词即可
+        return artists.some(a => songArtist.includes(a.toLowerCase()))
+      }
+    }).map(song => ({
+      id: song.id,
+      title: song.title,
+      ds: song.ds,
+      level: song.level,
+      basic_info: song.basic_info,
+      // 添加匹配的艺术家信息
+      matchedArtist: song.basic_info?.artist || ''
+    }))
+  }
+
+  /**
    * 组合查询：同时按版本、定数范围和类型搜索
    * @param {Object} query - 查询条件
    * @param {string|Array<string>} query.version - 版本名称或版本名称数组
@@ -146,9 +252,13 @@ class SongService {
    * @param {number} query.dsRange.min - 最小定数值
    * @param {number} query.dsRange.max - 最大定数值
    * @param {string|Array<string>} query.genre - 歌曲类型或类型数组
+   * @param {string|Array<string>} query.charter - 谱师名称或谱师名称数组
+   * @param {string|Array<string>} query.artist - 艺术家名称或艺术家名称数组
    * @param {Object} options - 查询选项
    * @param {boolean} options.exactVersion - 是否进行版本精确匹配，默认为true
    * @param {boolean} options.exactGenre - 是否进行类型精确匹配，默认为true
+   * @param {boolean} options.exactCharter - 是否进行谱师精确匹配，默认为true
+   * @param {boolean} options.exactArtist - 是否进行艺术家精确匹配，默认为true
    * @param {number} options.difficulty - 指定难度等级(0-4)，不指定则搜索所有难度
    * @param {boolean} options.includeEqual - 是否包含等于边界值的情况，默认为true
    * @returns {Array} - 返回匹配的歌曲列表
@@ -157,12 +267,16 @@ class SongService {
     const {
       version,
       dsRange,
-      genre
+      genre,
+      charter,
+      artist  // 艺术家搜索参数
     } = query
 
     const {
       exactVersion = true,
       exactGenre = true,
+      exactCharter = false,
+      exactArtist = false,  // 艺术家精确匹配选项
       difficulty = null,
       includeEqual = true
     } = options
@@ -186,6 +300,53 @@ class SongService {
           return genres.some(g => songGenre === g.toLowerCase())
         } else {
           return genres.some(g => songGenre.includes(g.toLowerCase()))
+        }
+      })
+    }
+
+    // 如果有谱师条件，继续筛选
+    if (charter) {
+      results = results.filter(song => {
+        const charters = Array.isArray(charter) ? charter : [charter]
+        
+        // 如果指定了难度，只检查该难度的谱师
+        if (difficulty !== null && difficulty >= 0 && difficulty < song.charts.length) {
+          const targetCharter = song.charts[difficulty]?.charter?.toLowerCase() || ''
+          
+          if (exactCharter) {
+            return charters.some(c => targetCharter === c.toLowerCase())
+          } else {
+            return charters.some(c => targetCharter.includes(c.toLowerCase()))
+          }
+        }
+        
+        // 否则检查所有难度的谱师
+        return song.charts.some(chart => {
+          const chartCharter = chart?.charter?.toLowerCase() || ''
+          
+          if (exactCharter) {
+            return charters.some(c => chartCharter === c.toLowerCase())
+          } else {
+            return charters.some(c => chartCharter.includes(c.toLowerCase()))
+          }
+        })
+      })
+    }
+    
+    // 如果有艺术家条件，继续筛选
+    if (artist) {
+      results = results.filter(song => {
+        const artists = Array.isArray(artist) ? artist : [artist]
+        
+        // 获取艺术家信息
+        const songArtist = song.basic_info?.artist?.toLowerCase() || ''
+        
+        if (exactArtist) {
+          // 精确匹配：艺术家名称必须完全相同
+          return artists.some(a => songArtist === a.toLowerCase())
+        } else {
+          // 模糊匹配：艺术家名称包含搜索词即可
+          return artists.some(a => songArtist.includes(a.toLowerCase()))
         }
       })
     }
