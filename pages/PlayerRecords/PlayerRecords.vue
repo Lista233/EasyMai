@@ -75,6 +75,26 @@
 			</button>
 		</view>
 		
+		<!-- 添加达成率筛选按钮 -->
+		<view class="filter-buttons second-row">
+			<button class="filter-btn" @click="showAchievementFilter">
+				<view class="btn-content">
+					<text class="btn-title">达成率筛选</text>
+					<text class="filter-active" v-if="achievementFilter.min || achievementFilter.max">
+						{{formatAchievementFilterText}}
+					</text>
+				</view>
+			</button>
+			<button class="filter-btn" @click="showFcFsFilter">
+				<view class="btn-content">
+					<text class="btn-title">FC/FS筛选</text>
+					<text class="filter-active" v-if="selectedFcType || selectedFsType">
+						{{formatFcFsFilterText}}
+					</text>
+				</view>
+			</button>
+		</view>
+		
 		<!-- 添加视图控制栏 -->
 		<view class="view-controls">
 			<view class="view-mode">
@@ -400,6 +420,124 @@
 				</view>
 			</view>
 		</uni-popup>
+		
+		<!-- 达成率筛选弹窗 -->
+		<uni-popup ref="achievementPopup" type="center">
+			<view class="filter-popup">
+				<view class="popup-header">
+					<text class="title">达成率范围筛选</text>
+					<text class="close-btn" @click="closeAchievementFilter">×</text>
+				</view>
+				<view class="popup-content">
+					<view class="form-item ds-range">
+						<input 
+							type="digit" 
+							v-model="achievementFilter.min" 
+							placeholder="最小值"
+							@focus="onInputFocus"
+							@blur="onInputBlur"
+							maxlength="6"
+						/>
+						<text class="range-separator">至</text>
+						<input 
+							type="digit" 
+							v-model="achievementFilter.max" 
+							placeholder="最大值"
+							@focus="onInputFocus"
+							@blur="onInputBlur"
+							maxlength="6"
+						/>
+					</view>
+					<view class="range-tips">
+						<text>* 达成率范围: 0-101.0%</text>
+					</view>
+					<view class="quick-select">
+						<text class="section-title">快速选择</text>
+						<view class="option-grid">
+							<view 
+								v-for="range in achievementRanges" 
+								:key="range.label"
+								class="option-chip"
+								:class="{ active: isQuickAchievementRangeSelected(range) }"
+								@click="selectQuickAchievementRange(range)"
+							>
+								<text>{{range.label}}</text>
+							</view>
+						</view>
+					</view>
+				</view>
+				<view class="popup-footer">
+					<button class="cancel-btn" @click="closeAchievementFilter">取消</button>
+					<button class="confirm-btn" @click="applyAchievementFilter">确定</button>
+				</view>
+			</view>
+		</uni-popup>
+		
+		<!-- FC/FS筛选弹窗 -->
+		<uni-popup ref="fcFsPopup" type="center">
+			<view class="filter-popup">
+				<view class="popup-header">
+					<text class="title">FC/FS筛选</text>
+					<text class="close-btn" @click="closeFcFsFilter">×</text>
+				</view>
+				<view class="popup-content">
+					<view class="fc-fs-tabs">
+						<view 
+							class="tab-item" 
+							:class="{ active: fcFsTab === 'fc' }"
+							@click="fcFsTab = 'fc'"
+						>FC状态</view>
+						<view 
+							class="tab-item" 
+							:class="{ active: fcFsTab === 'fs' }"
+							@click="fcFsTab = 'fs'"
+						>FS状态</view>
+					</view>
+					
+					<view class="option-list" v-if="fcFsTab === 'fc'">
+						<view 
+							class="option-item"
+							:class="{ active: tempFcType === null }"
+							@click="selectFcType(null)"
+						>
+							<text>全部</text>
+						</view>
+						<view 
+							v-for="(label, type) in fcTypes" 
+							:key="type"
+							class="option-item"
+							:class="{ active: tempFcType === type }"
+							@click="selectFcType(type)"
+						>
+							<text>{{label}}</text>
+						</view>
+					</view>
+					
+					<view class="option-list" v-else>
+						<view 
+							class="option-item"
+							:class="{ active: tempFsType === null }"
+							@click="selectFsType(null)"
+						>
+							<text>全部</text>
+						</view>
+						<view 
+							v-for="(label, type) in fsTypes" 
+							:key="type"
+							class="option-item"
+							:class="{ active: tempFsType === type }"
+							@click="selectFsType(type)"
+						>
+							<text>{{label}}</text>
+						</view>
+					</view>
+				</view>
+				<view class="popup-footer">
+					<button class="cancel-btn" @click="closeFcFsFilter">取消</button>
+					<button class="confirm-btn" @click="applyFcFsFilter">确定</button>
+				</view>
+			</view>
+		</uni-popup>
 	</view>
 </template>
 
@@ -542,6 +680,169 @@ const gridSize = ref(5) // 默认4列
 // 添加图标显示控制
 const iconDisplay = ref('fc') // 'fc', 'fs', 'rate'
 
+// 添加达成率筛选相关
+const achievementPopup = ref(null)
+const achievementFilter = ref({
+	min: '',
+	max: ''
+})
+const selectedAchievementRange = ref(null)
+
+// 添加FC/FS筛选相关
+const fcFsPopup = ref(null)
+const fcFsTab = ref('fc') // 'fc' 或 'fs'
+const selectedFcType = ref(null)
+const selectedFsType = ref(null)
+const tempFcType = ref(null)
+const tempFsType = ref(null)
+
+// FC类型映射
+const fcTypes = {
+	'none': '无FC',
+	'fc': 'FC',
+	'fcp': 'FC+',
+	'ap': 'AP',
+	'app': 'AP+'
+}
+
+// FS类型映射
+const fsTypes = {
+	'none': '无FS',
+	'fs': 'FS',
+	'fsp': 'FS+',
+	'fsd': 'FSD',
+	'fsdp': 'FSD+'
+}
+
+// 预定义的达成率范围
+const achievementRanges = [
+	{ label: '全部', min: 0, max: 101 },
+	{ label: 'SSS+', min: 100.5, max: 101 },
+	{ label: 'SSS', min: 100, max: 100.49 },
+	{ label: 'SS+', min: 99.5, max: 99.99 },
+	{ label: 'SS', min: 99, max: 99.49 },
+	{ label: 'S+', min: 98, max: 98.99 },
+	{ label: 'S', min: 97, max: 97.99 },
+	{ label: 'AAA', min: 94, max: 96.99 },
+	{ label: '未SSS', min: 0, max: 99.99 }
+]
+
+// 检查是否选中了快速选择达成率范围
+const isQuickAchievementRangeSelected = (range) => {
+	if (!achievementFilter.value.min && !achievementFilter.value.max && range.label === '全部') {
+		return true
+	}
+	
+	return parseFloat(achievementFilter.value.min) === range.min && 
+		   parseFloat(achievementFilter.value.max) === range.max
+}
+
+// 快速选择达成率范围
+const selectQuickAchievementRange = (range) => {
+	if (range.label === '全部') {
+		achievementFilter.value.min = ''
+		achievementFilter.value.max = ''
+	} else {
+		achievementFilter.value.min = range.min.toString()
+		achievementFilter.value.max = range.max.toString()
+	}
+}
+
+// 显示达成率筛选弹窗
+const showAchievementFilter = () => {
+	achievementPopup.value.open()
+}
+
+// 关闭达成率筛选弹窗
+const closeAchievementFilter = () => {
+	achievementPopup.value?.close()
+}
+
+// 应用达成率筛选
+const applyAchievementFilter = () => {
+	// 解析输入值
+	let min = achievementFilter.value.min === '' ? 0 : parseFloat(achievementFilter.value.min)
+	let max = achievementFilter.value.max === '' ? 101 : parseFloat(achievementFilter.value.max)
+	
+	// 验证范围
+	if (min > max) {
+		const temp = min
+		min = max
+		max = temp
+	}
+	
+	// 更新选中的达成率范围
+	if (min === 0 && max === 101) {
+		selectedAchievementRange.value = null // 全部范围视为未筛选
+	} else {
+		selectedAchievementRange.value = { min, max }
+	}
+	
+	closeAchievementFilter() // 确保弹窗关闭
+	currentPage.value = 1 // 重置页码
+	updateStats()
+}
+
+// 格式化达成率筛选文本
+const formatAchievementFilterText = computed(() => {
+	if (!achievementFilter.value.min && !achievementFilter.value.max) return '';
+	
+	if (achievementFilter.value.min && achievementFilter.value.max) {
+		return `${achievementFilter.value.min}%~${achievementFilter.value.max}%`;
+	} else if (achievementFilter.value.min) {
+		return `≥ ${achievementFilter.value.min}%`;
+	} else {
+		return `≤ ${achievementFilter.value.max}%`;
+	}
+})
+
+// 显示FC/FS筛选弹窗
+const showFcFsFilter = () => {
+	tempFcType.value = selectedFcType.value
+	tempFsType.value = selectedFsType.value
+	fcFsPopup.value.open()
+}
+
+// 关闭FC/FS筛选弹窗
+const closeFcFsFilter = () => {
+	fcFsPopup.value?.close()
+}
+
+// 选择FC类型
+const selectFcType = (type) => {
+	tempFcType.value = type
+}
+
+// 选择FS类型
+const selectFsType = (type) => {
+	tempFsType.value = type
+}
+
+// 应用FC/FS筛选
+const applyFcFsFilter = () => {
+	selectedFcType.value = tempFcType.value
+	selectedFsType.value = tempFsType.value
+	closeFcFsFilter()
+	currentPage.value = 1 // 重置页码
+	updateStats()
+}
+
+// 格式化FC/FS筛选文本
+const formatFcFsFilterText = computed(() => {
+	const fcText = selectedFcType.value ? fcTypes[selectedFcType.value] : '';
+	const fsText = selectedFsType.value ? fsTypes[selectedFsType.value] : '';
+	
+	if (fcText && fsText) {
+		return `${fcText}/${fsText}`;
+	} else if (fcText) {
+		return fcText;
+	} else if (fsText) {
+		return fsText;
+	}
+	
+	return '';
+})
+
 // 检查是否选中了快速选择范围
 const isQuickRangeSelected = (range) => {
 	if (!dsFilter.value.min && !dsFilter.value.max && range.label === '全部') {
@@ -630,9 +931,13 @@ const filteredRecords = computed(() => {
 	return playerRecordService.filterRecordsByMultipleConditions(songService.value, {
 		version: selectedVersion.value,
 		difficultyIndex: selectedDifficulty.value,
-		dsRange: selectedDsRange.value && selectedDsRange.value.label !== '全部' 
-			? { min: selectedDsRange.value.min, max: selectedDsRange.value.max } 
-			: null,
+		dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
+			min: dsFilter.value.min ? parseFloat(dsFilter.value.min) : 1,
+			max: dsFilter.value.max ? parseFloat(dsFilter.value.max) : 15
+		} : null,
+		achievementRange: selectedAchievementRange.value,
+		fcType: selectedFcType.value,
+		fsType: selectedFsType.value,
 		sortBy: sortBy.value,
 		order: 'desc'
 	})

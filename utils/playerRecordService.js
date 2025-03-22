@@ -341,7 +341,16 @@ class PlayerRecordService {
   }
 
   // 修改现有的 filterRecordsByMultipleConditions 方法
-  filterRecordsByMultipleConditions(songService, { version, difficultyIndex, dsRange, sortBy, order = 'desc' }) {
+  filterRecordsByMultipleConditions(songService, { 
+    version, 
+    difficultyIndex, 
+    dsRange, 
+    achievementRange,
+    fcType,
+    fsType,
+    sortBy, 
+    order = 'desc' 
+  }) {
     let records = [...this.playerData.records]
     
     // 版本筛选
@@ -375,6 +384,33 @@ class PlayerRecordService {
         const ds = song.ds[levelIndex];
         return ds >= dsRange.min && ds <= dsRange.max;
       });
+    }
+    
+    // 达成率范围筛选
+    if (achievementRange && (achievementRange.min !== undefined || achievementRange.max !== undefined)) {
+      records = records.filter(record => {
+        const achievement = parseFloat(record.achievements);
+        
+        if (achievementRange.min !== undefined && achievement < achievementRange.min) {
+          return false;
+        }
+        
+        if (achievementRange.max !== undefined && achievement > achievementRange.max) {
+          return false;
+        }
+        
+        return true;
+      });
+    }
+    
+    // FC状态筛选
+    if (fcType) {
+      records = records.filter(record => record.fc === fcType);
+    }
+    
+    // FS状态筛选
+    if (fsType) {
+      records = records.filter(record => record.fs === fsType);
     }
     
     // 排序逻辑

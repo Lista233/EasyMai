@@ -8,8 +8,8 @@
           <input 
             v-model="searchKeyword" 
             type="text" 
-            placeholder="输入歌曲名称/别名/ID进行搜索"
-            @input="onSearch"
+            placeholder="请输入乐曲名称|别名|ID|曲/谱师"
+            @input="onSearchInput"
           />
           <view class="view-toggle" @click="toggleViewMode">
             <uni-icons :type="viewMode === 'grid' ? 'image' : 'list'" size="20" color="#ffffff"></uni-icons>
@@ -271,6 +271,10 @@ import { ref, onMounted, computed, watch } from 'vue'
 import SongSearcher from '@/utils/songSearcher.js'
 import SongService from '@/utils/songService.js'
 import {getCoverUrl,initCoverList} from '../../util/coverManager.js'
+
+// 添加防抖相关变量
+const searchTimeout = ref(null)
+const debounceDelay = 300 // 300毫秒的防抖延迟
 
 // 原有的响应式状态
 const searcher = ref(null)
@@ -864,6 +868,19 @@ const getDifficultyStyle = (levelIndex) => {
 const getDifficultyLabel = (levelIndex) => {
   const labels = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:Master']
   return labels[levelIndex] || ''
+}
+
+// 修改输入事件处理函数，添加防抖
+const onSearchInput = (e) => {
+  // 清除之前的定时器
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+  
+  // 设置新的定时器
+  searchTimeout.value = setTimeout(() => {
+    onSearch()
+  }, debounceDelay)
 }
 </script>
 
