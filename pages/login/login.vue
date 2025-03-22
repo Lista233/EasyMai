@@ -31,7 +31,7 @@
               class="form-input"
               type="text"
               v-model="loginForm.username"
-              placeholder="请输入水鱼用户名"
+              placeholder="请输入用户名"
               :disabled="isLoading"
             />
           </view>
@@ -65,7 +65,7 @@
             @click="handleLogin"
             :disabled="isLoading"
           >
-            <view class="button-content" v-if="!isLoading">登录水鱼账号</view>
+            <view class="button-content" v-if="!isLoading">登录水鱼查分器账号</view>
             <view class="loading-spinner" v-else></view>
           </button>
         </view>
@@ -123,9 +123,9 @@
           
           <button 
             class="register-button" 
-            :class="{ 'loading': isLoading, 'disabled': !agreeToTerms }" 
+            :class="{ 'loading': isLoading}" 
             @click="handleRegister"
-            :disabled="isLoading || !agreeToTerms"
+            :disabled="isLoading"
           >
             <view class="button-content" v-if="!isLoading">注册水鱼账号</view>
             <view class="loading-spinner" v-else></view>
@@ -291,6 +291,7 @@ async function setProfile(token) {
     const records = await maiApi.divingFishGetRecords(token);
     uni.setStorageSync('divingFish_records', records);
     await getb50()
+
     return profile;
   } catch (error) {
     console.error('获取用户资料失败:', error);
@@ -368,9 +369,8 @@ async function getb50(){
 		
 		let res = await maiApi.divingFishgetb50(profile.bind_qq, profile.username);
 		uni.hideLoading();
-	
 		uni.setStorageSync('b50', res);
-		
+		console.log('b50',res)
 		// 计算并保存 rating 值
 		if (res.data) {
 			let b35 = res.data.charts.sd;
@@ -405,7 +405,9 @@ async function getb50(){
 }
 // 注册处理
 const handleRegister = async () => {
+	console.log('我点击了注册')
   if (!registerForm.username || !registerForm.password || !registerForm.confirmPassword) {
+	  console.log('我没填表单')
     uni.showToast({
       title: '请填写完整信息',
       icon: 'none'
@@ -413,7 +415,8 @@ const handleRegister = async () => {
     return;
   }
   
-  if (registerForm.password !== registerForm.confirmPassword) {
+ else if (registerForm.password !== registerForm.confirmPassword) {
+	 console.log('我密码不一致')
     uni.showToast({
       title: '两次密码输入不一致',
       icon: 'none'
@@ -421,11 +424,12 @@ const handleRegister = async () => {
     return;
   }
   
-  if (!agreeToTerms.value) {
+ else if (!agreeToTerms.value) {
+	console.log('我没接受协议')
     uni.showToast({
       title: '请先接受用户协议',
       icon: 'none',
-      duration: 1000
+      //duration: 1500
     });
     return;
   }
@@ -438,23 +442,25 @@ const handleRegister = async () => {
       registerForm.username,
       registerForm.password
     );
-    
-    if (response.status === 200) {
+	console.log(response)
+    if (response.statusCode === 200) {
       uni.showToast({
         title: '注册成功，请登录',
-        icon: 'success'
+        icon: 'none'
       });
-      
+	 loginForm.username = registerForm.username;
+	 loginForm.password = registerForm.password;
       // 清空注册表单
       registerForm.username = '';
       registerForm.password = '';
       registerForm.confirmPassword = '';
+
       
       // 切换到登录模式
       isRegisterMode.value = false;
       
       // 自动填充登录表单
-      loginForm.username = registerForm.username;
+    
     } else {
       uni.showToast({
         title: response.data.message || '注册失败，请稍后再试',
@@ -463,7 +469,7 @@ const handleRegister = async () => {
     }
   } catch (error) {
     console.error('注册失败:', error);
-    const errorMessage = error.response?.data?.message || '注册失败，请稍后再试';
+    const errorMessage = error.response?.data?.message || '注册失败,用户名已存在或网络异常';
     
     if (errorMessage.includes('已存在')) {
       uni.showToast({

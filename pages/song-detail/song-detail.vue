@@ -75,41 +75,42 @@
 
       <!-- 难度详情 -->
       <view class="difficulty-details" :class="difficulties[currentDiffIndex].class">
-        <!-- 定数和拟合难度显示 -->
+        <!-- 定数和谱师显示 -->
         <view class="info-row">
           <view class="info-pair">
-            <text class="label">定数:</text>
+            <text class="label">官方定数:</text>
             <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
               {{ (dataLoading || statsLoading) ? '' : songData.ds[currentDiffIndex] }}
             </text>
           </view>
-          <view class="info-pair">
-            <text class="label">拟合难度:</text>
-            <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
-              {{ (dataLoading || statsLoading) ? '' : (fitDiff ? fitDiff.toFixed(2) : '-') }}
-            </text>
-          </view>
+		  <view class="info-pair">
+		    <text class="label">谱面谱师:</text>
+		    <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
+		      {{ (dataLoading || statsLoading) ? '' : (songData.charts[currentDiffIndex]?.charter || '-') }}
+		    </text>
+		  </view>
         </view>
 
         <!-- 谱师和平均达成率 -->
         <view class="chart-info">
-          <view class="info-pair">
-            <text class="label">谱师:</text>
-            <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
-              {{ (dataLoading || statsLoading) ? '' : songData.charts[currentDiffIndex].charter }}
-            </text>
-          </view>
+			<view class="info-pair">
+			  <text class="label">拟合难度:</text>
+			  <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
+			    {{ (dataLoading || statsLoading) ? '' : (fitDiff ? fitDiff.toFixed(2) : '-') }}
+			  </text>
+			</view>
           <view class="info-pair">
             <text class="label">平均达成:</text>
             <text class="value" :class="{'skeleton': dataLoading || statsLoading}">
               {{ (dataLoading || statsLoading) ? '' : (avgAchievement ? avgAchievement.toFixed(2) + '%' : '-') }}
             </text>
           </view>
+	
         </view>
 
         <!-- Notes数据 -->
         <view class="notes-info">
-          <text class="label">Notes详情：</text>
+      
           <view class="notes-grid">
             <view 
               class="note-item" 
@@ -146,7 +147,11 @@
               </view>
               <view class="detail-item">
                 <text class="label">连击|同步</text>
-                <text class="value">{{formatCombo(currentRecord?.fc) || '-'}} | {{formatFS(currentRecord?.fs) || '-'}}</text>
+                <view class="combo-sync-container">
+                  <text class="value combo" :class="getComboClass(currentRecord?.fc)">{{formatCombo(currentRecord?.fc) || '-'}}</text>
+                  <text class="separator">|</text>
+                  <text class="value sync" :class="getSyncClass(currentRecord?.fs)">{{formatFS(currentRecord?.fs) || '-'}}</text>
+                </view>
               </view>
             </view>
           </view>
@@ -162,7 +167,11 @@
               </view>
               <view class="detail-item">
                 <text class="label">连击|同步</text>
-                <text class="value skeleton-text">-- | --</text>
+                <view class="combo-sync-container">
+                  <text class="value combo skeleton-text">--</text>
+                  <text class="separator skeleton-text">|</text>
+                  <text class="value sync skeleton-text">--</text>
+                </view>
               </view>
             </view>
           </view>
@@ -172,16 +181,14 @@
         <view class="tools-section">
           <view class="tools-container">
 			  <button class="tool-btn" :class="difficulties[currentDiffIndex].class" @click="navToBiliBili(songData.title)">
-			      <text class="iconfont icon-alias"></text>
-			      跳转B站查看视频
+			      <text class="iconfont">   跳转B站<p>查看视频</p></text>
 			</button>
             <button class="tool-btn alias-btn" @click="showAliasDialog" :class="difficulties[currentDiffIndex].class">
-              <text class="iconfont icon-alias"></text>
-              查看别名
+              <text class="iconfont">查看别名</text>
             </button>
-    
           </view>
         </view>
+		
       </view>
     </view>
   </view>
@@ -205,6 +212,7 @@
       </view>
     </view>
   </uni-popup>
+
 </template>
 
 <script setup>
@@ -215,7 +223,7 @@ import * as maiApi from '../../api/maiapi.js'
 import { onLoad, onHide, onShow } from '@dcloudio/uni-app'
 import { getCoverUrl, isLoading } from '@/util/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
-import {openBiliSearch} from '@/utils/biliUtils.js'
+
 
 // 加载状态控制
 const pageLoaded = ref(false)  // 页面基础结构是否加载完成
@@ -696,6 +704,7 @@ const copyTitle = () => {
   }
 }
 
+// 修改 navToBiliBili 函数
 function navToBiliBili(keyword) {
   // 显示加载弹窗
   uni.showLoading({
@@ -726,8 +735,19 @@ function navToBiliBili(keyword) {
   uni.$once('page-hide', hideCallback);
   uni.$once('page-show', showCallback);
   
-  // 跳转到B站
-  openBiliSearch(keyword);
+  // 跳转到B站，并处理用户取消的情况
+  openBiliSearch(keyword, {
+    showError: true,
+    useWebFallback: true
+  }).then(result => {
+    // 如果用户取消了跳转（result为false），关闭加载框
+    if (!result) {
+      uni.hideLoading();
+      clearTimeout(timeout);
+      uni.$off('page-show', showCallback);
+      uni.$off('page-hide', hideCallback);
+    }
+  });
 }
 
 // 在页面的生命周期钩子中
@@ -754,6 +774,22 @@ const copyId = () => {
     })
   }
 }
+
+// 获取连击样式类
+const getComboClass = (fc) => {
+  if (!fc) return '';
+  if (fc.includes('ap')) return 'ap-combo';
+  if (fc.includes('fc')) return 'fc-combo';
+  return '';
+};
+
+// 获取同步样式类
+const getSyncClass = (fs) => {
+  if (!fs) return '';
+  if (fs.includes('fsd')) return 'fsd-sync';
+  if (fs.includes('fs') || fs === 'sync') return 'fs-sync';
+  return '';
+};
 </script>
 
 <style lang="scss">
@@ -763,21 +799,21 @@ const copyId = () => {
   box-sizing: border-box;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-
+ 
   &.basic {
-    background: linear-gradient(135deg, rgba(55, 160, 59, 0.05) 0%, #f8f8f8 100%);
+    background: linear-gradient(135deg, rgba(46, 213, 115, 0.15) 0%, #f8f8f8 100%);
   }
   &.advanced {
-    background: linear-gradient(135deg, rgba(230, 162, 60, 0.05) 0%, #f8f8f8 100%);
+    background: linear-gradient(135deg, rgba(255, 159, 26, 0.15) 0%, #f8f8f8 100%);
   }
   &.expert {
-    background: linear-gradient(135deg, rgba(232, 60, 60, 0.05) 0%, #f8f8f8 100%);
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.15) 0%, #f8f8f8 100%);
   }
   &.master {
-    background: linear-gradient(135deg, rgba(156, 81, 182, 0.05) 0%, #f8f8f8 100%);
+    background: linear-gradient(135deg, rgba(156, 136, 255, 0.15) 0%, #f8f8f8 100%);
   }
   &.remaster {
-    background: linear-gradient(135deg, rgba(224, 163, 255, 0.05) 0%, #f8f8f8 100%);
+    background: linear-gradient(135deg, rgba(224, 163, 255, 0.15) 0%, #f8f8f8 100%);
   }
 }
 
@@ -836,38 +872,39 @@ const copyId = () => {
   
   // 不同难度的边框和背景色
   &.basic {
-    border-color: #37a03b;
-    background: linear-gradient(135deg, rgba(55, 160, 59, 0.05), transparent);
-    .title-decoration { background: #37a03b; }
-    .cover-container { border-color: #37a03b; }
-    .label-decoration { background: #37a03b; }
+    border-color: #2ed573;
+    background: linear-gradient(135deg, rgba(46, 213, 115, 0.35), rgba(46, 213, 115, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f); }
+    .cover-container { border-color: #2ed573; }
+    .label-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f); }
   }
   &.advanced {
-    border-color: #e6a23c;
-    background: linear-gradient(135deg, rgba(214, 139, 22, 0.05), transparent);
-    .title-decoration { background: #e6a23c; }
-    .cover-container { border-color: #e6a23c; }
+    border-color: #ff9f1a;
+    background: linear-gradient(135deg, rgba(255, 159, 26, 0.35), rgba(255, 159, 26, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57); }
+    .cover-container { border-color: #ff9f1a; }
+    .label-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57); }
   }
   &.expert {
-    border-color: #e83c3c;
-    background: linear-gradient(135deg, rgba(232, 60, 60, 0.05), transparent);
-    .title-decoration { background: #e83c3c; }
-    .cover-container { border-color: #e83c3c; }
-    .label-decoration { background: #e83c3c; }
+    border-color: #ff4757;
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.35), rgba(255, 71, 87, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81); }
+    .cover-container { border-color: #ff4757; }
+    .label-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81); }
   }
   &.master {
-    border-color: #9c51b6;
-    background: linear-gradient(135deg, rgba(156, 81, 182, 0.05), transparent);
-    .title-decoration { background: #9c51b6; }
-    .cover-container { border-color: #9c51b6; }
-    .label-decoration { background: #9c51b6; }
+    border-color: #9c88ff;
+    background: linear-gradient(135deg, rgba(156, 136, 255, 0.35), rgba(156, 136, 255, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd); }
+    .cover-container { border-color: #9c88ff; }
+    .label-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd); }
   }
   &.remaster {
     border-color: #e0a3ff;
-    background: linear-gradient(135deg, rgba(224, 163, 255, 0.05), transparent);
-    .title-decoration { background: #e0a3ff; }
+    background: linear-gradient(135deg, rgba(224, 163, 255, 0.35), rgba(224, 163, 255, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff); }
     .cover-container { border-color: #e0a3ff; }
-    .label-decoration { background: #e0a3ff; }
+    .label-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff); }
   }
 
   .song-id {
@@ -895,7 +932,7 @@ const copyId = () => {
   .difficulty-tab {
     flex: 1;
     min-width: 0;
-    padding: 20rpx 8rpx; // 减小内边距
+    padding: 20rpx 8rpx;
     text-align: center;
     border-radius: 8rpx;
     background: rgba(255, 255, 255, 0.8);
@@ -910,7 +947,7 @@ const copyId = () => {
     justify-content: center;
     
     text {
-      font-size: 24rpx; // 减小字体大小
+      font-size: 24rpx;
       line-height: 1.2;
       display: block;
       width: 100%;
@@ -938,194 +975,50 @@ const copyId = () => {
       transform: translateY(-2rpx);
       
       &.basic {
-        border-color: #37a03b;
-        color: #37a03b;
-        background: linear-gradient(to bottom, rgba(55, 160, 59, 0.1), rgba(55, 160, 59, 0.2));
+        background: linear-gradient(135deg, #2ed573, #7bed9f);
+        border-color: #2ed573;
+        color: white;
       }
       
       &.advanced {
-        border-color: #e6a23c;
-        color: #d68b16;
-        background: linear-gradient(to bottom, rgba(214, 139, 22, 0.1), rgba(214, 139, 22, 0.2));
+        background: linear-gradient(135deg, #ff9f1a, #feca57);
+        border-color: #ff9f1a;
+        color: white;
       }
       
       &.expert {
-        border-color: #e83c3c;
-        color: #e83c3c;
-        background: linear-gradient(to bottom, rgba(232, 60, 60, 0.1), rgba(232, 60, 60, 0.2));
+        background: linear-gradient(135deg, #ff4757, #ff6b81);
+        border-color: #ff4757;
+        color: white;
       }
       
       &.master {
-        border-color: #9c51b6;
-        color: #9c51b6;
-        background: linear-gradient(to bottom, rgba(156, 81, 182, 0.1), rgba(156, 81, 182, 0.2));
+        background: linear-gradient(135deg, #9c88ff, #c4b5fd);
+        border-color: #9c88ff;
+        color: white;
       }
       
       &.remaster {
+        background: linear-gradient(135deg, #e0a3ff, #f0d0ff);
         border-color: #e0a3ff;
-        color: #e0a3ff;
-        background: linear-gradient(to bottom, rgba(224, 163, 255, 0.1), rgba(224, 163, 255, 0.2));
+        color: white;
       }
     }
   }
 }
 
-.difficulty-details {
-  padding: 30rpx;
-  border-radius: 12rpx;
-  transition: all 0.3s ease;
-  
-  &.basic { 
-    background: rgba(55, 160, 59, 0.1);
-    .label { color: #37a03b; }
-    .value { color: #2f8a33; }
-  }
-  &.advanced { 
-    background: rgba(243, 192, 95, 0.1);
-    .label { color: #d4a64a; }
-    .value { color: #b38a3d; }
-  }
-  &.expert { 
-    background: rgba(232, 60, 60, 0.1);
-    .label { color: #e83c3c; }
-    .value { color: #c93535; }
-  }
-  &.master { 
-    background: rgba(156, 81, 182, 0.1);
-    .label { color: #9c51b6; }
-    .value { color: #854b9b; }
-  }
-  &.remaster { 
-    background: rgba(224, 163, 255, 0.1);
-    .label { color: #c58de0; }
-    .value { color: #a974c4; }
-  }
-
-  .info-row, .chart-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20rpx;
-    
-    .info-pair {
-      display: flex;
-      align-items: flex-start;
-      
-      &:first-child {
-        flex: 1;
-        min-width: 0;
-        margin-right: 20rpx;
-        
-        .value {
-          word-break: break-all;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-        }
-      }
-      
-      &:last-child {
-        min-width: 240rpx; // 固定最小宽度
-        justify-content: flex-end; // 右对齐
-        text-align: right; // 文本右对齐
-        
-        .label {
-          text-align: right;
-        }
-        
-        .value {
-          text-align: right;
-          min-width: 100rpx; // 确保数值有足够空间
-        }
-      }
-
-      .label {
-        font-size: 28rpx;
-        font-weight: 600;
-        margin-right: 10rpx;
-        white-space: nowrap;
-      }
-      
-      .value {
-        font-size: 32rpx;
-        font-weight: 700;
-      }
-    }
-  }
-
-  .notes-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6rpx;
-    margin-top: 16rpx;
-    
-    .note-item {
-      text-align: center;
-      padding: 16rpx 12rpx;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 8rpx;
-      backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 8rpx;
-      min-height: 100rpx;
-      min-width: 0;
-      width: 100%;
-      box-sizing: border-box;
-      transition: all 0.3s ease;
-      
-      .basic & {
-        border: 1px solid rgba(55, 160, 59, 0.2);
-        .note-type { color: #37a03b; }
-        .note-count { color: #2f8a33; }
-      }
-      
-      .advanced & {
-        border: 1px solid rgba(243, 192, 95, 0.2);
-        .note-type { color: #d4a64a; }
-        .note-count { color: #b38a3d; }
-      }
-      
-      .expert & {
-        border: 1px solid rgba(232, 60, 60, 0.2);
-        .note-type { color: #e83c3c; }
-        .note-count { color: #c93535; }
-      }
-      
-      .master & {
-        border: 1px solid rgba(156, 81, 182, 0.2);
-        .note-type { color: #9c51b6; }
-        .note-count { color: #854b9b; }
-      }
-      
-      .remaster & {
-        border: 1px solid rgba(224, 163, 255, 0.2);
-        .note-type { color: #c58de0; }
-        .note-count { color: #a974c4; }
-      }
-      
-      .note-type {
-        font-size: 24rpx;
-        font-weight: 500;
-        line-height: 1.4;
-      }
-      
-      .note-count {
-        font-size: 32rpx;
-        font-weight: 700;
-        line-height: 1.4;
-      }
-    }
-  }
-}
 
 .basic-info {
+  display: flex;
   margin-top: 0rpx;
   padding: 28rpx;
   max-height: 150rpx;
+  min-height: 150rpx;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12rpx;
-  
+  justify-content: center;
+  align-items: self-start;
+  flex-direction: column;
   .info-row {
     display: flex;
     align-items: flex-start;
@@ -1134,6 +1027,7 @@ const copyId = () => {
     .label-wrapper {
       display: flex;
       align-items: center;
+
       min-width: 100rpx;
       
       .label {
@@ -1195,127 +1089,9 @@ const copyId = () => {
     }
 }
 
-.player-record {
-  margin-top: 30rpx;
-  padding: 30rpx;
-  background: #f8f8f8;
-  border-radius: 12rpx;
-  
-  .record-header {
-    margin-bottom: 20rpx;
-    
-    .section-title {
-      font-size: 28rpx;
-      color: #666;
-      font-weight: 500;
-    }
-  }
-  
-  .record-content {
-    .achievement-section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20rpx;
-      
-      .achievement-value {
-        font-size: 48rpx;
-        font-weight: bold;
-        
-        &.sssp, &.sss {
-          background: linear-gradient(45deg, 
-            #ff4757,
-            #ff7f50,
-            #ffa502,
-            #70a1ff,
-            #7f50ff,
-            #ff6b81
-          );
-          background-clip: text;
-          -webkit-background-clip: text;
-          color: transparent;
-        }
-        
-        &.ssp, &.ss, &.sp, &.s {
-          background: linear-gradient(45deg, 
-            #ffd700,
-            #ffa500,
-            #ffd700
-          );
-          background-clip: text;
-          -webkit-background-clip: text;
-          color: transparent;
-        }
-      }
-    }
-    
-    .record-details {
-      display: flex;
-      flex-direction: column;
-      gap: 12rpx;
-      
-      .detail-item {
-        display: flex;
-        align-items: center;
-        gap: 16rpx;
-        
-        .label {
-          font-size: 26rpx;
-          color: #666;
-        }
-        
-        .value {
-          font-size: 28rpx;
-          font-weight: 500;
-          
-          &.ra {
-            &.rainbow { color: #ff4757; }
-            &.bright-gold { color: #ffa502; }
-            &.gold { color: #ffd700; }
-            &.blue { color: #70a1ff; }
-            &.copper { color: #cd7f32; }
-          }
-        }
-      }
-    }
-  }
-}
 
-.tools-section {
-  margin-top: 20rpx;
-  padding: 20rpx;
-  background: linear-gradient(to bottom, #f8f8f8, #f8f8f8);
-  border-radius: 12rpx;
-  // box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
 
-  .tools-container {
-    display: flex;
-    gap: 20rpx;
-     background: linear-gradient(to bottom, #f8f8f8, #f8f8f8);
-    .tool-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 15rpx 30rpx;
-      background: #ffffff;
-      border: 2rpx solid #e2e8f0;
-      border-radius: 8rpx;
-      font-size: 28rpx;
-      color: #64748b;
-      transition: all 0.3s ease;
-      
-      &:hover {
-        background: #f8fafc;
-        transform: translateY(-2rpx);
-      }
-      
-      .iconfont {
-        margin-right: 10rpx;
-        font-size: 24rpx;
-      }
-    }
-  }
-}
+
 
 .alias-popup {
   width: 600rpx;
@@ -1419,50 +1195,60 @@ const copyId = () => {
      
       
       .tool-btn {
-        min-height: 260rpx;
-        padding: 12rpx;
+        min-height: 80rpx;
+        min-width: 120rpx;
         width: 100%;
+        line-height: 36rpx;
         text-align: center;
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: center;
         gap: 6rpx;
-        
-        border-radius: 8rpx;
-        transition: all 0.3s ease;
-        padding: 12rpx;
-       
-        
+        font-size: 28rpx;
+        border-radius: 16rpx;
+        font-weight: bold;
+        padding-top: 40rpx;
+        padding-bottom: 40rpx;       
+        padding-left: 12rpx;
+        padding-right: 12rpx;
+        box-shadow: 4rpx 4rpx 12rpx rgba(0, 0, 0, 0.09);
+
+        box-sizing: border-box;
         &:active {
           transform: translateY(2rpx);
           box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);
         }
         
         &.basic { 
-          color: #37a03b;
-          background: rgba(55, 160, 59, 0.1);
-          border-color: #37a03b;
+          color: white;
+          border: 2rpx solid #2ed573;
+          border-color: #2ed573;
+          background: linear-gradient(135deg, #2ed573, #7bed9f);
         }
         &.advanced { 
-          color: #e6a23c;
-          background: rgba(230, 162, 60, 0.1);
-          border-color: #e6a23c;
+          color: white;
+          border: 2rpx solid #ff9f1a;
+          border-color: #ff9f1a;
+          background: linear-gradient(135deg, #ff9f1a, #feca57);
         }
         &.expert { 
-          color: #e83c3c;
-          background: rgba(232, 60, 60, 0.1);
-          border-color: #e83c3c;
+          color: white;
+          border: 2rpx solid #ff4757;
+          border-color: #ff4757;
+          background: linear-gradient(135deg, #ff4757, #ff6b81);
         }
         &.master { 
-          color: #9c51b6;
-          background: rgba(156, 81, 182, 0.1);
-          border-color: #9c51b6;
+          color: white;
+          border: 2rpx solid #9c88ff;
+          border-color: #9c88ff;
+          background: linear-gradient(135deg, #9c88ff, #a99ae7);
         }
         &.remaster { 
-          color: #e0a3ff;
-          background: rgba(224, 163, 255, 0.1);
+          color: white;
+          border: 2rpx solid #e0a3ff; 
           border-color: #e0a3ff;
+          background: linear-gradient(135deg, #e0a3ff, #f0d0ff);
         }
         
         .iconfont {
@@ -1503,31 +1289,7 @@ const copyId = () => {
   }
 }
 
-// 修改难度标签的颜色，使其继承卡片的主题色
-.difficulty-tab {
-  &.active {
-    &.basic { 
-      color: #37a03b;
-      .title-decoration, .label-decoration { background: #37a03b; }
-    }
-    &.advanced { 
-      color: #d68b16;
-      .title-decoration, .label-decoration { background: #e6a23c; }
-    }
-    &.expert { 
-      color: #e83c3c;
-      .title-decoration, .label-decoration { background: #e83c3c; }
-    }
-    &.master { 
-      color: #9c51b6;
-      .title-decoration, .label-decoration { background: #9c51b6; }
-    }
-    &.remaster { 
-      color: #e0a3ff;
-      .title-decoration, .label-decoration { background: #e0a3ff; }
-    }
-  }
-}
+
 
 .song-header {
   display: flex;
@@ -1614,38 +1376,39 @@ const copyId = () => {
   
   // 不同难度的边框和背景色
   &.basic {
-    border-color: #37a03b;
-    background: linear-gradient(135deg, rgba(55, 160, 59, 0.05), transparent);
-    .title-decoration { background: #37a03b; }
-    .cover-container { border-color: #37a03b; }
-    .label-decoration { background: #37a03b; }
+    border-color: #2ed573;
+    background: linear-gradient(135deg, rgba(46, 213, 115, 0.35), rgba(46, 213, 115, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f); }
+    .cover-container { border-color: #2ed573; }
+    .label-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f); }
   }
   &.advanced {
-    border-color: #e6a23c;
-    background: linear-gradient(135deg, rgba(214, 139, 22, 0.05), transparent);
-    .title-decoration { background: #e6a23c; }
-    .cover-container { border-color: #e6a23c; }
+    border-color: #ff9f1a;
+    background: linear-gradient(135deg, rgba(255, 159, 26, 0.35), rgba(255, 159, 26, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57); }
+    .cover-container { border-color: #ff9f1a; }
+    .label-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57); }
   }
   &.expert {
-    border-color: #e83c3c;
-    background: linear-gradient(135deg, rgba(232, 60, 60, 0.05), transparent);
-    .title-decoration { background: #e83c3c; }
-    .cover-container { border-color: #e83c3c; }
-    .label-decoration { background: #e83c3c; }
+    border-color: #ff4757;
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.35), rgba(255, 71, 87, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81); }
+    .cover-container { border-color: #ff4757; }
+    .label-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81); }
   }
   &.master {
-    border-color: #9c51b6;
-    background: linear-gradient(135deg, rgba(156, 81, 182, 0.05), transparent);
-    .title-decoration { background: #9c51b6; }
-    .cover-container { border-color: #9c51b6; }
-    .label-decoration { background: #9c51b6; }
+    border-color: #9c88ff;
+    background: linear-gradient(135deg, rgba(156, 136, 255, 0.35), rgba(156, 136, 255, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd); }
+    .cover-container { border-color: #9c88ff; }
+    .label-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd); }
   }
   &.remaster {
     border-color: #e0a3ff;
-    background: linear-gradient(135deg, rgba(224, 163, 255, 0.05), transparent);
-    .title-decoration { background: #e0a3ff; }
+    background: linear-gradient(135deg, rgba(224, 163, 255, 0.35), rgba(224, 163, 255, 0.1));
+    .title-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff); }
     .cover-container { border-color: #e0a3ff; }
-    .label-decoration { background: #e0a3ff; }
+    .label-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff); }
   }
 
   .song-id {
@@ -1673,7 +1436,7 @@ const copyId = () => {
   .difficulty-tab {
     flex: 1;
     min-width: 0;
-    padding: 20rpx 8rpx; // 减小内边距
+    padding: 20rpx 8rpx;
     text-align: center;
     border-radius: 8rpx;
     background: rgba(255, 255, 255, 0.8);
@@ -1688,7 +1451,7 @@ const copyId = () => {
     justify-content: center;
     
     text {
-      font-size: 24rpx; // 减小字体大小
+      font-size: 24rpx;
       line-height: 1.2;
       display: block;
       width: 100%;
@@ -1716,33 +1479,33 @@ const copyId = () => {
       transform: translateY(-2rpx);
       
       &.basic {
-        border-color: #37a03b;
-        color: #37a03b;
-        background: linear-gradient(to bottom, rgba(55, 160, 59, 0.1), rgba(55, 160, 59, 0.2));
+        background: linear-gradient(135deg, #2ed573, #7bed9f);
+        border-color: #2ed573;
+        color: white;
       }
       
       &.advanced {
-        border-color: #e6a23c;
-        color: #d68b16;
-        background: linear-gradient(to bottom, rgba(214, 139, 22, 0.1), rgba(214, 139, 22, 0.2));
+        background: linear-gradient(135deg, #ff9f1a, #feca57);
+        border-color: #ff9f1a;
+        color: white;
       }
       
       &.expert {
-        border-color: #e83c3c;
-        color: #e83c3c;
-        background: linear-gradient(to bottom, rgba(232, 60, 60, 0.1), rgba(232, 60, 60, 0.2));
+        background: linear-gradient(135deg, #ff4757, #ff6b81);
+        border-color: #ff4757;
+        color: white;
       }
       
       &.master {
-        border-color: #9c51b6;
-        color: #9c51b6;
-        background: linear-gradient(to bottom, rgba(156, 81, 182, 0.1), rgba(156, 81, 182, 0.2));
+        background: linear-gradient(135deg, #9c88ff, #c4b5fd);
+        border-color: #9c88ff;
+        color: white;
       }
       
       &.remaster {
+        background: linear-gradient(135deg, #e0a3ff, #f0d0ff);
         border-color: #e0a3ff;
-        color: #e0a3ff;
-        background: linear-gradient(to bottom, rgba(224, 163, 255, 0.1), rgba(224, 163, 255, 0.2));
+        color: white;
       }
     }
   }
@@ -1753,68 +1516,105 @@ const copyId = () => {
   border-radius: 12rpx;
   transition: all 0.3s ease;
   
-  &.basic { 
-    background: rgba(55, 160, 59, 0.1);
-    .label { color: #37a03b; }
-    .value { color: #2f8a33; }
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:30rpx;
+  font-size: 28rpx;
+  grid-template-areas: 
+    "info-row chart-info"
+    "notes-info notes-info";
+  
+  &.basic {
+    border-color: #2ed573;
+    background: linear-gradient(to bottom, rgba(46, 213, 115, 0.2), rgba(46, 213, 115, 0.35));
+    
+    .info-pair {
+      .label { color: rgba(46, 213, 115, 0.9); }
+      .value { color: #2ed573; }
+    }
+    
+    .note-item {
+      border: 1px solid rgba(46, 213, 115, 0.2);
+      .note-type { color: rgba(46, 213, 115, 0.8); }
+      .note-count { color: #2ed573; }
+    }
   }
-  &.advanced { 
-    background: rgba(243, 192, 95, 0.1);
-    .label { color: #d4a64a; }
-    .value { color: #b38a3d; }
+  
+  &.advanced {
+    border-color: #ff9f1a;
+    background: linear-gradient(to bottom, rgba(255, 159, 26, 0.2), rgba(255, 159, 26, 0.35));
+    
+    .info-pair {
+      .label { color: rgba(255, 159, 26, 0.9); }
+      .value { color: #ff9f1a; }
+    }
+    
+    .note-item {
+      border: 1px solid rgba(255, 159, 26, 0.2);
+      .note-type { color: rgba(255, 159, 26, 0.8); }
+      .note-count { color: #ff9f1a; }
+    }
   }
-  &.expert { 
-    background: rgba(232, 60, 60, 0.1);
-    .label { color: #e83c3c; }
-    .value { color: #c93535; }
+  
+  &.expert {
+    border-color: #ff4757;
+    background: linear-gradient(to bottom, rgba(255, 71, 87, 0.2), rgba(255, 71, 87, 0.35));
+    
+    .info-pair {
+      .label { color: rgba(255, 71, 87, 0.9); }
+      .value { color: #ff4757; }
+    }
+    
+    .note-item {
+      border: 1px solid rgba(255, 71, 87, 0.2);
+      .note-type { color: rgba(255, 71, 87, 0.8); }
+      .note-count { color: #ff4757; }
+    }
   }
-  &.master { 
-    background: rgba(156, 81, 182, 0.1);
-    .label { color: #9c51b6; }
-    .value { color: #854b9b; }
+  
+  &.master {
+    border-color: #9c88ff;
+    background: linear-gradient(to bottom, rgba(156, 136, 255, 0.2), rgba(156, 136, 255, 0.35));
+    
+    .info-pair {
+      .label { color: rgba(156, 136, 255, 0.9); }
+      .value { color: #9c88ff; }
+    }
+    
+    .note-item {
+      border: 1px solid rgba(156, 136, 255, 0.2);
+      .note-type { color: rgba(156, 136, 255, 0.8); }
+      .note-count { color: #9c88ff; }
+    }
   }
-  &.remaster { 
-    background: rgba(224, 163, 255, 0.1);
-    .label { color: #c58de0; }
-    .value { color: #a974c4; }
+  
+  &.remaster {
+    border-color: #e0a3ff;
+    background: linear-gradient(to bottom, rgba(224, 163, 255, 0.2), rgba(224, 163, 255, 0.35));
+    
+    .info-pair {
+      .label { color: rgba(224, 163, 255, 0.9); }
+      .value { color: #e0a3ff; }
+    }
+    
+    .note-item {
+      border: 1px solid rgba(224, 163, 255, 0.2);
+      .note-type { color: rgba(224, 163, 255, 0.8); }
+      .note-count { color: #e0a3ff; }
+    }
   }
 
-  .info-row, .chart-info {
+  .info-row {
+    grid-area: info-row;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 20rpx;
     
     .info-pair {
-      display: flex;
-      align-items: flex-start;
+     // display: flex;
+     // align-items: flex-start;
       
-      &:first-child {
-        flex: 1;
-        min-width: 0;
-        margin-right: 20rpx;
-        
-        .value {
-          word-break: break-all;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
-        }
-      }
-      
-      &:last-child {
-        min-width: 240rpx; // 固定最小宽度
-        justify-content: flex-end; // 右对齐
-        text-align: right; // 文本右对齐
-        
-        .label {
-          text-align: right;
-        }
-        
-        .value {
-          text-align: right;
-          min-width: 100rpx; // 确保数值有足够空间
-        }
-      }
+ 
 
       .label {
         font-size: 28rpx;
@@ -1830,11 +1630,42 @@ const copyId = () => {
     }
   }
 
+  .chart-info {
+    grid-area: chart-info;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20rpx;
+    
+    .info-pair {
+     // display: flex;
+     // align-items: flex-start;
+      
+ 
+
+      .label {
+        font-size: 28rpx;
+        font-weight: 1000;
+        margin-right: 10rpx;
+        white-space: nowrap;
+      }
+      
+      .value {
+        font-size: 32rpx;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .notes-info {
+    grid-area: notes-info;
+    width: 100%;
+  }
+
   .notes-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6rpx;
-    margin-top: 16rpx;
+    margin-top: -45rpx;
     
     .note-item {
       text-align: center;
@@ -1851,36 +1682,6 @@ const copyId = () => {
       width: 100%;
       box-sizing: border-box;
       transition: all 0.3s ease;
-      
-      .basic & {
-        border: 1px solid rgba(55, 160, 59, 0.2);
-        .note-type { color: #37a03b; }
-        .note-count { color: #2f8a33; }
-      }
-      
-      .advanced & {
-        border: 1px solid rgba(243, 192, 95, 0.2);
-        .note-type { color: #d4a64a; }
-        .note-count { color: #b38a3d; }
-      }
-      
-      .expert & {
-        border: 1px solid rgba(232, 60, 60, 0.2);
-        .note-type { color: #e83c3c; }
-        .note-count { color: #c93535; }
-      }
-      
-      .master & {
-        border: 1px solid rgba(156, 81, 182, 0.2);
-        .note-type { color: #9c51b6; }
-        .note-count { color: #854b9b; }
-      }
-      
-      .remaster & {
-        border: 1px solid rgba(224, 163, 255, 0.2);
-        .note-type { color: #c58de0; }
-        .note-count { color: #a974c4; }
-      }
       
       .note-type {
         font-size: 24rpx;
@@ -1935,8 +1736,8 @@ const copyId = () => {
   &.basic .label-decoration { background: #37a03b; }
   &.advanced .label-decoration { background: #e6a23c; }
   &.expert .label-decoration { background: #e83c3c; }
-  &.master .label-decoration { background: #b264bf; }
-  &.remaster .label-decoration { background: rgb(170, 81, 196); }
+  &.master .label-decoration { background:#7a66d9; }
+  &.remaster .label-decoration { background:#b06cd9; }
    &.basic {
       .basic-info {
         .label { color: rgba(55, 160, 59, 0.8); }
@@ -1946,8 +1747,8 @@ const copyId = () => {
     
     &.advanced {
       .basic-info {
-        .label { color: rgba(230, 162, 60, 0.8); }
-        .value { color: #e6a23c; }
+        .label { color: #d17800; }  // 加深颜色
+      .value { color: #d17800; }  //
       }
     }
     
@@ -1960,15 +1761,15 @@ const copyId = () => {
     
     &.master {
       .basic-info {
-        .label { color: rgba(156, 81, 182, 0.8); }
-        .value { color: #9c51b6; }
+        .label { color: #7a66d9; }  // 加深颜色
+        .value { color: #7a66d9; }  
       }
     }
     
     &.remaster {
       .basic-info {
-        .label { color: rgba(224, 163, 255, 0.8); }
-        .value { color: #e0a3ff; }
+        .label { color: #b06cd9; }  // 加深颜色
+        .value { color: #b06cd9; }  //
       }
     }
 }
@@ -2040,12 +1841,12 @@ const copyId = () => {
         .label {
           font-size: 26rpx;
           color: #666;
+		  font-weight: 500;
         }
         
         .value {
           font-size: 28rpx;
           font-weight: 500;
-          
           &.ra {
             &.rainbow { color: #ff4757; }
             &.bright-gold { color: #ffa502; }
@@ -2059,195 +1860,243 @@ const copyId = () => {
   }
 }
 
-.tools-section {
-  margin-top: 20rpx;
-  padding: 20rpx;
-  background: linear-gradient(to bottom, #f8f8f8, #f8f8f8);
-  border-radius: 12rpx;
-  // box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
-
-  .tools-container {
-    display: flex;
-    gap: 20rpx;
-     background: linear-gradient(to bottom, #f8f8f8, #f8f8f8);
-    .tool-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 15rpx 30rpx;
-      background: #ffffff;
-      border: 2rpx solid #e2e8f0;
-      border-radius: 8rpx;
-      font-size: 28rpx;
-      color: #64748b;
-      transition: all 0.3s ease;
-      
-      &:hover {
-        background: #f8fafc;
-        transform: translateY(-2rpx);
-      }
-      
-      .iconfont {
-        margin-right: 10rpx;
-        font-size: 24rpx;
-      }
-    }
-  }
-}
-
-.alias-popup {
-  width: 600rpx;
-  background: #ffffff;
-  border-radius: 12rpx;
-  overflow: hidden;
-
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20rpx 30rpx;
-    border-bottom: 2rpx solid #e2e8f0;
-    
-    .title {
-      font-size: 32rpx;
-      font-weight: bold;
-      color: #1e293b;
-    }
-    
-    .close-btn {
-      font-size: 40rpx;
-      color: #64748b;
-      padding: 10rpx;
-      cursor: pointer;
-    }
-  }
-
-  .alias-list {
-    padding: 20rpx 30rpx;
-    max-height: 600rpx;
-    overflow-y: auto;
-    
-    .alias-item {
-      padding: 15rpx 0;
-      border-bottom: 2rpx solid #f1f5f9;
-      color: #334155;
-      font-size: 28rpx;
-      
-      &:last-child {
-        border-bottom: none;
-      }
-    }
-    
-    .no-alias {
-      text-align: center;
-      color: #94a3b8;
-      padding: 40rpx 0;
-      font-size: 28rpx;
-    }
-  }
-}
-
-.info-row {
-  .info-pair {
-    .alias-link {
-      margin-left: 10rpx;
-      color: #3b82f6;
-      font-size: 24rpx;
-      cursor: pointer;
-      
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
-.record-tools-container {
+.combo-sync-container {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
   
-  .player-record {
-    flex: 1;
-    margin-top: 30rpx;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12rpx;
-    padding: 20rpx;
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1rpx solid rgba(255, 255, 255, 0.2);
+  .separator {
+    color: #94a3b8;
+    font-size: 24rpx;
   }
   
-  .tools-section {
-    margin-top: 30rpx;
+  .combo, .sync {
+    padding: 4rpx 12rpx;
+    border-radius: 6rpx;
+    font-weight: 600;
+  }
+  
+  .fc-combo {
+    color: #10b981;
+    background-color: rgba(16, 185, 129, 0.1);
+  }
+  
+  .ap-combo {
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+  
+  .fs-sync {
+    color: #3b82f6;
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  .fsd-sync {
+    color: #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+}
 
-    max-width: 180rpx;
-    flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.0);
-    .tools-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10rpx;
-      padding: 10rpx;
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20rpx;
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  
+  .action-button {
+    background: #f8f8f8;
+    padding: 16rpx 30rpx;
+    border-radius: 10rpx;
+    font-size: 28rpx;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    
+    &:active {
+      transform: scale(0.95);
+      opacity: 0.9;
+    }
+    
+    .icon {
+      font-size: 32rpx;
+    }
+    
+    &.bilibili {
+      background: linear-gradient(135deg, rgba(251, 114, 153, 0.1), rgba(255, 140, 170, 0.1));
+      color: #fb7299;
+      border: 1rpx solid rgba(251, 114, 153, 0.2);
       
-      border-radius: 12rpx;
-      background: rgba(255, 255, 255, 0.0);
-      backdrop-filter: blur(10px);
-     
+      &:active {
+        background: linear-gradient(135deg, rgba(251, 114, 153, 0.2), rgba(255, 140, 170, 0.2));
+      }
+    }
+    
+    &.alias {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(129, 140, 248, 0.1));
+      color: #6366f1;
+      border: 1rpx solid rgba(99, 102, 241, 0.2);
       
-      .tool-btn {
-        min-height: 130rpx;
-        padding: 12rpx;
-        width: 100%;
-        text-align: center;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 6rpx;
-        line-height: 30rpx;
-        border-radius: 8rpx;
-        transition: all 0.3s ease;
-        padding: 12rpx;
-       
-        
-        &:active {
-          transform: translateY(2rpx);
-          box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);
-        }
-        
-        &.basic { 
-          color: #37a03b;
-          background: rgba(55, 160, 59, 0.1);
-          border-color: #37a03b;
-        }
-        &.advanced { 
-          color: #e6a23c;
-          background: rgba(230, 162, 60, 0.1);
-          border-color: #e6a23c;
-        }
-        &.expert { 
-          color: #e83c3c;
-          background: rgba(232, 60, 60, 0.1);
-          border-color: #e83c3c;
-        }
-        &.master { 
-          color: #9c51b6;
-          background: rgba(156, 81, 182, 0.1);
-          border-color: #9c51b6;
-        }
-        &.remaster { 
-          color: #e0a3ff;
-          background: rgba(224, 163, 255, 0.1);
-          border-color: #e0a3ff;
-        }
-        
-        .iconfont {
-          margin-right: 4rpx;
-        }
+      &:active {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(129, 140, 248, 0.2));
       }
     }
   }
+}
+
+.info-row, .chart-info {
+  .info-pair {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16rpx;
+    
+    .label {
+      font-size: 28rpx;
+      font-weight: 700;
+      margin-bottom: 8rpx;
+      color: rgba(0, 0, 0, 0.6);
+      position: relative;
+      padding-left: 16rpx;
+      
+      &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8rpx;
+        height: 24rpx;
+        border-radius: 4rpx;
+        background: currentColor;
+        opacity: 0.8;
+      }
+    }
+    
+    .value {
+      font-size: 32rpx;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+  }
+}
+
+.difficulty-details {
+  // ... 现有代码 ...
+  
+  .info-row, .chart-info {
+    .info-pair {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 16rpx;
+      
+      .label {
+        font-size: 28rpx;
+        font-weight: 700;
+        margin-bottom: 8rpx;
+        position: relative;
+        padding-left: 16rpx;
+        
+        &:before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 8rpx;
+          height: 24rpx;
+          border-radius: 4rpx;
+          background: currentColor;
+          opacity: 0.9;
+        }
+      }
+      
+      .value {
+        font-size: 32rpx;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+    }
+  }
+  
+  &.basic {
+    // ... 现有代码 ...
+    
+    .info-pair {
+      .label { color: #1a8c4b; }  // 加深颜色
+      .value { color: #1a8c4b; }  // 加深颜色
+    }
+    
+    .note-item {
+      // ... 现有代码 ...
+      .note-type { color: #1a8c4b; }  // 加深颜色
+      .note-count { color: #1a8c4b; }  // 加深颜色
+    }
+  }
+  
+  &.advanced {
+    // ... 现有代码 ...
+    
+    .info-pair {
+      .label { color: #d17800; }  // 加深颜色
+      .value { color: #d17800; }  // 加深颜色
+    }
+    
+    .note-item {
+      // ... 现有代码 ...
+      .note-type { color: #d17800; }  // 加深颜色
+      .note-count { color: #d17800; }  // 加深颜色
+    }
+  }
+  
+  &.expert {
+    // ... 现有代码 ...
+    
+    .info-pair {
+      .label { color: #d01c2d; }  // 加深颜色
+      .value { color: #d01c2d; }  // 加深颜色
+    }
+    
+    .note-item {
+      // ... 现有代码 ...
+      .note-type { color: #d01c2d; }  // 加深颜色
+      .note-count { color: #d01c2d; }  // 加深颜色
+    }
+  }
+  
+  &.master {
+    // ... 现有代码 ...
+    
+    .info-pair {
+      .label { color: #7a66d9; }  // 加深颜色
+      .value { color: #7a66d9; }  // 加深颜色
+    }
+    
+    .note-item {
+      // ... 现有代码 ...
+      .note-type { color: #7a66d9; }  // 加深颜色
+      .note-count { color: #7a66d9; }  // 加深颜色
+    }
+  }
+  
+  &.remaster {
+    // ... 现有代码 ...
+    
+    .info-pair {
+      .label { color: #b06cd9; }  // 加深颜色
+      .value { color: #b06cd9; }  // 加深颜色
+    }
+    
+    .note-item {
+      // ... 现有代码 ...
+      .note-type { color: #b06cd9; }  // 加深颜色
+      .note-count { color: #b06cd9; }  // 加深颜色
+    }
+  }
+  
+  // ... 现有代码 ...
 }
 </style> 

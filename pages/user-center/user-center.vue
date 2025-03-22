@@ -277,13 +277,9 @@ onLoad(async () => {
 	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
 	console.log('nickname'+nickname.value)
+	await getb50local();
 	
 
-	if (qqid.value && nickname.value) {
-		await getb50local();
-	
-	}
-	
 
 });
 // 其他处理函数保持不变
@@ -658,6 +654,25 @@ const handleRefreshAPI = async () => {
 		console.log(res)
 		return res;
 	}
+	async function getb50(){
+		try {
+			uni.showLoading({
+				title: '加载中...',
+				mask: true
+			});
+			
+			let res = await maiApi.divingFishgetb50(qqid.value, username.value);
+			uni.hideLoading();
+			setb50Value(res);
+			uni.setStorageSync('b50', res);
+		} catch (error) {
+			console.error('获取数据失败:', error);
+			uni.showToast({
+				title: '获取数据失败，请重试',
+				icon: 'none'
+			});
+		}
+	}
 	const timeCutDown=4000;
 		let cutDownTime=0;
 		let isProcessing=ref(false);
@@ -717,6 +732,7 @@ async function divingFishUpdate()
 			records.value = await maiApi.divingFishGetRecords(jwt_token.value);
 			console.log(records.value);
 			uni.setStorageSync('divingFish_records', records.value);
+			await getb50();
 			uni.hideLoading();
 			if(res.data.message=="更新成功"){
 				uni.showToast({

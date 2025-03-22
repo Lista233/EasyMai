@@ -41,9 +41,14 @@
 				</text>
 
 				<view class="fc-fs-container">
-					<text class="stat-item fc-fs">
-						{{formatCombo(record.fc)}} | {{formatFS(record.fs)}}
+					<text class="fc-fs" v-if="record.fc" :class="getFcClass(record.fc)">
+						{{formatCombo(record.fc)}}
 					</text>
+					<text class="fc-fs" v-else></text>
+					<text class="fc-fs" v-if="record.fs" :class="getFsClass(record.fs)">
+						{{formatFS(record.fs)}}
+					</text>
+					<text class="fc-fs" v-else></text>
 				</view>
 			</view>
 		</view>
@@ -137,34 +142,68 @@
 		return 'default'
 	}
 
-	// 根据连击情况返回对应的样式类
-	const getComboClass = (fc, fs) => {
-		if (fs?.includes('ap')) return 'all-perfect'
-		if (fs?.includes('fs')) return 'full-sync'
-		if (fc?.includes('fc')) return 'full-combo'
-		return 'normal'
+	// 获取FC类样式
+	const getFcClass = (fc) => {
+		if (!fc) return '';
+		
+		if (fc.includes('app')) return 'fc-app';
+		if (fc.includes('ap')) return 'fc-ap';
+		if (fc.includes('fcp')) return 'fc-fcp';
+		if (fc.includes('fc')) return 'fc-fc';
+		
+		return '';
+	}
+	
+	// 获取FS类样式
+	const getFsClass = (fs) => {
+		if (!fs) return '';
+		
+		if (fs.includes('fsdp')) return 'fs-fsdp';
+		if (fs.includes('fsd')) return 'fs-fsd';
+		if (fs.includes('fsp')) return 'fs-fsp';
+		if (fs.includes('fs')) return 'fs-fs';
+		if (fs.includes('sync')) return 'fs-sc';
+		
+		return '';
 	}
 
 	// 格式化连击显示
 	const formatCombo = (fc) => {
-		return fc?.replace('p', '+') || ''
+		if (!fc) return '';
+		
+		if (fc.includes('app')) return 'AP+';
+		if (fc.includes('ap')) return 'AP';
+		if (fc.includes('fcp')) return 'FC+';
+		if (fc.includes('fc')) return 'FC';
+		
+		return fc;
 	}
 
 	// 格式化FS显示
 	const formatFS = (fs) => {
-		return fs?.replace('p', '+')
-			.replace('ap', 'ap')
-			.replace('app', 'ap+')
-			.replace('sync', 'sc') || ''
+		if (!fs) return '';
+		
+		if (fs.includes('fsdp')) return 'FSD+';
+		if (fs.includes('fsd')) return 'FSD';
+		if (fs.includes('fsp')) return 'FS+';
+		if (fs.includes('fs')) return 'FS';
+		if (fs.includes('sync')) return 'SC';
+		
+		return fs;
 	}
 
 	// 获取评级徽章样式
 	const getRateBadgeClass = (rate) => {
-		return {
-			'rainbow': rate?.includes('sss'),
-			'gold': rate?.includes('ss') && !rate?.includes('sss'),
-			'silver': rate?.includes('s') && !rate?.includes('ss'),
+		if (!rate) return '';
+		
+		if (rate === 'sssp' || rate === 'sss+') {
+			return 'rainbowp'; // SSS+ 深彩色
+		} else if (rate === 'sss') {
+			return 'rainbow'; // SSS 淡彩色
+		} else if (rate?.includes('ss')) {
+			return 'gold'; // SS/SS+ 金色
 		}
+		return '';
 	}
 
 	// 格式化评级显示
@@ -177,12 +216,11 @@
 .record-card {
 	position: relative;
 	width: 100%;
-
 	background: white;
 	border-radius: 20rpx;
 	padding: 44rpx;
-	padding-top:65rpx ;
-	padding-bottom:65rpx ;
+	padding-top: 65rpx;
+	padding-bottom: 65rpx;
 	box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.1);
 	display: flex;
 	gap: 48rpx;
@@ -278,27 +316,27 @@
 				box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.2);
 				
 				&.level-0 {
-					border-color: rgba(46, 204, 113, 1);
+					background: rgba(46, 204, 113, 1);
 					box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
 				}
 				
 				&.level-1 {
-					border-color: rgba(241, 196, 15, 1);
+					background: rgba(241, 196, 15, 1);
 					box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
 				}
 				
 				&.level-2 {
-					border-color: rgba(231, 76, 60, 1);
+					background: rgba(231, 76, 60, 1);
 					box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
 				}
 				
 				&.level-3 {
-					border-color: rgba(155, 89, 182, 1);
+					background: rgba(155, 89, 182, 1);
 					box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
 				}
 				
 				&.level-4 {
-					border-color: rgba(190, 170, 245, 1);
+					background: rgba(190, 170, 245, 1);
 					box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
 				}
 			}
@@ -343,36 +381,97 @@
 
 		.song-stats {
 			display: flex;
-			flex-wrap: wrap;
-			gap: 12rpx 16rpx;
+			flex-direction: column;
+			gap: 8rpx;
+			width: 100%;
 			
 			.stat-item {
 				font-size: 28rpx;
 				padding: 4rpx 12rpx;
 				border-radius: 6rpx;
 				background: #f8fafc;
+				text-align: center;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				box-sizing: border-box;
+				width: 100%;
 				
 				&.achievements {
-					color: #ffa502;
+					color: #ff9500;
 					font-weight: 600;
-					background: rgba(255, 165, 2, 0.1);
+					background-color: rgba(255, 149, 0, 0.1);
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
+					box-shadow: 0 1px 2px rgba(255, 149, 0, 0.15);
 				}
 				
 				&.ra {
-					color: #2196F3;
+					color: #6366f1;
 					font-weight: 600;
-					background: rgba(33, 150, 243, 0.1);
+					background-color: rgba(99, 102, 241, 0.1);
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
+					box-shadow: 0 1px 2px rgba(99, 102, 241, 0.15);
 				}
 			}
 
 			.fc-fs-container {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				grid-gap: 8rpx;
 				width: 100%;
 				
 				.fc-fs {
-					color: #2ecc71;
+					width: 100%;
+					text-align: center;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					box-sizing: border-box;
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
 					font-weight: 500;
-					background: rgba(46, 204, 113, 0.1);
-					width: fit-content;
+					
+					&.fc-fc {
+						color: #10b981;
+						background-color: rgba(16, 185, 129, 0.1);
+					}
+					
+					&.fc-fcp {
+						color: #10b981;
+						background-color: rgba(16, 185, 129, 0.1);
+					}
+					
+					&.fc-ap {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fc-app {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fs-sc, &.fs-fs {
+						color: #3b82f6;
+						background-color: rgba(59, 130, 246, 0.1);
+					}
+					
+					&.fs-fsp {
+						color: #3b82f6;
+						background-color: rgba(59, 130, 246, 0.1);
+					}
+					
+					&.fs-fsd {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fs-fsdp {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
 				}
 			}
 		}
@@ -388,34 +487,53 @@
 		border-radius: 8rpx;
 		color: #666;
 		background: rgba(0, 0, 0, 0.05);
+		text-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
 		
 		&.rainbow {
-			background: none;
+			/* SSS 淡彩色 */
+			background: linear-gradient(45deg, 
+				rgba(255, 69, 58, 0.85) 0%,
+				rgba(255, 149, 0, 0.85) 20%,
+				rgba(255, 204, 0, 0.85) 40%,
+				rgba(52, 199, 89, 0.85) 60%,
+				rgba(88, 86, 214, 0.85) 80%,
+				rgba(255, 45, 85, 0.85) 100%
+			);
 			background-clip: text;
 			-webkit-background-clip: text;
-			background-image: linear-gradient(45deg, 
-				#ff4757,
-				#ff7f50,
-				#ffa502,
-				#70a1ff,
-				#7f50ff,
-				#ff6b81
+			color: transparent;
+			font-weight: 700;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		}
+		
+		&.rainbowp {
+			/* SSS+ 深彩色 */
+			background: linear-gradient(45deg, 
+				#ff2d55 0%,
+				#ff9500 20%,
+				#ffcc00 40%,
+				#34aadc 60%,
+				#5856d6 80%,
+				#ff2d55 100%
 			);
+			background-clip: text;
+			-webkit-background-clip: text;
 			color: transparent;
 			font-weight: 800;
+			text-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
 		}
 		
 		&.gold {
-			background: none;
-			background-clip: text;
-			-webkit-background-clip: text;
-			background-image: linear-gradient(45deg, 
+			background: linear-gradient(45deg, 
 				#ffd700,
 				#ffa500,
 				#ffd700
 			);
+			background-clip: text;
+			-webkit-background-clip: text;
 			color: transparent;
 			font-weight: 800;
+			text-shadow: 0 2px 3px rgba(245, 158, 11, 0.3);
 		}
 	}
 }

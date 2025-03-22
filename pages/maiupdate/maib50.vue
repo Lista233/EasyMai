@@ -170,11 +170,14 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text class="stat-item fc-fs">{{item.fc.replace('p', '+').toUpperCase()}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc').toUpperCase()}}</text>
+								<text v-if="item.fc" class="stat-item fc-fs" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
+								<text v-if="item.fs" class="stat-item fs-fs" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{
-							'rainbow': item.rate?.includes('sss'),
+							'rainbowp': item.rate?.includes('sssp'),
+							'rainbow': item.rate?.includes('sss')&& !item.rate?.includes('sssp'),
+						
 							'gold': item.rate?.includes('ss') && !item.rate?.includes('sss')
 						}">{{item.rate?.endsWith('p') ? item.rate.slice(0, -1) + '+' : item.rate}}</text>
 					</view>
@@ -197,10 +200,12 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text class="stat-item fc-fs">{{item.fc.replace('p', '+').toUpperCase()}} | {{item.fs.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').replace('sync', 'sc').toUpperCase()}}</text>
+								<text v-if="item.fc" class="stat-item fc-fs" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
+								<text v-if="item.fs" class="stat-item fs-fs" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{
+							'rainbowp': item.rate?.includes('sssp'),
 							'rainbow': item.rate?.includes('sss'),
 							'gold': item.rate?.includes('ss') && !item.rate?.includes('sss')
 						}">{{item.rate?.endsWith('p') ? item.rate.slice(0, -1) + '+' : item.rate}}</text>
@@ -396,9 +401,8 @@ onLoad(async () => {
 	console.log('nickname'+nickname.value)
 	
 	// 只在首次加载且用户已登录时执行
-	if (qqid.value && nickname.value) {
 		await getb50local();
-	}
+	
 	
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
 });
@@ -562,14 +566,7 @@ async function confirmBind() {
 
 // 处理刷新按钮点击
 async function handleRefresh() {
-	if (!qqid.value || !nickname.value) {
-		uni.showToast({
-			title: '请先绑定用户信息',
-			icon: 'none'
-		});
-		toggleBindForm();
-		return;
-	}
+
 	
 	await getb50();
 }
@@ -597,7 +594,7 @@ const getRatingClass = () => {
 			return null;
 		 }
 		let a=await b50adapter(resp.data)
-		console.log("SADD"+a);
+	
 		return a
 		
 	}
@@ -669,6 +666,7 @@ async function divingFishUpdate()
 			console.log(records.value);
 			uni.setStorageSync('divingFish_records', records.value);
 			uni.hideLoading();
+			await getb50();
 			if(res.data.message=="更新成功"){
 				uni.showToast({
 					title:"上传成功",
@@ -1054,6 +1052,24 @@ function closeRecordModal() {
    selectedRecord.value.index=null;
 }
 
+// 获取 FC 状态的样式类
+function getFcClass(fc) {
+  if (!fc) return '';
+  return 'fc-' + fc.toLowerCase();
+}
+
+// 获取 FS 状态的样式类
+function getFsClass(fs) {
+  if (!fs) return '';
+  return 'fs-' + fs.toLowerCase();
+}
+
+// 格式化连击显示
+const formatCombo = (fc) => fc ? fc.replace('app', 'ap+').replace('ap', 'ap').replace('fcp', 'fc+').toUpperCase() : '';
+
+// 格式化同步显示
+const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC','SC'): '';
+
 </script>
 
 <style lang='scss'>
@@ -1082,5 +1098,37 @@ function closeRecordModal() {
   /* animation: slideUp 0.2s ease-out; */
 }
 
+/* FC 样式 */
+.fc-fc, .fc-fcp {
+  color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  padding: 2rpx 4rpx;
+  border-radius: 4rpx;
+  margin-right: -5rpx;
+}
 
+.fc-ap, .fc-app {
+  color: #f59e0b !important;
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  padding: 2rpx 4rpx;
+  border-radius: 4rpx;
+  margin-right: -5rpx;
+}
+
+/* FS 样式 */
+.fs-sc, .fs-fs, .fs-fsp {
+  color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  padding: 2rpx 4rpx;
+  border-radius: 4rpx;
+  
+}
+
+.fs-fsd, .fs-fsdp {
+  color: #f59e0b !important;
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  padding: 2rpx 4rpx;
+  border-radius: 4rpx;
+  
+}
 </style>

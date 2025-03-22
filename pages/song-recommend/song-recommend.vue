@@ -126,11 +126,9 @@
 					</view>
 					<view class="page-controls">
 						<button class="page-btn" 
-							
-							@click="currentPage--">上一页</button>
+							@click="handlePrevPage">上一页</button>
 						<button class="page-btn" 
-						
-							@click="currentPage++">下一页</button>
+							@click="handleNextPage">下一页</button>
 					</view>
 				</view>
 			</view>
@@ -279,6 +277,17 @@ const generateRecommendations = async () => {
 			200
 		);
 		
+		// 过滤掉ID大于5位数的歌曲
+		if (recommendations.value) {
+			recommendations.value.fitRecommendations = recommendations.value.fitRecommendations.filter(chart => {
+				return String(chart.songId).length <= 5;
+			});
+			
+			recommendations.value.diffRecommendations = recommendations.value.diffRecommendations.filter(chart => {
+				return String(chart.songId).length <= 5;
+			});
+		}
+		
 		// 为每个推荐添加玩家达成率信息
 		if (isPlayerDataInitialized.value) {
 			console.log('添加玩家达成率信息');
@@ -424,6 +433,29 @@ onMounted(() => {
 	console.log('页面加载，初始化服务');
 	initServices();
 });
+
+// 在 script 部分添加这两个方法
+const handlePrevPage = () => {
+	if (currentPage.value <= 1) {
+		uni.showToast({
+			title: '已经是第一页了',
+			icon: 'none'
+		});
+		return;
+	}
+	currentPage.value--;
+};
+
+const handleNextPage = () => {
+	if (currentPage.value >= totalPages.value) {
+		uni.showToast({
+			title: '已经是最后一页了',
+			icon: 'none'
+		});
+		return;
+	}
+	currentPage.value++;
+};
 </script>
 
 <style>
@@ -502,10 +534,11 @@ onMounted(() => {
 	background-color: #f8fafc;
 }
 
-.rating-input:focus {
+.rating-input:hover {
 	border-color: #6366f1;
 	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 	background: white;
+	
 }
 
 /* 美化按钮样式 */
