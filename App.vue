@@ -39,7 +39,8 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 		'divingFish_records', // 添加别名数据的存储key
 		'b35rating',         // 添加 B35 rating 存储
 		'b15rating',         // 添加 B15 rating 存储
-		'totalRating'        // 添加总 rating 存储
+		'totalRating',       // 添加总 rating 存储
+		'lastLaunchDate'     // 添加上次启动日期存储
 	]
    // uni.clearStorage()
 	// 初始化本地存储
@@ -107,9 +108,25 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 		}
 	}
 
-
-
-
+	// 检查启动日期并记录每日启动
+	const checkLaunchDate = () => {
+		// 获取当前日期（格式：YYYY-MM-DD）
+		const now = new Date()
+		const currentDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+		
+		// 获取上次启动日期
+		const lastLaunchDate = uni.getStorageSync('lastLaunchDate')
+		
+		// 如果日期不同，则更新日期并记录每日启动
+		if (lastLaunchDate !== currentDate) {
+			// 更新启动日期
+			uni.setStorageSync('lastLaunchDate', currentDate)
+			
+			// 记录每日启动
+			addAPICount('DailyLaunch')
+			console.log('记录每日启动:', currentDate)
+		}
+	}
 
 	// App 生命周期
 	onLaunch(() => {
@@ -122,13 +139,12 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 		initMusicData()
 		initChartStats()
 		initAliasData() // 添加别名数据初始化
+		checkLaunchDate() // 检查启动日期并记录每日启动
 	})
-
-
 
 	onShow(() => {
 		console.log('App Show')
-
+		// 移除每次显示应用时的日期检查
 	})
 
 	onHide(() => {

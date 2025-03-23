@@ -245,22 +245,55 @@ class SongService {
   }
 
   /**
-   * 组合查询：同时按版本、定数范围和类型搜索
+   * 根据BPM范围获取歌曲
+   * @param {Object} bpmRange - BPM范围对象
+   * @param {number} bpmRange.min - 最小BPM值
+   * @param {number} bpmRange.max - 最大BPM值
+   * @param {Object} options - 查询选项
+   * @param {boolean} options.includeEqual - 是否包含等于边界值的情况，默认为true
+   * @returns {Array} - 返回匹配的歌曲列表
+   */
+  getSongsByBpm(bpmRange, options = {}) {
+    const {
+      min = 0,
+      max = Infinity
+    } = bpmRange
+
+    const {
+      includeEqual = true
+    } = options
+
+    return this.songList.filter(song => {
+      // 获取歌曲BPM
+      const bpm = song.basic_info?.bpm ? parseFloat(song.basic_info.bpm) : null
+      
+      // 如果歌曲没有BPM信息，则跳过
+      if (bpm === null) return false
+      
+      // 根据includeEqual选项决定是否包含边界值
+      return includeEqual 
+        ? bpm >= min && bpm <= max
+        : bpm > min && bpm < max
+    }).map(song => ({
+      id: song.id,
+      title: song.title,
+      ds: song.ds,
+      level: song.level,
+      basic_info: song.basic_info,
+      bpm: song.basic_info?.bpm || null
+    }))
+  }
+
+  /**
+   * 更新组合查询方法，添加BPM筛选支持
    * @param {Object} query - 查询条件
    * @param {string|Array<string>} query.version - 版本名称或版本名称数组
    * @param {Object} query.dsRange - 定数范围
-   * @param {number} query.dsRange.min - 最小定数值
-   * @param {number} query.dsRange.max - 最大定数值
    * @param {string|Array<string>} query.genre - 歌曲类型或类型数组
    * @param {string|Array<string>} query.charter - 谱师名称或谱师名称数组
    * @param {string|Array<string>} query.artist - 艺术家名称或艺术家名称数组
+   * @param {Object} query.bpmRange - BPM范围
    * @param {Object} options - 查询选项
-   * @param {boolean} options.exactVersion - 是否进行版本精确匹配，默认为true
-   * @param {boolean} options.exactGenre - 是否进行类型精确匹配，默认为true
-   * @param {boolean} options.exactCharter - 是否进行谱师精确匹配，默认为true
-   * @param {boolean} options.exactArtist - 是否进行艺术家精确匹配，默认为true
-   * @param {number} options.difficulty - 指定难度等级(0-4)，不指定则搜索所有难度
-   * @param {boolean} options.includeEqual - 是否包含等于边界值的情况，默认为true
    * @returns {Array} - 返回匹配的歌曲列表
    */
   searchSongs(query, options = {}) {
@@ -269,14 +302,15 @@ class SongService {
       dsRange,
       genre,
       charter,
-      artist  // 艺术家搜索参数
+      artist,
+      bpmRange  // 添加BPM范围参数
     } = query
 
     const {
       exactVersion = true,
       exactGenre = true,
       exactCharter = false,
-      exactArtist = false,  // 艺术家精确匹配选项
+      exactArtist = false,
       difficulty = null,
       includeEqual = true
     } = options
@@ -336,26 +370,42 @@ class SongService {
     // 如果有艺术家条件，继续筛选
     if (artist) {
       results = results.filter(song => {
+        const songArtist = song.basic_info?.artist?.toLowerCase() || ''
         const artists = Array.isArray(artist) ? artist : [artist]
         
-        // 获取艺术家信息
-        const songArtist = song.basic_info?.artist?.toLowerCase() || ''
-        
         if (exactArtist) {
-          // 精确匹配：艺术家名称必须完全相同
           return artists.some(a => songArtist === a.toLowerCase())
         } else {
-          // 模糊匹配：艺术家名称包含搜索词即可
           return artists.some(a => songArtist.includes(a.toLowerCase()))
         }
       })
     }
 
-    // 如果有定数范围，继续筛选
-    if (dsRange) {
-      const { min = 0, max = Infinity } = dsRange
-      
+    // 如果有BPM范围条件，继续筛选
+    if (bpmRange && (bpmRange.min !== undefined || bpmRange.max !== undefined)) {
       results = results.filter(song => {
+        const bpm = song.basic_info?.bpm ? parseFloat(song.basic_info.bpm) : null
+        
+        // 如果歌曲没有BPM信息，则跳过
+        if (bpm === null) return false
+        
+        const min = bpmRange.min !== undefined ? bpmRange.min : 0
+        const max = bpmRange.max !== undefined ? bpmRange.max : Infinity
+        
+        // 根据includeEqual选项决定是否包含边界值
+        return includeEqual 
+          ? bpm >= min && bpm <= max
+          : bpm > min && bpm < max
+      })
+    }
+
+    // 如果有定数范围条件，继续筛选
+    if (dsRange && (dsRange.min !== undefined || dsRange.max !== undefined)) {
+      results = results.filter(song => {
+        const min = dsRange.min !== undefined ? dsRange.min : 0
+        const max = dsRange.max !== undefined ? dsRange.max : Infinity
+        
+        // 如果指定了难度，只检查该难度的ds
         if (difficulty !== null && difficulty >= 0 && difficulty < song.ds.length) {
           const targetDs = song.ds[difficulty]
           return includeEqual 
@@ -363,6 +413,7 @@ class SongService {
             : targetDs > min && targetDs < max
         }
 
+        // 否则检查所有难度
         return song.ds.some(currentDs => {
           return includeEqual 
             ? currentDs >= min && currentDs <= max
@@ -512,6 +563,283 @@ class SongService {
     });
 
     return results;
+  }
+
+  /**
+   * 综合搜索：一次遍历完成所有筛选条件的匹配
+   * @param {Object} query - 查询条件
+   * @param {string|Array<string>} query.version - 版本名称或版本名称数组
+   * @param {Object} query.dsRange - 定数范围
+   * @param {string|Array<string>} query.genre - 歌曲类型或类型数组
+   * @param {string|Array<string>} query.charter - 谱师名称或谱师名称数组
+   * @param {string|Array<string>} query.artist - 艺术家名称或艺术家名称数组
+   * @param {Object} query.bpmRange - BPM范围
+   * @param {string} query.keyword - 关键词搜索（歌曲名称）
+   * @param {Object} options - 查询选项
+   * @param {boolean} options.exactVersion - 是否进行版本精确匹配，默认为true
+   * @param {boolean} options.exactGenre - 是否进行类型精确匹配，默认为true
+   * @param {boolean} options.exactCharter - 是否进行谱师精确匹配，默认为false
+   * @param {boolean} options.exactArtist - 是否进行艺术家精确匹配，默认为false
+   * @param {boolean} options.exactKeyword - 是否进行关键词精确匹配，默认为false
+   * @param {number} options.difficulty - 指定难度等级(0-4)，不指定则搜索所有难度
+   * @param {boolean} options.includeEqual - 是否包含等于边界值的情况，默认为true
+   * @returns {Array} - 返回匹配的歌曲列表，包含匹配的难度索引
+   */
+  searchSongsOptimized(query, options = {}) {
+    const {
+      version,
+      dsRange,
+      genre,
+      charter,
+      artist,
+      bpmRange,
+      keyword
+    } = query;
+
+    const {
+      exactVersion = true,
+      exactGenre = true,
+      exactCharter = false,
+      exactArtist = false,
+      exactKeyword = false,
+      difficulty = null,
+      includeEqual = true
+    } = options;
+
+    // 过滤掉ID大于五位数的歌曲
+    const results = this.songList.filter(song => {
+      // 检查ID长度
+      const songId = String(song.id);
+      if (songId.length > 5) return false;
+
+      // 匹配的难度索引数组
+      let matchedDifficulties = [];
+      
+      // 1. 检查版本
+      if (version) {
+        const songVersion = song.basic_info?.from?.toLowerCase() || '';
+        const versions = Array.isArray(version) ? version : [version];
+        
+        const versionMatch = exactVersion
+          ? versions.some(v => songVersion === v.toLowerCase())
+          : versions.some(v => songVersion.includes(v.toLowerCase()));
+        
+        if (!versionMatch) return false;
+      }
+      
+      // 2. 检查类型
+      if (genre) {
+        const songGenre = song.basic_info?.genre?.toLowerCase() || '';
+        const genres = Array.isArray(genre) ? genre : [genre];
+        
+        const genreMatch = exactGenre
+          ? genres.some(g => songGenre === g.toLowerCase())
+          : genres.some(g => songGenre.includes(g.toLowerCase()));
+        
+        if (!genreMatch) return false;
+      }
+      
+      // 3. 检查艺术家
+      if (artist) {
+        const songArtist = song.basic_info?.artist?.toLowerCase() || '';
+        const artists = Array.isArray(artist) ? artist : [artist];
+        
+        const artistMatch = exactArtist
+          ? artists.some(a => songArtist === a.toLowerCase())
+          : artists.some(a => songArtist.includes(a.toLowerCase()));
+        
+        if (!artistMatch) return false;
+      }
+      
+      // 4. 检查BPM范围
+      if (bpmRange && (bpmRange.min !== undefined || bpmRange.max !== undefined)) {
+        const bpm = song.basic_info?.bpm ? parseFloat(song.basic_info.bpm) : null;
+        
+        // 如果歌曲没有BPM信息，则跳过
+        if (bpm === null) return false;
+        
+        const min = bpmRange.min !== undefined ? bpmRange.min : 0;
+        const max = bpmRange.max !== undefined ? bpmRange.max : Infinity;
+        
+        const bpmMatch = includeEqual
+          ? bpm >= min && bpm <= max
+          : bpm > min && bpm < max;
+        
+        if (!bpmMatch) return false;
+      }
+      
+      // 5. 检查关键词（歌曲名称）
+      if (keyword) {
+        const songTitle = song.title?.toLowerCase() || '';
+        const keywordLower = keyword.toLowerCase();
+        
+        const keywordMatch = exactKeyword
+          ? songTitle === keywordLower
+          : songTitle.includes(keywordLower);
+        
+        if (!keywordMatch) return false;
+      }
+      
+      // 6. 检查谱师和定数范围（需要按难度检查）
+      // 如果指定了难度，只检查该难度
+      if (difficulty !== null && difficulty >= 0 && difficulty < song.charts?.length) {
+        let difficultyMatched = true;
+        
+        // 检查谱师
+        if (charter) {
+          const targetCharter = song.charts[difficulty]?.charter?.toLowerCase() || '';
+          const charters = Array.isArray(charter) ? charter : [charter];
+          
+          const charterMatch = exactCharter
+            ? charters.some(c => targetCharter === c.toLowerCase())
+            : charters.some(c => targetCharter.includes(c.toLowerCase()));
+          
+          if (!charterMatch) difficultyMatched = false;
+        }
+        
+        // 检查定数范围
+        if (dsRange && (dsRange.min !== undefined || dsRange.max !== undefined) && difficultyMatched) {
+          const targetDs = song.ds[difficulty];
+          const min = dsRange.min !== undefined ? dsRange.min : 0;
+          const max = dsRange.max !== undefined ? dsRange.max : Infinity;
+          
+          const dsMatch = includeEqual
+            ? targetDs >= min && targetDs <= max
+            : targetDs > min && targetDs < max;
+          
+          if (!dsMatch) difficultyMatched = false;
+        }
+        
+        if (difficultyMatched) {
+          matchedDifficulties.push(difficulty);
+        }
+      } else {
+        // 否则检查所有难度
+        for (let i = 0; i < song.charts?.length; i++) {
+          let difficultyMatched = true;
+          
+          // 检查谱师
+          if (charter) {
+            const chartCharter = song.charts[i]?.charter?.toLowerCase() || '';
+            const charters = Array.isArray(charter) ? charter : [charter];
+            
+            const charterMatch = exactCharter
+              ? charters.some(c => chartCharter === c.toLowerCase())
+              : charters.some(c => chartCharter.includes(c.toLowerCase()));
+            
+            if (!charterMatch) difficultyMatched = false;
+          }
+          
+          // 检查定数范围
+          if (dsRange && (dsRange.min !== undefined || dsRange.max !== undefined) && difficultyMatched) {
+            const currentDs = song.ds[i];
+            const min = dsRange.min !== undefined ? dsRange.min : 0;
+            const max = dsRange.max !== undefined ? dsRange.max : Infinity;
+            
+            const dsMatch = includeEqual
+              ? currentDs >= min && currentDs <= max
+              : currentDs > min && currentDs < max;
+            
+            if (!dsMatch) difficultyMatched = false;
+          }
+          
+          if (difficultyMatched) {
+            matchedDifficulties.push(i);
+          }
+        }
+      }
+      
+      // 如果有谱师或定数条件但没有匹配的难度，则不返回该歌曲
+      if ((charter || (dsRange && (dsRange.min !== undefined || dsRange.max !== undefined))) && matchedDifficulties.length === 0) {
+        return false;
+      }
+      
+      // 添加匹配的难度索引到歌曲对象
+      song.matchedDifficulties = matchedDifficulties;
+      
+      // 如果有匹配的难度，选择第一个作为默认匹配难度
+      // 如果没有特定匹配的难度（例如只匹配了版本或艺术家），则默认选择Master难度(3)或最高可用难度
+      if (matchedDifficulties.length > 0) {
+        song.matchedDifficulty = matchedDifficulties[0];
+      } else {
+        song.matchedDifficulty = Math.min(3, song.charts?.length - 1 || 0);
+      }
+      
+      return true;
+    });
+
+    return results;
+  }
+
+  /**
+   * 根据关键词搜索歌曲（名称、谱师、艺术家）并返回匹配的难度
+   * @param {string} keyword - 搜索关键词
+   * @param {Object} options - 搜索选项
+   * @param {boolean} options.exact - 是否精确匹配，默认为false
+   * @param {number} options.defaultDifficulty - 默认难度，当匹配项不是特定难度时使用，默认为3
+   * @returns {Array} - 返回匹配的歌曲列表，包含匹配的难度索引
+   */
+  searchByKeyword(keyword, options = {}) {
+    const {
+      exact = false,
+      defaultDifficulty = 3
+    } = options;
+    
+    if (!keyword || typeof keyword !== 'string') {
+      return [];
+    }
+    
+    const keywordLower = keyword.toLowerCase().trim();
+    
+    return this.songList.filter(song => {
+      // 过滤掉ID大于五位数的歌曲
+      const songId = String(song.id);
+      if (songId.length > 5) return false;
+      
+      let matched = false;
+      let matchType = '';
+      let matchedDifficulty = defaultDifficulty;
+      
+      // 1. 检查歌曲名称
+      const songTitle = song.title?.toLowerCase() || '';
+      if (exact ? songTitle === keywordLower : songTitle.includes(keywordLower)) {
+        matched = true;
+        matchType = 'title';
+      }
+      
+      // 2. 检查艺术家
+      if (!matched && song.basic_info?.artist) {
+        const artist = song.basic_info.artist.toLowerCase();
+        if (exact ? artist === keywordLower : artist.includes(keywordLower)) {
+          matched = true;
+          matchType = 'artist';
+        }
+      }
+      
+      // 3. 检查谱师（需要遍历所有难度）
+      if (!matched && song.charts) {
+        for (let i = 0; i < song.charts.length; i++) {
+          if (song.charts[i]?.charter) {
+            const charter = song.charts[i].charter.toLowerCase();
+            if (exact ? charter === keywordLower : charter.includes(keywordLower)) {
+              matched = true;
+              matchType = 'charter';
+              matchedDifficulty = i; // 记录匹配的难度索引
+              break;
+            }
+          }
+        }
+      }
+      
+      if (matched) {
+        // 添加匹配信息到歌曲对象
+        song.matchType = matchType;
+        song.matchedDifficulty = matchedDifficulty;
+        return true;
+      }
+      
+      return false;
+    });
   }
 }
 

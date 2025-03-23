@@ -8,7 +8,7 @@
           <input 
             v-model="searchKeyword" 
             type="text" 
-            placeholder="请输入乐曲名称|别名|ID|曲/谱师"
+            placeholder="请输入乐曲名称|别名|BPM|ID|曲/谱师"
             @input="onSearchInput"
           />
           <view class="view-toggle" @click="toggleViewMode">
@@ -53,7 +53,7 @@
         v-for="(result, index) in paginatedResults" 
         :key="result.songId" 
         class="result-item"
-        @click="navigateToDetail(result.songId)"
+        @click="navigateToDetail(result.songId, result.matchedDifficulty)"
       >
         <view class="song-cover">
           <image 
@@ -74,10 +74,22 @@
             <text class="genre" v-if="result.basic_info?.genre">{{formatGenre(result.basic_info?.genre)}}</text>
             <text class="difficulty">{{formatLevels(result.level)}}</text>
           </view>
-          <view class="matched-aliases" v-if="result.matchedAliases?.length || result.matchedCharter || result.matchedArtist">
-            <text v-if="result.matchedAliases?.length">别名: {{formatAliases(result.matchedAliases)}}</text>
-            <text v-if="result.matchedCharter">谱师: {{result.matchedCharter}}</text>
-            <text v-if="result.matchedArtist">艺术家: {{result.matchedArtist}}</text>
+          <view class="result-info">
+            <view v-if="result.matchedId" class="match-info">
+              ID: {{result.matchedId}}
+            </view>
+            <view v-else-if="result.matchedBpm" class="match-info">
+              BPM: {{result.matchedBpm}}
+            </view>
+            <view v-if="result.matchedCharter" class="match-info">
+              谱师: {{result.matchedCharter}}
+            </view>
+            <view v-if="result.matchedArtist" class="match-info">
+              艺术家: {{result.matchedArtist}}
+            </view>
+            <view v-if="result.matchedAliases && result.matchedAliases.length > 0" class="match-info">
+              别名: {{formatAliases(result.matchedAliases)}}
+            </view>
           </view>
         </view>
       </view>
@@ -127,7 +139,7 @@
             v-for="(result, index) in filteredGridResults" 
             :key="result.songId" 
             class="grid-item"
-            @click="navigateToDetail(result.songId)"
+            @click="navigateToDetail(result.songId, result.matchedDifficulty)"
           >
             <image 
               :src="getCoverUrl(result.songId)" 
@@ -519,97 +531,227 @@ const onSearch = async () => {
   }
   
   let matchedIds = new Set()
+  const idMatchMap = new Map()
   
-  // 1. 检查是否为纯数字ID搜索
+  // 解析关键词，检查是否为BPM搜索格式
   const keyword = searchKeyword.value.trim()
-  if (keyword && /^\d+$/.test(keyword)) {
-    // 纯数字搜索，直接通过ID查找
-    const song = songService.value.getSongById(keyword)
-    if (song) {
-      matchedIds.add(song.id.toString())
+  let bpmRange = null
+  let songIdSearch = false
+  
+  // 检查BPM搜索格式
+  if (keyword) {
+    // 检查 ">数字" 格式 (大于某BPM)
+    if (/^>\s*\d+(\.\d+)?$/.test(keyword)) {
+      const minBpm = parseFloat(keyword.substring(1).trim())
+      bpmRange = { min: minBpm }
+    } 
+    // 检查 "<数字" 格式 (小于某BPM)
+    else if (/^<\s*\d+(\.\d+)?$/.test(keyword)) {
+      const maxBpm = parseFloat(keyword.substring(1).trim())
+      bpmRange = { max: maxBpm }
+    } 
+    // 检查 "数字~数字" 格式 (BPM范围)
+    else if (/^\d+(\.\d+)?\s*~\s*\d+(\.\d+)?$/.test(keyword)) {
+      const [min, max] = keyword.split('~').map(part => parseFloat(part.trim()))
+      bpmRange = { min, max }
+    } 
+    // 检查纯数字格式 (可能是歌曲ID或精确BPM)
+    else if (/^\d+(\.\d+)?$/.test(keyword)) {
+      // 如果是整数且长度小于等于5，可能是歌曲ID
+      if (Number.isInteger(parseFloat(keyword)) && keyword.length <= 5) {
+        songIdSearch = true
+        // 尝试按ID搜索
+        const song = songService.value.getSongById(keyword)
+        if (song) {
+          matchedIds.add(song.id)
+          // 标记为ID匹配
+          idMatchMap.set(song.id, true)
+        }
+      }
+      
+      // 无论是否找到ID，都尝试按BPM搜索
+      const exactBpm = parseFloat(keyword)
+      bpmRange = { min: exactBpm, max: exactBpm }
     }
-  } else if (keyword) {
-    // 关键词搜索 - 包括歌曲名称和别名
-    const searchResults = searcher.value.search({
+  }
+  
+  // 如果是BPM搜索，使用优化的搜索方法
+  if (bpmRange) {
+    const bpmResults = songService.value.searchSongsOptimized({
+      bpmRange,
+      version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
+      genre: selectedGenre.value || undefined,
+      dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
+        min: dsFilter.value.min ? Number(dsFilter.value.min) : undefined,
+        max: dsFilter.value.max ? Number(dsFilter.value.max) : undefined
+      } : undefined
+    }, {
+      exactVersion: true,
+      exactGenre: true,
+      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
+      includeEqual: true
+    })
+    
+    // 添加BPM搜索结果
+    bpmResults.forEach(song => {
+      matchedIds.add(song.id)
+    })
+  }
+  
+  // 如果不是纯数字搜索或者没有找到匹配的ID，则进行关键词搜索
+  if (!songIdSearch && !bpmRange && keyword) {
+    // 使用优化的关键词搜索
+    const keywordResults = songService.value.searchByKeyword(keyword, {
+      exact: false,
+      defaultDifficulty: 3
+    })
+    
+    // 添加关键词搜索结果
+    keywordResults.forEach(song => {
+      matchedIds.add(song.id)
+    })
+    
+    // 使用别名搜索器 - 修复这部分
+    const aliasResults = searcher.value.search({
       keyword: keyword,
       exactMatch: false
     })
-    searchResults.forEach(result => matchedIds.add(result.id))
     
-    // 添加谱师搜索
-    const charterResults = songService.value.getSongsByCharter(keyword, {
-      exact: false,
-      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined
+    // 添加别名搜索结果
+    aliasResults.forEach(matchInfo => {
+      matchedIds.add(matchInfo.id)
     })
-    charterResults.forEach(song => matchedIds.add(song.id.toString()))
-    
-    // 添加艺术家搜索
-    const artistResults = songService.value.getSongsByArtist(keyword, {
-      exact: false
-    })
-    artistResults.forEach(song => matchedIds.add(song.id.toString()))
-  } else {
-    // 如果没有关键词，获取所有歌曲ID
-    searcher.value.getAllIds().forEach(id => matchedIds.add(id))
   }
-
-  // 2. 获取匹配ID的歌曲数据并应用组合筛选
-  let results = songService.value.searchSongs({
-    version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
-    genre: selectedGenre.value || undefined,
-    dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
-      min: dsFilter.value.min ? Number(dsFilter.value.min) : undefined,
-      max: dsFilter.value.max ? Number(dsFilter.value.max) : undefined
-    } : undefined
-  }, {
-    difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
-    exactVersion: true,
-    exactGenre: true
-  })
-
-  // 3. 只保留匹配ID的结果
-  results = results.filter(song => matchedIds.has(song.id.toString()))
-
-  // 4. 获取匹配的别名信息并格式化结果
-  const formattedResults = results.map(song => {
-    const aliasInfo = searcher.value.getAliasInfo(song.id)
-    let matchInfo = null
+  
+  // 应用筛选条件
+  let results = []
+  
+  if (matchedIds.size > 0) {
+    // 将匹配的ID转换为歌曲对象
+    const matchedSongs = Array.from(matchedIds).map(id => {
+      const song = songService.value.getSongById(id)
+      return song
+    }).filter(Boolean) // 过滤掉undefined
     
-    if (keyword && !/^\d+$/.test(keyword)) {
-      matchInfo = searcher.value.search({
-        keyword: keyword,
-        exactMatch: false
-      }).find(r => r.id === song.id)
-    }
-    
-    // 检查是否匹配谱师
-    let matchedCharter = null
-    if (keyword) {
-      const charterMatch = song.charts?.find(chart => 
-        chart?.charter?.toLowerCase()?.includes(keyword.toLowerCase())
-      )
-      if (charterMatch) {
-        matchedCharter = charterMatch.charter
+    // 应用版本、定数和类别筛选
+    results = matchedSongs.filter(song => {
+      // 版本筛选
+      if (selectedVersion.value) {
+        const songVersion = song.basic_info?.from || ''
+        const displayVersion = versionMap[songVersion] || songVersion
+        if (displayVersion !== selectedVersion.value) {
+          return false
+        }
       }
+      
+      // 类别筛选
+      if (selectedGenre.value) {
+        const songGenre = song.basic_info?.genre || ''
+        if (songGenre !== selectedGenre.value) {
+          return false
+        }
+      }
+      
+      // 定数筛选
+      if (dsFilter.value.min || dsFilter.value.max) {
+        const difficultyIndex = selectedDifficulty.value.value
+        
+        // 如果选择了特定难度
+        if (difficultyIndex >= 0) {
+          const ds = song.ds[difficultyIndex]
+          if (dsFilter.value.min && ds < Number(dsFilter.value.min)) {
+            return false
+          }
+          if (dsFilter.value.max && ds > Number(dsFilter.value.max)) {
+            return false
+          }
+        } else {
+          // 检查任意难度是否满足条件
+          let matchAnyDifficulty = false
+          for (let i = 0; i < song.ds.length; i++) {
+            const ds = song.ds[i]
+            if ((!dsFilter.value.min || ds >= Number(dsFilter.value.min)) && 
+                (!dsFilter.value.max || ds <= Number(dsFilter.value.max))) {
+              matchAnyDifficulty = true
+              break
+            }
+          }
+          if (!matchAnyDifficulty) {
+            return false
+          }
+        }
+      }
+      
+      return true
+    })
+  } else if (!keyword) {
+    // 如果没有关键词，只有筛选条件，则直接使用筛选条件搜索
+    results = songService.value.searchSongsOptimized({
+      version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
+      genre: selectedGenre.value || undefined,
+      dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
+        min: dsFilter.value.min ? Number(dsFilter.value.min) : undefined,
+        max: dsFilter.value.max ? Number(dsFilter.value.max) : undefined
+      } : undefined
+    }, {
+      exactVersion: true,
+      exactGenre: true,
+      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
+      includeEqual: true
+    })
+  }
+  
+  // 格式化结果
+  const formattedResults = results.map(song => {
+    // 获取别名信息
+    const aliasInfo = searcher.value.getAliasInfo(song.id)
+    
+    // 获取匹配的别名
+    let matchedAliases = []
+    if (keyword && aliasInfo?.alias) {
+      // 过滤出包含关键词的别名
+      matchedAliases = aliasInfo.alias.filter(alias => 
+        alias.toLowerCase().includes(keyword.toLowerCase())
+      )
     }
     
-    // 检查是否匹配艺术家
-    let matchedArtist = null
-    if (keyword && song.basic_info?.artist?.toLowerCase()?.includes(keyword.toLowerCase())) {
-      matchedArtist = song.basic_info.artist
+    // 获取匹配的难度索引
+    let matchedDifficulty = song.matchedDifficulty !== undefined ? song.matchedDifficulty : 3
+    
+    // 如果选择了特定难度，优先使用选择的难度
+    if (selectedDifficulty.value.value >= 0) {
+      matchedDifficulty = selectedDifficulty.value.value
+    }
+    
+    // 添加匹配信息
+    let matchedBpm = null
+    let matchedId = null
+    
+    // 检查是否为ID匹配
+    if (idMatchMap.has(song.id)) {
+      matchedId = song.id
+    } 
+    // 检查是否为BPM匹配
+    else if (bpmRange && song.basic_info?.bpm) {
+      matchedBpm = parseFloat(song.basic_info.bpm)
+      // 确保BPM匹配时默认返回难度索引为3
+      if (!selectedDifficulty.value.value >= 0) {
+        matchedDifficulty = 3
+      }
     }
     
     return {
       songId: song.id,
-      name: song.title || aliasInfo?.name || '',
-      matchedAliases: matchInfo?.matchedAliases || [],
-      matchFields: matchInfo?.matchFields || [],
-      matchedCharter: matchedCharter,
-      matchedArtist: matchedArtist,
-      ds: song.ds,
-      level: song.level,
+      name: song.title,
       basic_info: song.basic_info,
-      charts: song.charts
+      level: song.level,
+      ds: song.ds,
+      matchedAliases,
+      matchedCharter: song.matchType === 'charter' ? song.charts[matchedDifficulty]?.charter : undefined,
+      matchedArtist: song.matchType === 'artist' ? song.basic_info?.artist : undefined,
+      matchedDifficulty,
+      matchedBpm,
+      matchedId
     }
   })
   
@@ -643,11 +785,11 @@ onMounted(() => {
 })
 
 // 添加跳转方法
-const navigateToDetail = (songId) => {
+const navigateToDetail = (songId, difficultyIndex = 3) => {
   uni.navigateTo({
-    url: `/pages/song-detail/song-detail?songId=${songId}`,
-		animationType: 'pop-in',
-		animationDuration: 0
+    url: `/pages/song-detail/song-detail?songId=${songId}&difficulty=${difficultyIndex}`,
+    animationType: 'pop-in',
+    animationDuration: 0
   })
 }
 
@@ -1136,7 +1278,7 @@ const onSearchInput = (e) => {
         }
       }
       
-      .matched-aliases {
+      .result-info {
         font-size: 24rpx;
         color: #888;
         background-color: rgba(0, 0, 0, 0.03);
@@ -1145,7 +1287,7 @@ const onSearchInput = (e) => {
         max-height: 80rpx;
         overflow: hidden;
         
-        text {
+        .match-info {
           display: block;
           overflow: hidden;
           text-overflow: ellipsis;

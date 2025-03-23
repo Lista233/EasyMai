@@ -24,13 +24,16 @@
             <text class="song-id" @click="copyId">#{{ songData?.id }}</text>
           </view>
           
+          <!-- 在 basic-info 部分添加艺术家信息 -->
           <view class="basic-info">
+           
+            
             <view class="info-row">
               <view class="label-wrapper">
                 <view class="label-decoration"></view>
                 <text class="label">类别:</text>
               </view>
-              <text class="value" :class="{'skeleton': dataLoading}">{{ dataLoading ? '' : (songData?.basic_info?.genre || '-') }}</text>
+              <text class="value" :class="{'skeleton': dataLoading}">{{ dataLoading ? '' : (songData?.basic_info?.genre .replace('niconicoボーカロイド', 'nico & vocal').replace('niconico & VOCALOID', 'nico & vocal') || '-') }}</text>
             </view>
             <view class="info-row">
               <view class="label-wrapper">
@@ -46,6 +49,15 @@
               </view>
               <text class="value" :class="{'skeleton': dataLoading}">{{ dataLoading ? '' : formatVersion(songData?.basic_info?.from) }}</text>
             </view>
+			<view class="info-row">
+			  <view class="label-wrapper">
+			    <view class="label-decoration"></view>
+			    <text class="label">曲师:</text>
+			  </view>
+			  <text class="value ellipsis" :class="{'skeleton': dataLoading}" @click="copyArtist">
+			    {{ dataLoading ? '' : (songData?.basic_info?.artist || '-') }}
+			  </text>
+			</view>
           </view>
         </view>
       </view>
@@ -804,6 +816,22 @@ const getSyncClass = (fs) => {
   if (fs.includes('fs') || fs === 'sync') return 'fs-sync';
   return '';
 };
+
+// 添加复制艺术家名称功能
+const copyArtist = () => {
+  if (songData.value?.basic_info?.artist) {
+    uni.setClipboardData({
+      data: songData.value.basic_info.artist,
+      success: () => {
+        uni.showToast({
+          title: '曲师名已复制到剪贴板',
+          icon: 'none',
+          position: 'bottom'
+        })
+      }
+    })
+  }
+}
 </script>
 
 <style lang="scss">
@@ -1022,43 +1050,6 @@ const getSyncClass = (fs) => {
 }
 
 
-.basic-info {
-  display: flex;
-  margin-top: 0rpx;
-  padding: 28rpx;
-  max-height: 150rpx;
-  min-height: 150rpx;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 12rpx;
-  justify-content: center;
-  align-items: self-start;
-  flex-direction: column;
-  .info-row {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8rpx;
-    
-    .label-wrapper {
-      display: flex;
-      align-items: center;
-
-      min-width: 100rpx;
-      
-      .label {
-        font-size: 26rpx;
-        white-space: nowrap;
-      }
-    }
-    
-    .value {
-      flex: 1;
-      font-size: 26rpx;
-      padding-left: 8rpx;
-      word-break: break-all;
-      overflow-wrap: break-word;
-    }
-  }
-}
 
 // 修改所有标签装饰的颜色
 .song-card {
@@ -1362,11 +1353,17 @@ const getSyncClass = (fs) => {
       display: flex;
       align-items: center;
       margin-bottom: 10rpx;
-      
+      max-width: 370rpx;
       .song-title {
         font-size: 36rpx;
         font-weight: bold;
         margin-right: 16rpx;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 100%; /* 限制最大宽度 */
+		display: inline-block; /* 确保省略号生效 */
+	
       }
       
       .song-id {
@@ -1718,7 +1715,7 @@ const getSyncClass = (fs) => {
   max-height: 150rpx;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12rpx;
-  
+  max-width: 300rpx;
   .info-row {
     display: flex;
     align-items: flex-start;
@@ -1741,6 +1738,22 @@ const getSyncClass = (fs) => {
       padding-left: 8rpx;
       word-break: break-all;
       overflow-wrap: break-word;
+      
+      &.ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 70%;
+      }
+      
+      &.artist-name {
+		
+        white-space: wrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 70%; /* 限制最大宽度 */
+        display: inline-block; /* 确保省略号生效 */
+      }
     }
   }
 }
