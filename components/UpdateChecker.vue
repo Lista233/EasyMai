@@ -50,6 +50,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getVersion } from '@/api/myapi.js'
+import { refreshAllBaseData } from '@/api/maiapi.js' // 导入刷新API的函数
 // 导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
 
@@ -68,14 +69,15 @@ const props = defineProps({
 });
 
 // 定义组件事件
-const emit = defineEmits(['update', 'skip', 'error']);
+const emit = defineEmits(['update', 'skip', 'error', 'api-refreshed']);
 
 // 更新信息
 const updateInfo = ref({
   version: '',
   description: '',
   force_update: false,
-  download_url: ''
+  download_url: '',
+  api_version: '' // 添加API版本字段
 });
   let data;
 // 弹窗引用
@@ -102,16 +104,58 @@ const checkUpdate = async () => {
       throw new Error('获取更新信息失败');
     }
     
-     data = response.data;
+    data = response.data;
     
     // 检查返回数据格式
     if (!data || !data.version) {
       throw new Error('更新信息格式错误');
     }
     
+    // 检查API版本
+    if (data.api_version) {
+      // 获取本地存储的API版本
+      const localApiVersion = uni.getStorageSync('api_version') || '';
+      
+      // 如果API版本不一致，需要刷新API数据
+      if (localApiVersion !== data.api_version) {
+        console.log('API版本不一致，正在刷新API数据...');
+        console.log('本地版本:', localApiVersion);
+        console.log('服务器版本:', data.api_version);
+        
+        // 显示刷新提示
+        uni.showLoading({
+          title: '正在刷新数据...'
+        });
+        
+        // 刷新API数据
+        try {
+          const refreshResult = await refreshAllBaseData();
+          
+          // 更新本地API版本
+          if (refreshResult.success) {
+            uni.setStorageSync('api_version', data.api_version);
+            console.log('API数据刷新成功，已更新本地API版本');
+            
+            // 通知父组件API已刷新
+            emit('api-refreshed', {
+              oldVersion: localApiVersion,
+              newVersion: data.api_version,
+              refreshResult
+            });
+          } else {
+            console.error('API数据刷新部分失败:', refreshResult.errors);
+          }
+        } catch (error) {
+          console.error('刷新API数据失败:', error);
+        } finally {
+          uni.hideLoading();
+        }
+      }
+    }
+    
     // 比较版本号
     if (compareVersion(data.version, props.currentVersion) > 0) {
-      // 保存完整的更新信息，包括 download_url
+      // 保存完整的更新信息，包括 download_url 和 api_version
       updateInfo.value = data;
       
       // 根据是否强制更新显示不同弹窗
@@ -141,14 +185,20 @@ const handleUpdate = () => {
     // #ifdef APP-PLUS
     plus.runtime.openURL(data.download_url);
     // #endif
+    
+    // #ifdef H5
+    // 在H5环境下，跳转到更新页面
+    uni.navigateTo({
+      url: `/pages/webview/update?url=${encodeURIComponent(data.download_url)}`
+    });
+    // #endif
   } else {
     uni.showToast({
       title: '下载链接无效',
       icon: 'none'
     });
-	emit('skip', updateInfo.value);
+    emit('skip', updateInfo.value);
   }
-
 };
 
 // 处理跳过

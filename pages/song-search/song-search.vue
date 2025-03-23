@@ -76,16 +76,16 @@
           </view>
           <view class="result-info">
             <view v-if="result.matchedId" class="match-info">
-              ID: {{result.matchedId}}
+              乐曲ID: {{result.matchedId}}
             </view>
             <view v-else-if="result.matchedBpm" class="match-info">
-              BPM: {{result.matchedBpm}}
+              乐曲BPM: {{result.matchedBpm}}
             </view>
             <view v-if="result.matchedCharter" class="match-info">
               谱师: {{result.matchedCharter}}
             </view>
             <view v-if="result.matchedArtist" class="match-info">
-              艺术家: {{result.matchedArtist}}
+              曲师: {{result.matchedArtist}}
             </view>
             <view v-if="result.matchedAliases && result.matchedAliases.length > 0" class="match-info">
               别名: {{formatAliases(result.matchedAliases)}}

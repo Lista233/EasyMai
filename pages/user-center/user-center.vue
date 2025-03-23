@@ -3,9 +3,8 @@
     <!-- 顶部用户信息区域 -->
     <view class="user-info-container">
       <view class="user-card">
-        <view class="avatar-container">
+      <view class="avatar-container" @click="showAvatarSelector">
           <image class="avatar" :src="avatar || '/static/default-avatar.png'" mode="aspectFill"></image>
-      <!--    <view class="level-badge">Lv.{{ userInfo.level || 0 }}</view> -->
         </view>
         <view class="user-details">
           <view class="username">{{ nickname || username || '请先登录' }}</view>
@@ -130,6 +129,28 @@
       @confirm="handleSettingsConfirm"
       @refresh-token="refreshToken"
     />
+
+    <!-- 头像选择器弹窗 -->
+    <uni-popup ref="avatarPopup" type="bottom">
+      <view class="avatar-selector">
+        <view class="avatar-selector-header">
+          <text class="avatar-selector-title">选择头像</text>
+          <text class="close-btn" @click="closeAvatarSelector">×</text>
+        </view>
+        <scroll-view scroll-y class="avatar-grid">
+          <view class="avatar-list">
+            <view 
+              v-for="(icon, index) in avatarList" 
+              :key="index" 
+              class="avatar-item"
+              @click="selectAvatar(icon)"
+            >
+              <image :src="icon" mode="aspectFill" class="avatar-option"></image>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </uni-popup>
   </view>
 </template>
 
@@ -141,6 +162,10 @@ import QrCodeModal from '@/components/QrCodeModal.vue';
 import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
 import RatingDisplay from '@/components/RatingDisplay.vue';
 import {b50adapter} from '@/util/b50adapter.js'
+
+// 确保导入 uni-popup 组件
+import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
+
 let b35=ref('')
 let b15=ref('')
 let b15rating=ref(0)
@@ -153,16 +178,11 @@ let qqid=ref('')
 let importToken=ref('')
 let qq_channel_uid=ref('')
 
-
 let jwt_token = ref('');
-
 let records=ref('')
-
 let avatar=ref('../../static/maiicon/UI_Icon_000001.jpg')
-
 let QrCode=ref('');
 let uid=ref(-1);
-
 
 // 计算属性：根据rating值返回对应的样式类名
 const ratingClass = computed(() => {
@@ -279,8 +299,17 @@ onLoad(async () => {
 	console.log('nickname'+nickname.value)
 	await getb50local();
 	
-
-
+	// 加载用户头像
+	const savedAvatar = uni.getStorageSync('user_avatar');
+	if (savedAvatar) {
+		avatar.value = savedAvatar;
+		console.log('已加载保存的头像:', avatar.value);
+	}
+	
+	// 加载头像列表
+	loadAvatarList();
+	
+	await getb50local();
 });
 // 其他处理函数保持不变
 const handleSettings = () => {
@@ -757,6 +786,85 @@ async function divingFishUpdate()
 			cutDownTime=new Date().getTime()+timeCutDown;
 		}
 	}
+
+// 添加头像选择器相关变量
+const avatarPopup = ref(null);
+const avatarList = ref([]);
+
+// 加载头像列表
+const loadAvatarList = () => {
+  // 生成 maiicon 文件夹中的图标路径
+  const icons = [];
+  for (let i = 1; i <= 50; i++) {
+    // 格式化为6位数，前导0
+    const formattedNumber = String(i).padStart(6, '0');
+    icons.push(`../../static/maiicon/UI_Icon_${formattedNumber}.jpg`);
+  }
+  avatarList.value = icons;
+  console.log('头像列表已加载:', avatarList.value);
+};
+
+// 显示头像选择器
+const showAvatarSelector = () => {
+  if (isLoggedIn.value) {
+    console.log('打开头像选择器');
+    if (avatarPopup.value) {
+      avatarPopup.value.open();
+    } else {
+      console.error('avatarPopup 引用为空');
+      // 尝试在下一个渲染周期获取引用
+      setTimeout(() => {
+        if (avatarPopup.value) {
+          avatarPopup.value.open();
+        } else {
+          uni.showToast({
+            title: '无法打开头像选择器',
+            icon: 'none'
+          });
+        }
+      }, 100);
+    }
+  } else {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none'
+    });
+  }
+};
+
+// 关闭头像选择器
+const closeAvatarSelector = () => {
+  console.log('关闭头像选择器');
+  if (avatarPopup.value) {
+    avatarPopup.value.close();
+  }
+};
+
+// 选择头像
+const selectAvatar = (iconPath) => {
+  console.log('选择头像:', iconPath);
+  avatar.value = iconPath;
+  // 保存到本地存储
+  uni.setStorageSync('user_avatar', iconPath);
+  closeAvatarSelector();
+  uni.showToast({
+    title: '头像已更新',
+    icon: 'success'
+  });
+};
+
+// 确保在组件挂载后初始化弹窗
+onMounted(() => {
+  console.log('组件已挂载');
+  // 确保弹窗组件已正确初始化
+  setTimeout(() => {
+    if (avatarPopup.value) {
+      console.log('弹窗组件已初始化');
+    } else {
+      console.warn('弹窗组件未初始化');
+    }
+  }, 500);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -787,47 +895,33 @@ async function divingFishUpdate()
       
       .avatar-container {
         position: relative;
-        margin-bottom: 20rpx;
-        
-        .avatar {
-          width: 100rpx;
-          height: 100rpx;
-          border-radius: 30%;
-		  transform: translateY(30%);
-          background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-          border: 4rpx solid white;
-          box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
-        }
-        
-        .level-badge {
-          position: absolute;
-          bottom: -10rpx;
-          right: -10rpx;
-          background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-          color: white;
-          font-size: 24rpx;
-          font-weight: bold;
-          padding: 6rpx 16rpx;
-          border-radius: 20rpx;
-          box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.3);
-        }
+        cursor: pointer;
+      }
+      
+      .avatar {
+        width: 120rpx;
+        height: 120rpx;
+        border-radius: 20rpx;
+        border: 4rpx solid #fff;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
       }
       
       .user-details {
-        text-align: center;
-        margin-bottom: 30rpx;
-        
+        flex: 1;
+        //min-width: 0;
+        justify-content: center;
+		align-content: center;
         .username {
           font-size: 36rpx;
-          font-weight: 600;
-          color: #1e293b;
+          font-weight: bold;
+          color: black;
           margin-bottom: 8rpx;
+		  text-align: center;
         }
         
         .user-id {
           font-size: 24rpx;
-          color: #64748b;
-          margin: 6rpx 0;
+          color: black;
         }
       }
       
@@ -979,7 +1073,7 @@ async function divingFishUpdate()
       font-size: 32rpx;
       font-weight: 800;
       margin: 28rpx 10rpx;
-      color: #4f46e5;
+      color: black;
       padding: 10rpx 20rpx;
       border-radius: 12rpx;
       position: relative;
@@ -1315,5 +1409,64 @@ async function divingFishUpdate()
   text-decoration: underline;
   font-weight: 500;
   cursor: pointer;
+}
+
+.avatar-selector {
+  background: white;
+  border-radius: 24rpx 24rpx 0 0;
+  padding-bottom: env(safe-area-inset-bottom, 40rpx);
+  max-height: 70vh;
+  box-sizing: border-box;
+  
+  .avatar-selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30rpx;
+    border-bottom: 2rpx solid #f1f5f9;
+    
+    .avatar-selector-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    
+    .close-btn {
+      font-size: 40rpx;
+      color: #64748b;
+      padding: 0 20rpx;
+    }
+  }
+  
+  .avatar-grid {
+    max-height: 60vh;
+    padding: 20rpx;
+    box-sizing: border-box;
+    
+    .avatar-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20rpx;
+      padding-bottom: 40rpx;
+      
+      .avatar-item {
+        aspect-ratio: 1;
+        border-radius: 16rpx;
+        overflow: hidden;
+        box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        
+        &:active {
+          transform: scale(0.95);
+        }
+        
+        .avatar-option {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
 }
 </style>
