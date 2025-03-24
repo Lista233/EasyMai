@@ -144,6 +144,9 @@
         <view class="player-record" >
           <view class="record-header">
             <text class="section-title">玩家最佳成绩</text>
+            <view class="favorite-btn" @click="showFavoriteDialog">
+              <text class="iconfont" :class="{'is-favorite': isFavorite}">★</text>
+            </view>
           </view>
           <view class="record-content" v-if="!dataLoading && !recordLoading">
             <view class="achievement-section">
@@ -225,6 +228,52 @@
     </view>
   </uni-popup>
 
+  <!-- 收藏弹窗组件 -->
+  <uni-popup ref="favoritePopupRef" type="center">
+    <view class="favorite-popup">
+      <view class="popup-header">
+        <text class="title">收藏歌曲</text>
+        <text class="close-btn" @click="closeFavoriteDialog">×</text>
+      </view>
+      <view class="folder-list">
+        <view v-if="favoriteFolders.length > 0">
+          <view 
+            v-for="(folder, index) in favoriteFolders" 
+            :key="index" 
+            class="folder-item"
+            :class="{'folder-selected': isSongInFolder(folder.id)}"
+            @click="addToFavorite(folder.id)"
+          >
+            <view class="folder-info">
+              <text class="folder-name">{{ folder.name }}</text>
+              <text class="folder-count">({{ folder.count || 0 }}首)</text>
+            </view>
+            <text v-if="isSongInFolder(folder.id)" class="folder-check">✓</text>
+          </view>
+          <view class="folder-item new-folder" @click="showNewFolderInput">
+            <text class="folder-name">+ 新建收藏夹</text>
+          </view>
+        </view>
+        <view v-else class="no-folder">
+          <text>暂无收藏夹</text>
+          <view class="folder-item new-folder" @click="showNewFolderInput">
+            <text class="folder-name">+ 新建收藏夹</text>
+          </view>
+        </view>
+      </view>
+      <view class="new-folder-input" v-if="showingNewFolderInput">
+        <input 
+          type="text" 
+          v-model="newFolderName" 
+          placeholder="输入收藏夹名称" 
+          focus
+          @blur="hideNewFolderInput"
+        />
+        <button class="create-btn" @click="createNewFolder">创建</button>
+      </view>
+    </view>
+  </uni-popup>
+
 </template>
 
 <script setup>
@@ -235,7 +284,7 @@ import * as maiApi from '../../api/maiapi.js'
 import { onLoad, onHide, onShow } from '@dcloudio/uni-app'
 import { getCoverUrl, isLoading } from '@/util/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
-
+import {openBiliSearch} from '@/utils/biliUtils.js'
 
 // 加载状态控制
 const pageLoaded = ref(false)  // 页面基础结构是否加载完成
@@ -832,6 +881,253 @@ const copyArtist = () => {
     })
   }
 }
+
+// 收藏相关的状态
+const favoritePopupRef = ref(null)
+const favoriteFolders = ref([])
+const isFavorite = ref(false)
+const showingNewFolderInput = ref(false)
+const newFolderName = ref('')
+
+// 显示收藏弹窗
+const showFavoriteDialog = () => {
+  loadFavoriteFolders()
+  checkIfFavorite()
+  if (favoritePopupRef.value) {
+    favoritePopupRef.value.open()
+  }
+}
+
+// 关闭收藏弹窗
+const closeFavoriteDialog = () => {
+  if (favoritePopupRef.value) {
+    favoritePopupRef.value.close()
+  }
+  showingNewFolderInput.value = false
+}
+
+// 加载收藏夹列表
+const loadFavoriteFolders = () => {
+  try {
+    const folders = uni.getStorageSync('favoriteFolders') || []
+    favoriteFolders.value = folders
+  } catch (e) {
+    console.error('加载收藏夹失败:', e)
+    favoriteFolders.value = []
+  }
+}
+
+// 检查当前歌曲是否已收藏
+const checkIfFavorite = () => {
+  if (!songData.value?.id) return;
+  
+  try {
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    
+    // 检查所有收藏夹中是否包含当前歌曲的当前难度
+    for (const folderId in allFavorites) {
+      const songList = allFavorites[folderId];
+      const found = songList.some(item => 
+        item.id === songData.value.id && item.difficulty === currentDiffIndex.value
+      );
+      
+      if (found) {
+        isFavorite.value = true;
+        return;
+      }
+    }
+    isFavorite.value = false;
+  } catch (e) {
+    console.error('检查收藏状态失败:', e);
+    isFavorite.value = false;
+  }
+};
+
+// 添加到收藏夹
+const addToFavorite = (folderId) => {
+  if (!songData.value?.id) return
+  
+  try {
+    // 确保收藏夹存在
+    let folders = uni.getStorageSync('favoriteFolders') || [];
+    if (folders.length === 0) {
+      // 创建默认收藏夹
+      const defaultFolder = {
+        id: 'default-' + Date.now().toString(),
+        name: '默认收藏夹',
+        count: 0
+      };
+      
+      folders.push(defaultFolder);
+      uni.setStorageSync('favoriteFolders', folders);
+      folderId = defaultFolder.id; // 使用新创建的默认收藏夹
+    }
+    
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    
+    // 如果收藏夹不存在，创建一个新的
+    if (!allFavorites[folderId]) {
+      allFavorites[folderId] = [];
+    }
+    
+    // 构建收藏项，包含歌曲ID和难度索引
+    const favoriteItem = {
+      id: songData.value.id,
+      difficulty: currentDiffIndex.value
+    };
+    
+    // 检查是否已经收藏了当前难度
+    const existingIndex = allFavorites[folderId].findIndex(item => 
+      item.id === songData.value.id && item.difficulty === currentDiffIndex.value
+    );
+    
+    if (existingIndex !== -1) {
+      // 已存在当前难度，移除它（取消收藏）
+      allFavorites[folderId].splice(existingIndex, 1);
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'none'
+      });
+    } else {
+      // 添加到收藏夹
+      allFavorites[folderId].push(favoriteItem);
+      uni.showToast({
+        title: '收藏成功',
+        icon: 'none'
+      });
+    }
+    
+    // 保存更新后的收藏
+    uni.setStorageSync('favorites', allFavorites);
+    
+    // 立即更新收藏状态
+    checkIfFavorite();
+    
+    // 更新收藏夹中的歌曲数量
+    updateFolderCount();
+    
+    // 刷新收藏夹列表以更新选中状态
+    nextTick(() => {
+      loadFavoriteFolders();
+    });
+    
+  } catch (e) {
+    console.error('添加收藏失败:', e);
+    uni.showToast({
+      title: '收藏失败',
+      icon: 'none'
+    });
+  }
+};
+
+// 显示新建收藏夹输入框
+const showNewFolderInput = () => {
+  showingNewFolderInput.value = true
+  newFolderName.value = ''
+}
+
+// 隐藏新建收藏夹输入框
+const hideNewFolderInput = () => {
+  if (!newFolderName.value.trim()) {
+    showingNewFolderInput.value = false
+  }
+}
+
+// 创建新收藏夹
+const createNewFolder = () => {
+  if (!newFolderName.value.trim()) {
+    uni.showToast({
+      title: '请输入收藏夹名称',
+      icon: 'none'
+    })
+    return
+  }
+  
+  try {
+    const folders = uni.getStorageSync('favoriteFolders') || []
+    
+    // 生成唯一ID
+    const newId = Date.now().toString()
+    
+    // 添加新收藏夹
+    folders.push({
+      id: newId,
+      name: newFolderName.value.trim(),
+      count: 0
+    })
+    
+    // 保存收藏夹列表
+    uni.setStorageSync('favoriteFolders', folders)
+    
+    // 刷新列表
+    favoriteFolders.value = folders
+    
+    // 重置输入框
+    newFolderName.value = ''
+    showingNewFolderInput.value = false
+    
+    uni.showToast({
+      title: '创建成功',
+      icon: 'success'
+    })
+  } catch (e) {
+    console.error('创建收藏夹失败:', e)
+    uni.showToast({
+      title: '创建失败',
+      icon: 'none'
+    })
+  }
+}
+
+// 更新收藏夹中的歌曲数量
+const updateFolderCount = () => {
+  try {
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    const folders = uni.getStorageSync('favoriteFolders') || [];
+    
+    const updatedFolders = folders.map(folder => ({
+      ...folder,
+      count: (allFavorites[folder.id] || []).length
+    }));
+    
+    uni.setStorageSync('favoriteFolders', updatedFolders);
+  } catch (e) {
+    console.error('更新收藏夹数量失败:', e);
+  }
+};
+
+// 在页面加载时检查收藏状态
+onMounted(() => {
+  // 其他初始化代码...
+  checkIfFavorite()
+})
+
+// 在歌曲数据更新时检查收藏状态
+watch(() => songData.value?.id, () => {
+  checkIfFavorite()
+})
+
+// 监听难度变化，更新收藏状态
+watch(currentDiffIndex, () => {
+  checkIfFavorite();
+});
+
+// 检查歌曲是否在特定收藏夹中
+const isSongInFolder = (folderId) => {
+  if (!songData.value?.id) return false;
+  
+  try {
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    const songList = allFavorites[folderId] || [];
+    
+    return songList.some(item => 
+      item.id === songData.value.id && item.difficulty === currentDiffIndex.value
+    );
+  } catch (e) {
+    console.error('检查收藏状态失败:', e);
+    return false;
+  }
+};
 </script>
 
 <style lang="scss">
@@ -1808,12 +2104,42 @@ const copyArtist = () => {
   border-radius: 12rpx;
   
   .record-header {
-    margin-bottom: 20rpx;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16rpx;
     
     .section-title {
-      font-size: 28rpx;
-      color: #666;
-      font-weight: 500;
+      font-size: 32rpx;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .favorite-btn {
+      width: 60rpx;
+      height: 60rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      .iconfont {
+        font-size: 54rpx;
+        color: #d6c9c9;
+        background-color: white;
+        border-radius: 50%;
+        border: 1px solid #fae8e8;
+        box-shadow: 0 0 5rpx rgba(0, 0, 0, 0.1);
+        width: 48rpx;
+        height: 48rpx;
+        line-height: 48rpx;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &.is-favorite {
+          color: #ffcc00;
+        }
+      }
     }
   }
   
@@ -2125,5 +2451,115 @@ const copyArtist = () => {
   }
   
   // ... 现有代码 ...
+}
+
+.favorite-popup {
+  width: 600rpx;
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx;
+    border-bottom: 1px solid #f0f0f0;
+    
+    .title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .close-btn {
+      font-size: 40rpx;
+      color: #999;
+      padding: 0 10rpx;
+    }
+  }
+  
+  .folder-list {
+    max-height: 600rpx;
+    overflow-y: auto;
+    padding: 30rpx;
+    
+    .folder-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24rpx 30rpx;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 10rpx;
+     
+      &.folder-selected {
+        background-color: #7c3aed10; /* 淡紫色背景 */
+        border-left: 8rpx solid #7c3aed; /* 紫色左边框 */
+      }
+      
+      .folder-info {
+        display: flex;
+        align-items: center;
+        gap: 10rpx;
+      }
+      
+      .folder-name {
+        font-size: 28rpx;
+        color: #333;
+      }
+      
+      .folder-count {
+        font-size: 24rpx;
+        color: #666;
+      }
+      
+      .folder-check {
+        color: #7c3aed; /* 紫色对勾 */
+        font-weight: bold;
+        font-size: 32rpx;
+      }
+      
+      &.new-folder {
+        color: #3b82f6;
+        background-color: #f0f7ff;
+      }
+    }
+    
+    .no-folder {
+      padding: 40rpx 0;
+      text-align: center;
+      color: #999;
+      font-size: 28rpx;
+      display: flex;
+      flex-direction: column;
+      gap: 30rpx;
+    }
+  }
+  
+  .new-folder-input {
+    display: flex;
+    padding: 20rpx;
+    border-top: 1px solid #f0f0f0;
+    
+    input {
+      flex: 1;
+      height: 80rpx;
+      border: 1px solid #d1d5db;
+      border-radius: 8rpx;
+      padding: 0 20rpx;
+      font-size: 28rpx;
+    }
+    
+    .create-btn {
+      margin-left: 20rpx;
+      height: 80rpx;
+      line-height: 80rpx;
+      padding: 0 30rpx;
+      background: #3b82f6;
+      color: white;
+      border-radius: 8rpx;
+      font-size: 28rpx;
+    }
+  }
 }
 </style> 

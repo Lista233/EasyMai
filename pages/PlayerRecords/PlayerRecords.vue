@@ -1698,7 +1698,7 @@ const updateGridSize = (size) => {
 				}
 				
 				&.level-4 {
-					border-color: rgba(192, 57, 43, 0.8);
+					border-color:  rgb(236, 199, 254);
 				}
 			}
 			
@@ -1733,7 +1733,7 @@ const updateGridSize = (size) => {
 				}
 				
 				&.level-4 {
-					background: linear-gradient(135deg, #c0392b, #922b21);
+					 background-color: rgb(236, 199, 254);
 				}
 			}
 		}

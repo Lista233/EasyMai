@@ -82,6 +82,13 @@
           <view class="function-name">绑定二维码</view>
           <view class="function-desc">关联舞萌DX账号</view>
         </view>
+		
+		<view class="function-item qr-code" @click="navigateToFavorite">
+		  <view class="function-icon">🔗</view>
+		  <view class="function-name">绑码</view>
+		  <view class="function-desc">关联舞萌DX账号</view>
+		</view>
+		
         
         <!-- 账号设置 -->
         <view class="function-item account-settings" @click="handleAccountSettings">
@@ -317,6 +324,7 @@ const handleSettings = () => {
     url: '/pages/settings/index'
   });
 };
+
 
 const handleViewScores = () => {
   uni.navigateTo({
@@ -609,6 +617,12 @@ const navigateToRecommend = () => {
     url: '/pages/song-recommend/song-recommend'
   });
 };
+
+const navigateToFavorite = () =>{
+	uni.navigateTo({
+	  url: '/pages/favorites/favorites'
+	});
+}
 
 const navigateToChartStats = () => {
   uni.navigateTo({
