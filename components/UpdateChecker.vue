@@ -42,6 +42,9 @@
           <button class="skip-button" @click="handleSkip">暂不更新</button>
           <button class="update-button" @click="handleUpdate">立即更新</button>
         </view>
+        <view class="ignore-text-container">
+          <text class="ignore-text" @click="handleIgnore">忽略此版本</text>
+        </view>
       </view>
     </uni-popup>
   </view>
@@ -69,7 +72,7 @@ const props = defineProps({
 });
 
 // 定义组件事件
-const emit = defineEmits(['update', 'skip', 'error', 'api-refreshed']);
+const emit = defineEmits(['update', 'skip', 'ignore', 'error', 'api-refreshed']);
 
 // 更新信息
 const updateInfo = ref({
@@ -79,13 +82,13 @@ const updateInfo = ref({
   download_url: '',
   api_version: '' // 添加API版本字段
 });
-  let data;
+let data;
 // 弹窗引用
 const forceUpdatePopup = ref(null);
 const optionalUpdatePopup = ref(null);
 
 // 检查更新
-const checkUpdate = async () => {
+const checkUpdate = async (forceCheck = false) => {
   try {
     // 显示加载提示
     uni.showLoading({
@@ -95,7 +98,6 @@ const checkUpdate = async () => {
     // 请求更新信息
     const response = await getVersion()
    
-    
     // 隐藏加载提示
     uni.hideLoading();
     
@@ -122,39 +124,29 @@ const checkUpdate = async () => {
         console.log('本地版本:', localApiVersion);
         console.log('服务器版本:', data.api_version);
         
-        // 显示刷新提示
-        uni.showLoading({
-          title: '正在刷新数据...'
-        });
-        
-        // 刷新API数据
         try {
-          const refreshResult = await refreshAllBaseData();
+          // 刷新API数据
+          await refreshAllBaseData();
           
-          // 更新本地API版本
-          if (refreshResult.success) {
-            uni.setStorageSync('api_version', data.api_version);
-            console.log('API数据刷新成功，已更新本地API版本');
-            
-            // 通知父组件API已刷新
-            emit('api-refreshed', {
-              oldVersion: localApiVersion,
-              newVersion: data.api_version,
-              refreshResult
-            });
-          } else {
-            console.error('API数据刷新部分失败:', refreshResult.errors);
-          }
-        } catch (error) {
-          console.error('刷新API数据失败:', error);
-        } finally {
-          uni.hideLoading();
+          // 更新本地存储的API版本
+          uni.setStorageSync('api_version', data.api_version);
+          
+          // 触发API刷新完成事件
+          emit('api-refreshed', { oldVersion: localApiVersion, newVersion: data.api_version });
+        } catch (refreshError) {
+          console.error('刷新API数据失败:', refreshError);
         }
       }
     }
     
     // 比较版本号
-    if (compareVersion(data.version, props.currentVersion) > 0) {
+    const versionCompare = compareVersion(data.version, props.currentVersion);
+    
+    // 获取忽略的版本
+    const ignoredVersion = uni.getStorageSync('ignored_version') || '';
+    
+    // 如果是强制检查或版本号不同且不是被忽略的版本，则显示更新弹窗
+    if (versionCompare > 0 && (forceCheck || data.version !== ignoredVersion)) {
       // 保存完整的更新信息，包括 download_url 和 api_version
       updateInfo.value = data;
       
@@ -167,7 +159,7 @@ const checkUpdate = async () => {
       
       return true;
     } else {
-      // 已是最新版本
+      // 已是最新版本或用户已忽略此版本
       emit('skip', updateInfo.value);
       return false;
     }
@@ -181,15 +173,15 @@ const checkUpdate = async () => {
 
 // 处理更新
 const handleUpdate = () => {
-  if (data.download_url) {
+  if (updateInfo.value.download_url) {
     // #ifdef APP-PLUS
-    plus.runtime.openURL(data.download_url);
+    plus.runtime.openURL(updateInfo.value.download_url);
     // #endif
     
     // #ifdef H5
     // 在H5环境下，跳转到更新页面
     uni.navigateTo({
-      url: `/pages/webview/update?url=${encodeURIComponent(data.download_url)}`
+      url: `/pages/webview/update?url=${encodeURIComponent(updateInfo.value.download_url)}`
     });
     // #endif
   } else {
@@ -207,6 +199,14 @@ const handleSkip = () => {
   emit('skip', updateInfo.value);
 };
 
+// 处理忽略此版本
+const handleIgnore = () => {
+  // 保存忽略的版本号到本地存储
+  uni.setStorageSync('ignored_version', updateInfo.value.version);
+  optionalUpdatePopup.value.close();
+  emit('ignore', updateInfo.value);
+};
+
 // 添加退出应用的处理函数
 const handleExit = () => {
   // #ifdef APP-PLUS
@@ -216,8 +216,20 @@ const handleExit = () => {
 
 // 比较版本号
 const compareVersion = (v1, v2) => {
-  // 直接比较字符串是否相等
-  return v1 === v2 ? 0 : 1;
+  // 将版本号拆分为数组
+  const v1Parts = v1.split('.').map(Number);
+  const v2Parts = v2.split('.').map(Number);
+  
+  // 比较每一部分
+  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+    const v1Part = v1Parts[i] || 0;
+    const v2Part = v2Parts[i] || 0;
+    
+    if (v1Part > v2Part) return 1;
+    if (v1Part < v2Part) return -1;
+  }
+  
+  return 0; // 版本相同
 };
 
 // 组件挂载时自动检查更新
@@ -302,7 +314,7 @@ defineExpose({
   }
   
   .update-buttons {
-    padding: 30rpx 40rpx;
+    padding: 30rpx 40rpx 20rpx;
     display: flex;
     justify-content: center;
     gap: 20rpx;
@@ -359,6 +371,24 @@ defineExpose({
       
       &:active {
         background-color: #fecaca;
+      }
+    }
+  }
+  
+  .ignore-text-container {
+    padding: 0 0 25rpx;
+    text-align: center;
+    background: #fff;
+    margin-top: -5rpx;
+    
+    .ignore-text {
+      font-size: 26rpx;
+      color: #9ca3af;
+      text-decoration: underline;
+      padding: 10rpx 20rpx;
+      
+      &:active {
+        color: #6b7280;
       }
     }
   }

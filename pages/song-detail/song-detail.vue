@@ -33,7 +33,7 @@
                 <view class="label-decoration"></view>
                 <text class="label">类别:</text>
               </view>
-              <text class="value" :class="{'skeleton': dataLoading}">{{ dataLoading ? '' : (songData?.basic_info?.genre .replace('niconicoボーカロイド', 'nico & vocal').replace('niconico & VOCALOID', 'nico & vocal') || '-') }}</text>
+              <text class="value" :class="{'skeleton': dataLoading}">{{ dataLoading ? '' : formatGenre(songData?.basic_info?.genre) }}</text>
             </view>
             <view class="info-row">
               <view class="label-wrapper">
@@ -1128,6 +1128,35 @@ const isSongInFolder = (folderId) => {
     return false;
   }
 };
+
+// 在 script 部分添加 formatGenre 方法
+const formatGenre = (genre) => {
+  if (!genre) return '-'
+  
+  // 处理 niconico & VOCALOID 相关显示
+  if (genre === 'niconicoボーカロイド' || genre === 'niconico & VOCALOID') {
+    return 'nico & vocal'
+  }
+  
+  // 遍历 genreMapping 查找对应的中文显示
+  for (const [zhName, jpNames] of Object.entries(genreMapping)) {
+    if (jpNames.includes(genre)) {
+      return zhName
+    }
+  }
+  
+  return genre
+}
+
+// 添加完整的类别映射
+const genreMapping = {
+  'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
+  '流行&动漫': ['流行&动漫', 'POPSアニメ'],
+  '舞萌': ['舞萌', 'maimai'],
+  '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
+  '东方Project': ['东方Project', '東方Project'],
+  '其他游戏': ['其他游戏', 'ゲームバラエティ'],
+}
 </script>
 
 <style lang="scss">

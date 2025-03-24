@@ -49,7 +49,7 @@
             <view class="song-info">
               <text class="song-title">{{ song.title }}</text>
               <view class="song-details">
-				<text class="song-version">版本:{{ song.basic_info.from || '未知版本' }}</text>
+                <text class="song-version">版本:{{ formatVersion(song.basic_info.from) }}</text>
                 <text class="song-artist">类别:{{ song.basic_info.genre || '未知类别' }}</text>
               </view>
             </view>
@@ -130,7 +130,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import SongService from '@/utils/songService.js';
 import { getCoverUrl } from '@/util/coverManager.js';
-
+import {onShow} from '@dcloudio/uni-app';
 // 状态变量
 const loading = ref(true);
 const favoriteFolders = ref([]);
@@ -140,6 +140,33 @@ const folderManagePopupRef = ref(null);
 const newFolderName = ref('');
 const currentFolderId = ref('');
 const currentSongs = ref([]);
+
+// 添加版本映射关系
+const versionMap = {
+  'maimai': 'maimai',
+  'maimai PLUS': 'maimai+',
+  'maimai GreeN': 'Green',
+  'maimai GreeN PLUS': 'Green+',
+  'maimai ORANGE': 'Orange',
+  'maimai ORANGE PLUS': 'Orange+',
+  'maimai PiNK': 'Pink',
+  'maimai PiNK PLUS': 'Pink+',
+  'maimai MURASAKi': 'Murasaki',
+  'maimai MURASAKi PLUS': 'Murasaki+',
+  'maimai MiLK': 'Milk',
+  'MiLK PLUS': 'Milk+',
+  'maimai FiNALE': 'Finale',
+  'maimai でらっくす': '舞萌DX2020',
+  'maimai でらっくす Splash': '舞萌DX2021',
+  'maimai でらっくす UNiVERSE': '舞萌DX2022',
+  'maimai でらっくす FESTiVAL': '舞萌DX2023',
+  'maimai でらっくす BUDDiES': '舞萌DX2024'
+};
+
+// 格式化版本显示
+const formatVersion = (version) => {
+  return versionMap[version] || version;
+};
 
 // 初始化数据
 const initData = async () => {
@@ -260,7 +287,7 @@ const loadFavoriteSongs = () => {
 };
 
 // 使用正确的页面生命周期函数
-onMounted(() => {
+onShow(() => {
   console.log('页面加载');
   initData();
 });

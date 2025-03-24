@@ -4,7 +4,7 @@
     <view class="user-info-container">
       <view class="user-card">
       <view class="avatar-container" @click="showAvatarSelector">
-          <image class="avatar" :src="avatar || '/static/default-avatar.png'" mode="aspectFill"></image>
+          <image class="avatar" :src="avatar || '/static/default-avatar.jpg'" mode="aspectFill"></image>
         </view>
         <view class="user-details">
           <view class="username">{{ nickname || username || '请先登录' }}</view>
@@ -84,9 +84,9 @@
         </view>
 		
 		<view class="function-item qr-code" @click="navigateToFavorite">
-		  <view class="function-icon">🔗</view>
-		  <view class="function-name">绑码</view>
-		  <view class="function-desc">关联舞萌DX账号</view>
+		  <view class="function-icon">⭐</view>
+		  <view class="function-name">我的收藏</view>
+		  <view class="function-desc">查看我收藏的乐曲</view>
 		</view>
 		
         
@@ -110,6 +110,13 @@
 		  <view class="function-name">更新成绩</view>
 		  <view class="function-desc">更新水鱼查分器成绩</view>
 		</view>
+        
+        <!-- 添加检查更新按钮 -->
+        <view class="function-item check-update" @click="checkForUpdates">
+          <view class="function-icon">🔄</view>
+          <view class="function-name">检查更新</view>
+          <view class="function-desc">检查应用是否有新版本</view>
+        </view>
       </view>
     </view>
     
@@ -158,6 +165,14 @@
         </scroll-view>
       </view>
     </uni-popup>
+
+    <!-- 添加更新检查器组件 -->
+    <UpdateChecker 
+      ref="updateChecker"
+      :current-version="currentVersion"
+      :auto-check="false"
+      @api-refreshed="handleApiRefreshed"
+    />
   </view>
 </template>
 
@@ -168,7 +183,9 @@ import {onLoad} from '@dcloudio/uni-app'
 import QrCodeModal from '@/components/QrCodeModal.vue';
 import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
 import RatingDisplay from '@/components/RatingDisplay.vue';
+import UpdateChecker from '@/components/UpdateChecker.vue'; // 导入更新检查器组件
 import {b50adapter} from '@/util/b50adapter.js'
+import { avatarList as importedAvatarList } from '../../utils/avatarList.js';
 
 // 确保导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
@@ -807,15 +824,21 @@ const avatarList = ref([]);
 
 // 加载头像列表
 const loadAvatarList = () => {
-  // 生成 maiicon 文件夹中的图标路径
-  const icons = [];
-  for (let i = 1; i <= 50; i++) {
-    // 格式化为6位数，前导0
-    const formattedNumber = String(i).padStart(6, '0');
-    icons.push(`../../static/maiicon/UI_Icon_${formattedNumber}.jpg`);
+  try {
+    // 使用导入的头像列表
+    avatarList.value = importedAvatarList;
+    console.log('头像列表已加载:', avatarList.value.length);
+  } catch (error) {
+    console.error('加载头像列表失败:', error);
+    
+    // 出错时使用默认列表
+    const icons = [];
+    for (let i = 1; i <= 50; i++) {
+      const formattedNumber = String(i).padStart(6, '0');
+      icons.push(`../../static/maiicon/UI_Icon_${formattedNumber}.jpg`);
+    }
+    avatarList.value = icons;
   }
-  avatarList.value = icons;
-  console.log('头像列表已加载:', avatarList.value);
 };
 
 // 显示头像选择器
@@ -878,6 +901,76 @@ onMounted(() => {
       console.warn('弹窗组件未初始化');
     }
   }, 500);
+});
+
+// 添加当前版本号和更新检查器引用
+const currentVersion = ref('1.0.0'); // 替换为你的实际版本号
+const updateChecker = ref(null);
+
+// 添加检查更新的方法
+const checkForUpdates = () => {
+  if (updateChecker.value) {
+    uni.showLoading({
+      title: '检查更新中...'
+    });
+    
+    // 调用UpdateChecker组件的checkUpdate方法，传入true表示强制检查
+    updateChecker.value.checkUpdate(true).then(hasUpdate => {
+      uni.hideLoading();
+      
+      // 如果没有更新，显示已是最新版本的提示
+      if (!hasUpdate) {
+        uni.showToast({
+          title: '已是最新版本',
+          icon: 'success',
+          duration: 2000
+        });
+      }
+    }).catch(error => {
+      uni.hideLoading();
+      uni.showToast({
+        title: '检查更新失败',
+        icon: 'none',
+        duration: 2000
+      });
+      console.error('检查更新失败:', error);
+    });
+  } else {
+    uni.showToast({
+      title: '更新组件未初始化',
+      icon: 'none'
+    });
+  }
+};
+
+// 处理API刷新完成事件
+const handleApiRefreshed = (data) => {
+  console.log('API已刷新:', data);
+  uni.showToast({
+    title: 'API数据已更新',
+    icon: 'success'
+  });
+};
+
+// 在onMounted中获取当前版本
+onMounted(() => {
+  // ... existing code ...
+  
+  // 获取当前应用版本
+  // #ifdef APP-PLUS
+  plus.runtime.getProperty(plus.runtime.appid, (info) => {
+    currentVersion.value = info.version;
+    console.log('当前应用版本:', currentVersion.value);
+  });
+  // #endif
+  
+  // #ifdef H5
+  // 在H5环境中，可以从配置文件或其他地方获取版本号
+  // 这里使用示例版本号
+  currentVersion.value = '1.0.0';
+  // #endif
+  
+  // ... existing code ...
 });
 </script>
 
@@ -1361,6 +1454,17 @@ onMounted(() => {
           .function-icon {
             color: #7c3aed;
             background: rgba(237, 233, 254, 0.6);
+          }
+        }
+        
+        &.check-update {
+          &::before {
+            background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+          }
+          
+          .function-icon {
+            color: #0ea5e9;
+            background: rgba(224, 242, 254, 0.6);
           }
         }
       }

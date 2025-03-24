@@ -125,16 +125,31 @@ class SongService {
     // 将单个类型转换为数组
     const genres = Array.isArray(genre) ? genre : [genre]
 
+    // 定义类型映射关系
+    const genreMapping = {
+      'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
+      '流行&动漫': ['流行&动漫', 'POPSアニメ'],
+      '舞萌': ['舞萌', 'maimai'],
+      '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
+      '东方Project': ['东方Project', '東方Project'],
+      '其他游戏': ['其他游戏', 'ゲームバラエティ'],
+    }
+
     return this.songList.filter(song => {
-      const songGenre = song.basic_info?.genre?.toLowerCase() || ''
+      const songGenre = song.basic_info?.genre || ''
       
-      if (exact) {
-        // 精确匹配：类型必须完全相同
-        return genres.some(g => songGenre === g.toLowerCase())
-      } else {
-        // 模糊匹配：类型包含搜索词即可
-        return genres.some(g => songGenre.includes(g.toLowerCase()))
-      }
+      return genres.some(g => {
+        // 获取映射的类型数组
+        const mappedGenres = genreMapping[g] || [g]
+        
+        if (exact) {
+          // 精确匹配：类型必须完全相同
+          return mappedGenres.some(mg => songGenre === mg)
+        } else {
+          // 模糊匹配：类型包含搜索词即可
+          return mappedGenres.some(mg => songGenre.includes(mg))
+        }
+      })
     })
   }
 
@@ -629,14 +644,27 @@ class SongService {
       
       // 2. 检查类型
       if (genre) {
-        const songGenre = song.basic_info?.genre?.toLowerCase() || '';
-        const genres = Array.isArray(genre) ? genre : [genre];
+        const songGenre = song.basic_info?.genre?.toLowerCase() || ''
+        const genres = Array.isArray(genre) ? genre : [genre]
         
-        const genreMatch = exactGenre
-          ? genres.some(g => songGenre === g.toLowerCase())
-          : genres.some(g => songGenre.includes(g.toLowerCase()));
+        // 定义类型映射关系
+        const genreMapping = {
+          'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
+          '流行&动漫': ['流行&动漫', 'POPSアニメ'],
+          '舞萌': ['舞萌', 'maimai'],
+          '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM']
+        }
         
-        if (!genreMatch) return false;
+        const genreMatch = genres.some(g => {
+          const mappedGenres = genreMapping[g] || [g]
+          const lowercaseMappedGenres = mappedGenres.map(mg => mg.toLowerCase())
+          
+          return exactGenre
+            ? lowercaseMappedGenres.some(mg => songGenre === mg)
+            : lowercaseMappedGenres.some(mg => songGenre.includes(mg))
+        })
+        
+        if (!genreMatch) return false
       }
       
       // 3. 检查艺术家

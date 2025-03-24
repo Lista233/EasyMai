@@ -645,9 +645,25 @@ const onSearch = async () => {
       }
       
       // 类别筛选
+      const genreMapping = {
+      'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
+      '流行&动漫': ['流行&动漫', 'POPSアニメ'],
+      '舞萌': ['舞萌', 'maimai'],
+      '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
+      '东方Project': ['东方Project', '東方Project'],
+      '其他游戏': ['其他游戏', 'ゲームバラエティ'],
+    }
+    
       if (selectedGenre.value) {
         const songGenre = song.basic_info?.genre || ''
-        if (songGenre !== selectedGenre.value) {
+        // 使用 genreMapping 检查匹配
+        const matchFound = Object.entries(genreMapping).some(([zhName, jpNames]) => {
+          if (zhName === selectedGenre.value) {
+            return jpNames.includes(songGenre)
+          }
+          return false
+        })
+        if (!matchFound) {
           return false
         }
       }
