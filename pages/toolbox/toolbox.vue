@@ -51,6 +51,11 @@
           <view class="tool-name">热门乐曲排行</view>
           <view class="tool-desc">震惊!最火爆的谱面竟然是...</view>
         </view>
+		<view class="tool-card" @click="navigateTo('/pages/version-map/version-map')">
+		  <view class="tool-icon">🔥</view>
+		  <view class="tool-name">版本映射表</view>
+		  <view class="tool-desc">妈妈再也不担心我分不清版本啦</view>
+		</view>
  <!--       <view class="tool-card" @click="navigateTo('/pages/PlayerRecords/PlayerRecords')">
           <view class="tool-icon">🏆</view>
           <view class="tool-name">成绩查询</view>

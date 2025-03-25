@@ -47,7 +47,10 @@ function processSongId(songId) {
     // 转换为字符串并补齐5位
     const paddedId =String(songId);
     
-    // 如果是5位数且以10开头，去除前面的10
+    if (paddedId.length === 4) {
+        return '1'+paddedId;
+    }
+	
     if (paddedId.length === 5 && paddedId.startsWith('10') ) {
         if(paddedId.startsWith('100')){
             return paddedId.slice(3);

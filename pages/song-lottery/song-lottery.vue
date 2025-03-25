@@ -32,11 +32,14 @@
         <view class="filter-label">版本筛选</view>
         <picker 
           mode="selector" 
-          :range="versionOptions" 
-          @change="onVersionChange" 
+          :range="displayVersionOptions" 
+          :value="versionOptions.indexOf(selectedVersion.value)"
+          @change="onVersionChange"
           class="version-picker"
         >
-          <view class="picker-text">{{ selectedVersion || '全部版本' }}</view>
+          <view class="picker-text">
+            {{ !selectedVersion || selectedVersion === '全部版本' ? '全部版本' : (versionMap[selectedVersion] || selectedVersion) }}
+          </view>
         </picker>
       </view>
       
@@ -176,6 +179,35 @@ const genreOptions = ['任意类别',
   '其他游戏',
   '东方Project',
   '音击&中二节奏'];
+
+// 版本映射表
+const versionMap = {
+  'maimai': 'maimai',
+  'maimai PLUS': 'maimai+',
+  'maimai GreeN': 'Green',
+  'maimai GreeN PLUS': 'Green+',
+  'maimai ORANGE': 'Orange',
+  'maimai ORANGE PLUS': 'Orange+',
+  'maimai PiNK': 'Pink',
+  'maimai PiNK PLUS': 'Pink+',
+  'maimai MURASAKi': 'Murasaki',
+  'maimai MURASAKi PLUS': 'Murasaki+',
+  'maimai MiLK': 'Milk',
+  'MiLK PLUS': 'Milk+',
+  'maimai FiNALE': 'Finale',
+  'maimai でらっくす': '舞萌DX2020',
+  'maimai でらっくす Splash': '舞萌DX2021',
+  'maimai でらっくす UNiVERSE': '舞萌DX2022',
+  'maimai でらっくす FESTiVAL': '舞萌DX2023',
+  'maimai でらっくす BUDDiES': '舞萌DX2024'
+};
+
+// 添加一个计算属性用于显示
+const displayVersionOptions = computed(() => {
+  return versionOptions.map(version => 
+    version === '全部版本' ? version : (versionMap[version] || version)
+  );
+});
 
 // 实例化SongService
 const songService = ref(null);
@@ -324,20 +356,14 @@ const getRandomSongs = (count) => {
     return [];
   }
   
-  // 如果筛选后的歌曲数量少于要抽取的数量，显示提示
-  // if (filteredSongs.value.length < count) {
-  //   uni.showToast({
-  //     title: `只有 ${filteredSongs.value.length} 首符合条件的歌曲`,
-  //     icon: 'none'
-  //   });
-  //   count = filteredSongs.value.length;
-  // }
+  // 如果筛选后的歌曲数量少于要抽取的数量，使用所有可用歌曲
+  const availableCount = Math.min(count, filteredSongs.value.length);
   
   const result = [];
   const indices = new Set();
   
   // 确保不重复抽取同一首歌
-  while (result.length < count) {
+  while (result.length < availableCount) {
     const randomIndex = Math.floor(Math.random() * filteredSongs.value.length);
     
     if (!indices.has(randomIndex)) {
