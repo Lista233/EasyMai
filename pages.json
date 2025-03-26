@@ -10,7 +10,9 @@
 			"path" : "pages/index/index",
 			"style" : 
 			{
-				"navigationBarTitleText" : ""
+				"navigationBarTitleText" : "",
+				"hideStatusBar":true,
+				"hideBottomNavigationIndicator":true
 			}
 		},
 		
@@ -18,7 +20,7 @@
 			"path" : "pages/Test/Test",
 			"style" : 
 			{
-				"navigationBarTitleText" : "舞萌查分器",
+				"navigationBarTitleText" : "",
 				"hideStatusBar":true,
 				"hideBottomNavigationIndicator":true
 			}
@@ -28,7 +30,7 @@
 			"path" : "pages/maiupdate/maib50",
 			"style" : 
 			{
-				"navigationBarTitleText" : "舞萌查分器",
+				"navigationBarTitleText" : "",
 				"hideStatusBar":true,
 				"hideBottomNavigationIndicator":true
 			}
@@ -38,7 +40,7 @@
 			"path" : "pages/song-detail/song-detail",
 			"style" : 
 			{
-				"navigationBarTitleText" : "舞萌查分器",
+				"navigationBarTitleText" : "",
 				"hideStatusBar":true,
 				"hideBottomNavigationIndicator":true
 				
@@ -48,7 +50,7 @@
 			"path" : "pages/song-search/song-search",
 			"style" : 
 			{
-				"navigationBarTitleText" : "舞萌查分器",
+				"navigationBarTitleText" : "",
 				"hideStatusBar":true,
 				"hideBottomNavigationIndicator":true
 			}
@@ -58,7 +60,7 @@
 			"path" : "pages/maiupdate/maiupdate",
 			"style" : 
 			{
-				"navigationBarTitleText" : "水鱼传分",
+				"navigationBarTitleText" : "",
 				"hideStatusBar":true,
 				"hideBottomNavigationIndicator":true
 			}

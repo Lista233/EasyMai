@@ -138,7 +138,13 @@
 			</view>
 		</view>
 		
-		<view class="b50box" id="capture-area">
+		<!-- 添加加载状态指示器 -->
+		<view class="loading-container" v-if="isLoading">
+			<view class="loading-spinner"></view>
+			<text class="loading-text">正在加载数据...</text>
+		</view>
+		
+		<view class="b50box" id="capture-area" v-else>
 			<view v-if="!b35?.length && !b15?.length" class="empty-state" @click="handleEmptyStateClick">
 				<view class="empty-icon">📊</view>
 				<view class="empty-title">暂无数据</view>
@@ -345,7 +351,7 @@
 	qq_channel_uid;
 	*/
 import * as fileutil from '../../util/fileutil.js'
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import * as maiApi from "../../api/maiapi.js"
 import { b50adapter } from '../../util/b50adapter.js';
 import {onReady,onLoad,onInit} from '@dcloudio/uni-app'
@@ -382,29 +388,47 @@ let isProcessing=ref(false);
 
 const hasLoadedB50 = ref(false);
 
+// 添加加载状态
+const isLoading = ref(true);
+
 onLoad(async () => {
 	console.log(1)
-	// coverlist.value = await fileutil.getDirectoryFiles(localroute)
-	qqid.value = uni.getStorageSync('divingFish_qqid');
-	nickname.value = uni.getStorageSync('divingFish_nickname');
-	importToken.value = uni.getStorageSync('divingFish_importToken');
-	records.value = uni.getStorageSync('divingFish_records');
-	uid.value = uni.getStorageSync('uid')
-	username.value = uni.getStorageSync('divingFish_username')
-	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
+	// 设置加载状态
+	isLoading.value = true;
 	
-	// 从本地缓存读取 rating
-	b35rating.value = uni.getStorageSync('b35rating') || 0;
-	b15rating.value = uni.getStorageSync('b15rating') || 0;
+	// 使用nextTick确保UI先渲染
+	await nextTick();
 	
-	await initCoverList();
-	console.log('nickname'+nickname.value)
-	
-	// 只在首次加载且用户已登录时执行
-		await getb50local();
-	
-	
-	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
+	// 使用setTimeout让主线程先处理UI渲染
+	setTimeout(async () => {
+		try {
+			// coverlist.value = await fileutil.getDirectoryFiles(localroute)
+			qqid.value = uni.getStorageSync('divingFish_qqid');
+			nickname.value = uni.getStorageSync('divingFish_nickname');
+			importToken.value = uni.getStorageSync('divingFish_importToken');
+			records.value = uni.getStorageSync('divingFish_records');
+			uid.value = uni.getStorageSync('uid')
+			username.value = uni.getStorageSync('divingFish_username')
+			qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
+			
+			// 从本地缓存读取 rating
+			b35rating.value = uni.getStorageSync('b35rating') || 0;
+			b15rating.value = uni.getStorageSync('b15rating') || 0;
+			
+			await initCoverList();
+			console.log('nickname'+nickname.value)
+			
+			// 只在首次加载且用户已登录时执行
+			await getb50local();
+			
+			jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
+		} catch (error) {
+			console.error('加载数据出错:', error);
+		} finally {
+			// 无论成功失败都关闭加载状态
+			isLoading.value = false;
+		}
+	}, 100);
 });
 
 // let coverlist=ref([])
@@ -1130,5 +1154,34 @@ const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC'
   padding: 2rpx 4rpx;
   border-radius: 4rpx;
   
+}
+
+/* 添加加载状态样式 */
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 60vh;
+	
+	.loading-spinner {
+		width: 80rpx;
+		height: 80rpx;
+		border: 6rpx solid rgba(99, 102, 241, 0.1);
+		border-top: 6rpx solid #6366f1;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 30rpx;
+	}
+	
+	.loading-text {
+		font-size: 30rpx;
+		color: #64748b;
+	}
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
 </style>

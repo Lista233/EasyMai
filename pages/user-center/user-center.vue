@@ -28,42 +28,54 @@
       <view class="function-grid">
         <!-- 乐曲搜索 -->
         <view class="function-item song-search" @click="handleSongSearch">
-          <view class="function-icon">🔍</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/search.png'); mask-image: url('/static/icons/search.png');"></view>
+          </view>
           <view class="function-name">乐曲搜索</view>
           <view class="function-desc">查询舞萌曲库所有歌曲</view>
         </view>
         
         <!-- 成绩查询 -->
         <view class="function-item my-scores" @click="handlePlayerRecords">
-          <view class="function-icon">🏆</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/record.png'); mask-image: url('/static/icons/record.png');"></view>
+          </view>
           <view class="function-name">成绩查询</view>
           <view class="function-desc">查看你的游玩数据</view>
         </view>
         
         <!-- 歌曲推荐 -->
         <view class="function-item song-recommend" @click="navigateToRecommend">
-          <view class="function-icon">✨</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/recommend.png'); mask-image: url('/static/icons/recommend.png');"></view>
+          </view>
           <view class="function-name">歌曲推荐</view>
           <view class="function-desc">基于你的水平推荐歌曲</view>
         </view>
         
 		<!-- 数据分析 -->
 		<view class="function-item data-analysis" @click="handleB50">
-		  <view class="function-icon">📈</view>
+		  <view class="function-icon">
+		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/b50.png'); mask-image: url('/static/icons/b50.png');"></view>
+		  </view>
 		  <view class="function-name">B50查询</view>
-		  <view class="function-desc">查看游戏数据统计</view>
+		  <view class="function-desc">来查查你的Best50</view>
 		</view>
 		
         <!-- 热门乐曲排行 -->
         <view class="function-item chart-stats" @click="navigateToChartStats">
-          <view class="function-icon">🎲</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/random.png'); mask-image: url('/static/icons/random.png');"></view>
+          </view>
           <view class="function-name">Mai什么</view>
           <view class="function-desc">抽取1~4首随机乐曲进行游玩</view>
         </view>
         
         <!-- 工具箱 -->
         <view class="function-item toolbox" @click="navigateToToolbox">
-          <view class="function-icon">🧰</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/tools.png'); mask-image: url('/static/icons/tools.png');"></view>
+          </view>
           <view class="function-name">工具箱</view>
           <view class="function-desc">实用工具与小功能</view>
         </view>
@@ -72,48 +84,62 @@
       </view>
       
       <view class="section-title has-data">
-        <view class="title-content">账号相关</view>
+        <view class="title-content">用户相关</view>
       </view>
       
       <view class="function-grid account-grid">
         <!-- 绑定二维码 -->
-        <view class="function-item qr-code" @click="handleQrCode">
-          <view class="function-icon">🔗</view>
-          <view class="function-name">绑定二维码</view>
-          <view class="function-desc">关联舞萌DX账号</view>
-        </view>
+     
 		
-		<view class="function-item qr-code" @click="navigateToFavorite">
-		  <view class="function-icon">⭐</view>
+		<view class="function-item favorite" @click="navigateToFavorite">
+		  <view class="function-icon">
+		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/favorites.png'); mask-image: url('/static/icons/favorites.png');"></view>
+		  </view>
 		  <view class="function-name">我的收藏</view>
 		  <view class="function-desc">查看我收藏的乐曲</view>
 		</view>
 		
-        
+    <view class="function-item update-scores" @click="divingFishUpdate">
+		  <view class="function-icon">
+		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/upload.png'); mask-image: url('/static/icons/upload.png');"></view>
+		  </view>
+		  <view class="function-name">更新成绩</view>
+		  <view class="function-desc">更新水鱼查分器成绩</view>
+		</view>
         <!-- 账号设置 -->
         <view class="function-item account-settings" @click="handleAccountSettings">
-          <view class="function-icon">⚙️</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/settings.png'); mask-image: url('/static/icons/settings.png');"></view>
+          </view>
           <view class="function-name">账号设置</view>
           <view class="function-desc">管理个人账号</view>
         </view>
         
-        <!-- 刷新API -->
-        <view class="function-item refresh-api" @click="handleRefreshAPI">
-          <view class="function-icon">🔄</view>
+        <view class="function-item qr-code" @click="handleQrCode">
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/qrcode.png'); mask-image: url('/static/icons/qrcode.png');"></view>
+          </view>
+          <view class="function-name">绑定二维码</view>
+          <view class="function-desc">关联舞萌DX账号</view>
+        </view>
+
+		
+		
+	
+
+    <view class="function-item refresh-api" @click="handleRefreshAPI">
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/refresh.png'); mask-image: url('/static/icons/refresh.png');"></view>
+          </view>
           <view class="function-name">刷新API</view>
           <view class="function-desc">重新从API获取数据(功能异常时使用)</view>
         </view>
-		
-		
-		<view class="function-item refresh-api" @click="divingFishUpdate">
-		  <view class="function-icon">⬆</view>
-		  <view class="function-name">更新成绩</view>
-		  <view class="function-desc">更新水鱼查分器成绩</view>
-		</view>
         
         <!-- 添加检查更新按钮 -->
         <view class="function-item check-update" @click="checkForUpdates">
-          <view class="function-icon">🔄</view>
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/update.png'); mask-image: url('/static/icons/update.png');"></view>
+          </view>
           <view class="function-name">检查更新</view>
           <view class="function-desc">检查应用是否有新版本</view>
         </view>
@@ -204,7 +230,7 @@ let qq_channel_uid=ref('')
 
 let jwt_token = ref('');
 let records=ref('')
-let avatar=ref('../../static/maiicon/UI_Icon_000001.jpg')
+let avatar=ref('../../static/maiicon/UI_Icon_409503.jpg')
 let QrCode=ref('');
 let uid=ref(-1);
 
@@ -978,7 +1004,7 @@ onMounted(() => {
 .user-center {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
+  background: linear-gradient(135deg, #f7f9ff 0%, #eff0fd 100%);
   padding: 40rpx 20rpx 60rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
@@ -1003,14 +1029,17 @@ onMounted(() => {
       .avatar-container {
         position: relative;
         cursor: pointer;
+        padding: 4rpx;
       }
       
       .avatar {
-        width: 120rpx;
-        height: 120rpx;
-        border-radius: 20rpx;
+        width: 150rpx;
+        height: 150rpx;
+        border-radius: 16rpx;
         border: 4rpx solid #fff;
         box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        display: block;
       }
       
       .user-details {
@@ -1179,7 +1208,9 @@ onMounted(() => {
     .section-title {
       font-size: 32rpx;
       font-weight: 800;
-      margin: 28rpx 10rpx;
+      margin: 28rpx auto;
+      margin-bottom: 20rpx;
+      margin-top: -15rpx;
       color: black;
       padding: 10rpx 20rpx;
       border-radius: 12rpx;
@@ -1187,8 +1218,10 @@ onMounted(() => {
       overflow: hidden;
       display: inline-block;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      min-width: 100rpx;
-      text-align: left;
+      min-width: 150rpx;
+      padding-top: 15rpx;
+      padding-bottom: 25rpx;
+      text-align: center;
       background: transparent;
       box-shadow: none;
       transform: translateX(-20rpx);
@@ -1228,7 +1261,9 @@ onMounted(() => {
         display: block;
         text-align: center;
         width: calc(95% - 20rpx);
-        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,246,255,0.4));
+        margin-left: auto;
+        margin-right: auto;
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.9));
         box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.08);
         backdrop-filter: blur(10px);
         transform: translateX(0);
@@ -1252,11 +1287,7 @@ onMounted(() => {
         left: 0;
         width: 100%;
         height: 2rpx;
-        background: linear-gradient(to right, 
-          rgba(99, 102, 241, 0.5), 
-          rgba(192, 132, 252, 0.5),
-          rgba(99, 102, 241, 0)
-        );
+       // background: linear-gradient(to bottom, #2196F3, #4CAF50);
         transform: scaleX(0);
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         transform-origin: left;
@@ -1270,17 +1301,92 @@ onMounted(() => {
     .function-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20rpx;
+      gap: 15rpx;
       margin-bottom: 40rpx;
       
       &.account-grid {
         grid-template-columns: repeat(2, 1fr);
+        
+        // 第一行 - 蓝紫色系列
+        .function-item:nth-child(1), 
+        .function-item:nth-child(2) {
+          &::before {
+            background: linear-gradient(90deg, #97a1ff, #768bf3);
+          }
+          
+          .function-icon {
+            color: #8b5cf6;
+             background: rgba(255, 255, 255, 0.85);
+          }
+        }
+        
+        // 第一行微调 - 第二个元素稍微深一点
+        .function-item:nth-child(2) {
+          &::before {
+            background: linear-gradient(90deg, #97a1ff, #768bf3);
+          }
+          
+          .function-icon {
+            color: #7c3aed;
+            background: rgba(255, 255, 255, 0.85);
+          }
+        }
+        
+        // 第二行 - 靛蓝色系列
+        .function-item:nth-child(3), 
+        .function-item:nth-child(4) {
+        &::before {
+          background: linear-gradient(90deg, #ffc2e4, #f483be);
+        }
+        
+        .function-icon {
+          color: #e864a6;
+           background: rgba(255, 255, 255, 0.85);
+        }
+        }
+        
+        // 第二行微调 - 第二个元素稍微深一点
+        .function-item:nth-child(4) {
+          &::before {
+            background: linear-gradient(90deg, #ffc2e4, #f483be);
+                   }
+                   
+                   .function-icon {
+                     color: #ec4899;
+                      background: rgba(255, 255, 255, 0.85);
+                   }
+        }
+        
+        // 第三行 - 紫色系列
+        .function-item:nth-child(5), 
+        .function-item:nth-child(6) {
+          &::before {
+            background: linear-gradient(90deg, #cca2ff, #894bf4);
+          }
+          
+          .function-icon {
+            color: #a855f7;
+            background: rgba(255, 255, 255, 0.85);
+          }
+        }
+        
+        // 第三行微调 - 第二个元素稍微深一点
+        .function-item:nth-child(6) {
+          &::before {
+            background: linear-gradient(90deg, #cba5f9, #894bf4);
+          }
+          
+          .function-icon {
+            color: #9333ea;
+             background: rgba(255, 255, 255, 0.85);
+          }
+        }
       }
       
       .function-item {
         background: white;
         border-radius: 16rpx;
-        padding: 30rpx 20rpx 40rpx;
+        padding: 25rpx 20rpx 30rpx;
         box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.08);
         transition: all 0.3s ease;
         position: relative;
@@ -1328,13 +1434,14 @@ onMounted(() => {
           font-size: 32rpx;
           font-weight: 600;
           color: #1e293b;
-          margin-bottom: 8rpx;
+		  margin-top:15rpx;
+          margin-bottom:3rpx;
           position: relative;
           z-index: 1;
         }
         
         .function-desc {
-          font-size: 24rpx;
+          font-size: 22rpx;
           color: #64748b;
           line-height: 1.4;
           position: relative;
@@ -1354,7 +1461,7 @@ onMounted(() => {
           
           .function-icon {
             color: #6366f1;
-            background: rgba(224, 231, 255, 0.6);
+            background: rgba(255, 255, 255, 0.85);
           }
         }
         
@@ -1364,8 +1471,8 @@ onMounted(() => {
           }
           
           .function-icon {
-            color: #8b5cf6;
-            background: rgba(237, 233, 254, 0.6);
+            background-color: #f765ae;
+           background: rgba(255, 255, 255, 0.85);
           }
         }
       
@@ -1375,75 +1482,78 @@ onMounted(() => {
           }
           
           .function-icon {
-            color: #a78bfa;
-            background: rgba(243, 232, 255, 0.6);
+            background-color: #f765ae;
+          background: rgba(255, 255, 255, 0.85);
           }
         }
         
         &.my-scores {
           &::before {
-            background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+            background: linear-gradient(90deg, #97a1ff, #768bf3);
           }
           
           .function-icon {
             color: #8b5cf6;
-            background: rgba(237, 233, 254, 0.6);
+           background: rgba(255, 255, 255, 0.85);
           }
         }
         
-        &.data-analysis {
-          &::before {
-            background: linear-gradient(90deg, #e879f9, #d946ef);
-          }
-          
-          .function-icon {
-            color: #d946ef;
-            background: rgba(250, 232, 255, 0.6);
-          }
-        }
+    
         
         &.song-search {
           &::before {
-            background: linear-gradient(90deg, #818cf8, #6366f1);
+             background: linear-gradient(90deg, #97a1ff, #768bf3);
           }
           
           .function-icon {
             color: #6366f1;
-            background: rgba(224, 231, 255, 0.6);
+          background: rgba(255, 255, 255, 0.85);
           }
         }
         
         &.song-recommend {
           &::before {
-            background: linear-gradient(90deg, #f472b6, #ec4899);
+            background: linear-gradient(90deg, #ffc2e4, #f483be);
           }
           
           .function-icon {
             color: #ec4899;
-            background: rgba(252, 231, 243, 0.6);
+            background: rgba(255, 255, 255, 0.85);
           }
         }
+&.data-analysis {
+	
+		  &::before {
+		    background: linear-gradient(90deg, #ffc2e4, #f483be);
+		  }
+		  
+		  .function-icon {
+		    color: #e864a6;
+		   background: rgba(255, 255, 255, 0.85);
+		  }
+		}
         
         &.chart-stats {
-          &::before {
-            background: linear-gradient(90deg, #c084fc, #a855f7);
-          }
-          
-          .function-icon {
-            color: #a855f7;
-            background: rgba(243, 232, 255, 0.6);
-          }
+            &::before {
+              background: linear-gradient(90deg, #cba5f9, #894bf4);
+		    }
+		  
+		    .function-icon {
+		    color: #e864fc;
+		   background: rgba(255, 255, 255, 0.85);
         }
-        
+        }
+		
+		
         &.toolbox {
-          &::before {
-            background: linear-gradient(90deg, #f9a8d4, #f472b6);
-          }
-          
-          .function-icon {
-            color: #f472b6;
-            background: rgba(252, 231, 243, 0.6);
-          }
+		  &::before {
+        background: linear-gradient(90deg, #c4b5fd 0%, #7c3aed 100%);
+		  }
+		  
+		  .function-icon {
+		    color: #6366f1;
+		    background: rgba(255, 255, 255, 0.9);
+		  }
         }
         
         &.update-data {
@@ -1453,18 +1563,42 @@ onMounted(() => {
           
           .function-icon {
             color: #7c3aed;
-            background: rgba(237, 233, 254, 0.6);
+           background: rgba(255, 255, 255, 0.85);
           }
         }
         
         &.check-update {
+         &::before {
+           background: linear-gradient(90deg, #a78bfa, #8b5cf6);
+         }
+         
+         .function-icon {
+           color: #8b5cf6;
+          background: rgba(255, 255, 255, 0.9);
+         }
+        }
+        
+        // 为"我的收藏"添加独特样式
+        &.favorite {
           &::before {
-            background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+            background: linear-gradient(90deg, #fcd34d, #f59e0b);
           }
           
           .function-icon {
-            color: #0ea5e9;
-            background: rgba(224, 242, 254, 0.6);
+            color: #f59e0b;
+            background: rgba(255, 255, 255, 0.85);
+          }
+        }
+        
+        // 为"更新成绩"添加独特样式
+        &.update-scores {
+          &::before {
+            background: linear-gradient(90deg, #34d399, #10b981);
+          }
+          
+          .function-icon {
+            color: #10b981;
+           background: rgba(255, 255, 255, 0.85);
           }
         }
       }
@@ -1587,4 +1721,135 @@ onMounted(() => {
     }
   }
 }
+
+// 添加图标图片样式
+.function-icon {
+  .icon-image {
+    width: 70rpx;
+    height: 70rpx;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+  }
+}
+
+// 功能中心图标样式
+.function-item {
+  &.song-search .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.my-scores .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #93c5fd 0%, #6366f1 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.song-recommend .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #fda4cf 0%, #f472b6 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.data-analysis .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      transform: scale(1.2); 
+      background: linear-gradient(135deg, #fda4cf 0%, #f472b6 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.chart-stats .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+
+    .icon-image {
+      background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.toolbox .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
+      opacity: 0.95;
+    }
+  }
+  
+  &.qr-code .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
+      opacity: 0.85;
+    }
+  }
+  
+  &.account-settings .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+   
+    .icon-image {
+      background: linear-gradient(135deg, #fda4cf 0%, #e11d48 100%);
+      opacity: 0.85;
+    }
+  }
+  
+  &.favorite .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.update-scores .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 100%);
+      opacity: 0.9;
+    }
+  }
+  
+  &.refresh-api .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+      opacity: 0.95;
+    }
+  }
+  
+  &.check-update .function-icon {
+    background: rgba(255, 255, 255, 0.9);
+    
+    .icon-image {
+      transform: scale(1.2);
+      background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
+      opacity: 0.95;
+    }
+  }
+}
+
+// 账号相关图标样式 - 使用nth-child选择器保持原有的行颜色设计
+
 </style>

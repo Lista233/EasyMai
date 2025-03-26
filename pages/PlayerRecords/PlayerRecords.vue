@@ -1,239 +1,201 @@
 <template>
 	<view class="container">
-		<!-- 头部信息 -->
-		<view class="header">
-			<view class="header-title">玩家记录</view>
-			<view class="player-info" v-if="currentStats">
-				<text class="nickname">{{ playerRecordService.getPlayerInfo()?.nickname || '未知玩家' }}</text>
-				<text class="rating">Rating: {{ playerRecordService.getPlayerInfo()?.rating || 0 }}</text>
-			</view>
-			
-			<!-- 统计信息 - 第一行 -->
-			<view class="stats-row" v-if="currentStats">
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.totalSongs }}</view>
-					<view class="stat-label">总曲目数</view>
-				</view>
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.rateStats.sssp }}</view>
-					<view class="stat-label">SSS+</view>
-				</view>
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.rateStats.sss }}</view>
-					<view class="stat-label">SSS</view>
-				</view>
-			</view>
-			
-			<!-- 统计信息 - 第二行 -->
-			<view class="stats-row fc-row" v-if="currentStats">
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.fcStats.fc + currentStats.fcStats.fcp }}</view>
-					<view class="stat-label">FC/FC+</view>
-				</view>
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.fcStats.ap + currentStats.fcStats.app }}</view>
-					<view class="stat-label">AP/AP+</view>
-				</view>
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.fcStats.fs + currentStats.fcStats.fsp }}</view>
-					<view class="stat-label">FS/FS+</view>
-				</view>
-				<view class="stat-item">
-					<view class="stat-value">{{ currentStats.fcStats.fsd + currentStats.fcStats.fsdp }}</view>
-					<view class="stat-label">FSD/FSD+</view>
-				</view>
-			</view>
+		<!-- 加载状态 -->
+		<view class="loading-container" v-if="isLoading">
+			<view class="loading-spinner"></view>
+			<text class="loading-text">正在加载数据...</text>
 		</view>
 		
-		<!-- 筛选按钮 -->
-		<view class="filter-buttons">
-			<button class="filter-btn" @click="showSortFilter">
-				<view class="btn-content">
-					<text class="btn-title">排序方式</text>
-					<text class="filter-active" v-if="sortBy">{{ getSortLabel(sortBy) }}</text>
+		<!-- 主内容区域 -->
+		<view v-else>
+			<!-- 头部信息 -->
+			<view class="header">
+				<view class="header-title">玩家记录</view>
+				<view class="player-info" v-if="currentStats">
+					<text class="nickname">{{ playerRecordService.getPlayerInfo()?.nickname || playerRecordService.getPlayerInfo()?.username || '未知玩家' }}</text>
+					<text class="rating">Rating: {{ playerRecordService.getPlayerInfo()?.rating || 0 }}</text>
 				</view>
-			</button>
-			<button class="filter-btn" @click="showVersionFilter">
-				<view class="btn-content">
-					<text class="btn-title">版本筛选</text>
-					<text class="filter-active" v-if="selectedVersion">{{ formatVersionText }}</text>
-				</view>
-			</button>
-			<button class="filter-btn" @click="showDsFilter">
-				<view class="btn-content">
-					<text class="btn-title">定数筛选</text>
-					<text v-if="dsFilter.min || dsFilter.max" class="filter-active">
-						{{formatDsFilterText}}
-					</text>
-				</view>
-			</button>
-			<button class="filter-btn" @click="showDifficultyFilter">
-				<view class="btn-content">
-					<text class="btn-title">难度筛选</text>
-					<text class="filter-active" v-if="selectedDifficulty !== null">{{ difficultyLabels[selectedDifficulty] }}</text>
-				</view>
-			</button>
-		</view>
-		
-		<!-- 添加达成率筛选按钮 -->
-		<view class="filter-buttons second-row">
-			<button class="filter-btn" @click="showAchievementFilter">
-				<view class="btn-content">
-					<text class="btn-title">达成率筛选</text>
-					<text class="filter-active" v-if="achievementFilter.min || achievementFilter.max">
-						{{formatAchievementFilterText}}
-					</text>
-				</view>
-			</button>
-			<button class="filter-btn" @click="showFcFsFilter">
-				<view class="btn-content">
-					<text class="btn-title">FC/FS筛选</text>
-					<text class="filter-active" v-if="selectedFcType || selectedFsType">
-						{{formatFcFsFilterText}}
-					</text>
-				</view>
-			</button>
-		</view>
-		
-		<!-- 添加视图控制栏 -->
-		<view class="view-controls">
-			<view class="view-mode">
-				<text 
-					class="mode-btn"
-					:class="{ active: viewMode === 'grid' }"
-					@click="setViewMode('grid')"
-				>网格</text>
-				<text 
-					class="mode-btn"
-					:class="{ active: viewMode === 'list' }"
-					@click="setViewMode('list')"
-				>列表</text>
-			</view>
-			<view class="grid-options" v-if="viewMode === 'grid'">
-				<view class="grid-size">
-					<text class="size-label">{{gridSize}}列</text>
-					<slider 
-						:min="2" 
-						:max="5" 
-						:value="gridSize" 
-						:step="1"
-						:block-size="18"
-						@change="onGridSizeChange"
-						show-value
-					/>
-				</view>
-				<view class="icon-toggle">
-					<text
-						class="toggle-btn"
-						:class="{ active: iconDisplay === 'rate' }"
-						@click="setIconDisplay('rate')"
-					>评级</text>
-					<text 
-						class="toggle-btn"
-						:class="{ active: iconDisplay === 'fc' }"
-						@click="setIconDisplay('fc')"
-					>FC</text>
-					<text 
-						class="toggle-btn"
-						:class="{ active: iconDisplay === 'fs' }"
-						@click="setIconDisplay('fs')"
-					>FS</text>
-					
-				</view>
-			</view>
-		</view>
-		
-		<!-- 修改歌曲列表容器 -->
-		<view 
-			class="songs-container"
-			:class="[
-				viewMode === 'grid' ? 'grid-view' : 'list-view',
-				`grid-size-${gridSize}`
-			]"
-		>
-			<!-- 网格视图下的歌曲项 -->
-			<template v-if="viewMode === 'grid'">
-				<view 
-					v-for="record in paginatedRecords" 
-					:key="record.id"
-					class="song-item"
-					@click="navigateToDetail(record.song_id, record.level_index)"
-				>
-					<view class="cover-image" :class="`level-${record.level_index}`">
-						<image :src="getSongCover(record.song_id)" mode="aspectFill" />
-						
-						<!-- 灰色遮罩 -->
-						<view class="icon-overlay" v-if="shouldShowIcon(record)"></view>
-						
-						<!-- 图标容器 - 新增 -->
-						<view class="icon-container" v-if="shouldShowIcon(record)">
-							<!-- FC图标 -->
-							<image 
-								v-if="iconDisplay === 'fc' && record.fc && record.fc !== 'none'" 
-								class="icon-badge"
-								:src="`../../static/maiFCFS/${record.fc}.png`"
-							/>
-							
-							<!-- FS图标 - 不显示sync -->
-							<image 
-								v-if="iconDisplay === 'fs' && record.fs && record.fs !== 'none' && record.fs !== 'sync'" 
-								class="icon-badge"
-								:src="`../../static/maiFCFS/${record.fs}.png`"
-							/>
-							
-							<!-- Rate图标 -->
-							<image 
-								v-if="iconDisplay === 'rate' && record.rate" 
-								class="icon-badge icon-rate"
-								:src="`../../static/maiFCFS/${record.rate}.png`"
-							/>
-						</view>
+				
+				<!-- 统计信息 - 第一行 -->
+				<view class="stats-row" v-if="currentStats">
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.totalSongs }}</view>
+						<view class="stat-label">总曲目数</view>
+					</view>
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.rateStats.sssp }}</view>
+						<view class="stat-label">SSS+</view>
+					</view>
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.rateStats.sss }}</view>
+						<view class="stat-label">SSS</view>
 					</view>
 				</view>
 				
-				<!-- 分页控制 -->
-				<view class="pagination" v-if="filteredRecords.length > 0">
-					<view class="page-info">
-						第 {{ currentPage }} / {{ totalPages }} 页
-						<text class="total-count">共 {{ filteredRecords.length }} 条记录</text>
+				<!-- 统计信息 - 第二行 -->
+				<view class="stats-row fc-row" v-if="currentStats">
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.fcStats.fc + currentStats.fcStats.fcp }}</view>
+						<view class="stat-label">FC/FC+</view>
 					</view>
-					<view class="page-controls">
-						<button class="page-btn" 
-							:disabled="currentPage === 1"
-							@click="currentPage--">上一页</button>
-						<button class="page-btn" 
-							:disabled="currentPage === totalPages"
-							@click="currentPage++">下一页</button>
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.fcStats.ap + currentStats.fcStats.app }}</view>
+						<view class="stat-label">AP/AP+</view>
+					</view>
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.fcStats.fs + currentStats.fcStats.fsp }}</view>
+						<view class="stat-label">FS/FS+</view>
+					</view>
+					<view class="stat-item">
+						<view class="stat-value">{{ currentStats.fcStats.fsd + currentStats.fcStats.fsdp }}</view>
+						<view class="stat-label">FSD/FSD+</view>
 					</view>
 				</view>
-			</template>
+			</view>
 			
-			<!-- 列表视图下的歌曲项 -->
-			<template v-else>
-				<!-- 记录列表 -->
-				<view class="record-list">
-					<view class="list-header">
-						<text class="list-title">歌曲记录</text>
-						<text class="record-count">总计: {{ filteredRecords.length }}</text>
+			<!-- 筛选按钮 -->
+			<view class="filter-buttons">
+				<button class="filter-btn" @click="showSortFilter">
+					<view class="btn-content">
+						<text class="btn-title">排序方式</text>
+						<text class="filter-active" v-if="sortBy">{{ getSortLabel(sortBy) }}</text>
 					</view>
-
-					<view class="song-records">
-						<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id, record.level_index)">
-							<view class="song-cover">
-								<image class="cover-image" :class="`level-${record.level_index}`" :src="getSongCover(record.song_id)" mode="aspectFill"></image>
-								<view class="difficulty-badge" :class="`level-${record.level_index}`">
-									{{ getSongDs(record.song_id, record.level_index) }}
-								</view>
+				</button>
+				<button class="filter-btn" @click="showVersionFilter">
+					<view class="btn-content">
+						<text class="btn-title">版本筛选</text>
+						<text class="filter-active" v-if="selectedVersion">{{ formatVersionText }}</text>
+					</view>
+				</button>
+				<button class="filter-btn" @click="showDsFilter">
+					<view class="btn-content">
+						<text class="btn-title">定数筛选</text>
+						<text v-if="dsFilter.min || dsFilter.max" class="filter-active">
+							{{formatDsFilterText}}
+						</text>
+					</view>
+				</button>
+				<button class="filter-btn" @click="showDifficultyFilter">
+					<view class="btn-content">
+						<text class="btn-title">难度筛选</text>
+						<text class="filter-active" v-if="selectedDifficulty !== null">{{ difficultyLabels[selectedDifficulty] }}</text>
+					</view>
+				</button>
+			</view>
+			
+			<!-- 添加达成率筛选按钮 -->
+			<view class="filter-buttons second-row">
+				<button class="filter-btn" @click="showAchievementFilter">
+					<view class="btn-content">
+						<text class="btn-title">达成率筛选</text>
+						<text class="filter-active" v-if="achievementFilter.min || achievementFilter.max">
+							{{formatAchievementFilterText}}
+						</text>
+					</view>
+				</button>
+				<button class="filter-btn" @click="showFcFsFilter">
+					<view class="btn-content">
+						<text class="btn-title">FC/FS筛选</text>
+						<text class="filter-active" v-if="selectedFcType || selectedFsType">
+							{{formatFcFsFilterText}}
+						</text>
+					</view>
+				</button>
+			</view>
+			
+			<!-- 添加视图控制栏 -->
+			<view class="view-controls">
+				<view class="view-mode">
+					<text 
+						class="mode-btn"
+						:class="{ active: viewMode === 'grid' }"
+						@click="setViewMode('grid')"
+					>网格</text>
+					<text 
+						class="mode-btn"
+						:class="{ active: viewMode === 'list' }"
+						@click="setViewMode('list')"
+					>列表</text>
+				</view>
+				<view class="grid-options" v-if="viewMode === 'grid'">
+					<view class="grid-size">
+						<text class="size-label">{{gridSize}}列</text>
+						<slider 
+							:min="2" 
+							:max="5" 
+							:value="gridSize" 
+							:step="1"
+							:block-size="18"
+							@change="onGridSizeChange"
+							show-value
+						/>
+					</view>
+					<view class="icon-toggle">
+						<text
+							class="toggle-btn"
+							:class="{ active: iconDisplay === 'rate' }"
+							@click="setIconDisplay('rate')"
+						>评级</text>
+						<text 
+							class="toggle-btn"
+							:class="{ active: iconDisplay === 'fc' }"
+							@click="setIconDisplay('fc')"
+						>FC</text>
+						<text 
+							class="toggle-btn"
+							:class="{ active: iconDisplay === 'fs' }"
+							@click="setIconDisplay('fs')"
+						>FS</text>
+						
+					</view>
+				</view>
+			</view>
+			
+			<!-- 修改歌曲列表容器 -->
+			<view 
+				class="songs-container"
+				:class="[
+					viewMode === 'grid' ? 'grid-view' : 'list-view',
+					`grid-size-${gridSize}`
+				]"
+			>
+				<!-- 网格视图下的歌曲项 -->
+				<template v-if="viewMode === 'grid'">
+					<view 
+						v-for="record in paginatedRecords" 
+						:key="record.id"
+						class="song-item"
+						@click="navigateToDetail(record.song_id, record.level_index)"
+					>
+						<view class="cover-image" :class="`level-${record.level_index}`">
+							<image :src="getSongCover(record.song_id)" mode="aspectFill" />
+							
+							<!-- 灰色遮罩 -->
+							<view class="icon-overlay" v-if="shouldShowIcon(record)"></view>
+							
+							<!-- 图标容器 - 新增 -->
+							<view class="icon-container" v-if="shouldShowIcon(record)">
+								<!-- FC图标 -->
+								<image 
+									v-if="iconDisplay === 'fc' && record.fc && record.fc !== 'none'" 
+									class="icon-badge"
+									:src="`../../static/maiFCFS/${record.fc}.png`"
+								/>
+								
+								<!-- FS图标 - 不显示sync -->
+								<image 
+									v-if="iconDisplay === 'fs' && record.fs && record.fs !== 'none' && record.fs !== 'sync'" 
+									class="icon-badge"
+									:src="`../../static/maiFCFS/${record.fs}.png`"
+								/>
+								
+								<!-- Rate图标 -->
+								<image 
+									v-if="iconDisplay === 'rate' && record.rate" 
+									class="icon-badge icon-rate"
+									:src="`../../static/maiFCFS/${record.rate}.png`"
+								/>
 							</view>
-							<view class="song-info">
-								<view class="song-title">{{ songService.getSongById(record.song_id)?.title || '未知歌曲' }}</view>
-								<view class="song-stats">
-									<view class="stat-item achievements">{{ (record.achievements).toFixed(4) }}%</view>
-									<view class="stat-item ra">RA: {{ record.ra }}</view>
-									<view v-if="record.fc" class="stat-item fc-fs">{{ record.fc.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').toUpperCase() }}丨{{ record.fs.replace('p', '+').toUpperCase() }}</view>
-								</view>
-							</view>
-							<view class="rate-badge" :class="record.rate.toLowerCase()">{{ record.rate.replace('p','+').toUpperCase() }}</view>
 						</view>
 					</view>
 					
@@ -252,297 +214,344 @@
 								@click="currentPage++">下一页</button>
 						</view>
 					</view>
+				</template>
+				
+				<!-- 列表视图下的歌曲项 -->
+				<template v-else>
+					<!-- 记录列表 -->
+					<view class="record-list">
+						<view class="list-header">
+							<text class="list-title">歌曲记录</text>
+							<text class="record-count">总计: {{ filteredRecords.length }}</text>
+						</view>
+
+						<view class="song-records">
+							<view v-for="(record, index) in paginatedRecords" :key="index" class="song-card" @click="navigateToDetail(record.song_id, record.level_index)">
+								<view class="song-cover">
+									<image class="cover-image" :class="`level-${record.level_index}`" :src="getSongCover(record.song_id)" mode="aspectFill"></image>
+									<view class="difficulty-badge" :class="`level-${record.level_index}`">
+										{{ getSongDs(record.song_id, record.level_index) }}
+									</view>
+								</view>
+								<view class="song-info">
+									<view class="song-title">{{ songService.getSongById(record.song_id)?.title || '未知歌曲' }}</view>
+									<view class="song-stats">
+										<view class="stat-item achievements">{{ (record.achievements).toFixed(4) }}%</view>
+										<view class="stat-item ra">RA: {{ record.ra }}</view>
+										<view v-if="record.fc" class="stat-item fc-fs">{{ record.fc.replace('p', '+').replace('ap', 'ap').replace('app', 'ap+').toUpperCase() }}丨{{ record.fs.replace('p', '+').toUpperCase() }}</view>
+									</view>
+								</view>
+								<view class="rate-badge" :class="record.rate.toLowerCase()">{{ record.rate.replace('p','+').toUpperCase() }}</view>
+							</view>
+						</view>
+						
+						<!-- 分页控制 -->
+						<view class="pagination" v-if="filteredRecords.length > 0">
+							<view class="page-info">
+								第 {{ currentPage }} / {{ totalPages }} 页
+								<text class="total-count">共 {{ filteredRecords.length }} 条记录</text>
+							</view>
+							<view class="page-controls">
+								<button class="page-btn" 
+									:disabled="currentPage === 1"
+									@click="currentPage--">上一页</button>
+								<button class="page-btn" 
+									:disabled="currentPage === totalPages"
+									@click="currentPage++">下一页</button>
+							</view>
+						</view>
+					</view>
+				</template>
+			</view>
+			
+			<!-- 排序弹窗 -->
+			<uni-popup ref="sortPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">排序方式</text>
+						<text class="close-btn" @click="closeSortFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<view class="option-list">
+							<view 
+								class="option-item"
+								:class="{ active: tempSortBy === 'ra' }"
+								@click="selectSortBy('ra')"
+							>
+								<text>Rating</text>
+							</view>
+							<view 
+								class="option-item"
+								:class="{ active: tempSortBy === 'achievements' }"
+								@click="selectSortBy('achievements')"
+							>
+								<text>达成率</text>
+							</view>
+							<view 
+								class="option-item"
+								:class="{ active: tempSortBy === 'ds' }"
+								@click="selectSortBy('ds')"
+							>
+								<text>难度</text>
+							</view>
+						</view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeSortFilter">取消</button>
+						<button class="confirm-btn" @click="applySortFilter">确定</button>
+					</view>
 				</view>
-			</template>
+			</uni-popup>
+			
+			<!-- 版本筛选弹窗 -->
+			<uni-popup ref="versionPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">版本筛选</text>
+						<text class="close-btn" @click="closeVersionFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<scroll-view 
+							scroll-y 
+							class="option-list"
+							:style="{ height: '500rpx' }"
+						>
+							<view 
+								v-for="version in versions" 
+								:key="version"
+								class="option-item"
+								:class="{ active: tempVersion === version }"
+								@click="selectVersion(version)"
+							>
+								<text>{{version}}</text>
+							</view>
+						</scroll-view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeVersionFilter">取消</button>
+						<button class="confirm-btn" @click="applyVersionFilter">确定</button>
+					</view>
+				</view>
+			</uni-popup>
+			
+			<!-- 定数筛选弹窗 -->
+			<uni-popup ref="dsPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">定数范围筛选</text>
+						<text class="close-btn" @click="closeDsFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<view class="form-item ds-range">
+							<input 
+								type="digit" 
+								v-model="dsFilter.min" 
+								placeholder="最小值"
+							
+								@focus="onInputFocus"
+								@blur="onInputBlur"
+								maxlength="5"
+							/>
+							<text class="range-separator">至</text>
+							<input 
+								type="digit" 
+								v-model="dsFilter.max" 
+								placeholder="最大值"
+							
+								@focus="onInputFocus"
+								@blur="onInputBlur"
+								maxlength="5"
+							/>
+						</view>
+						<view class="range-tips">
+							<text>* 定数范围: 1.0-15.0</text>
+						</view>
+						<view class="quick-select">
+							<text class="section-title">快速选择</text>
+							<view class="option-grid">
+								<view 
+									v-for="range in dsRanges" 
+									:key="range.label"
+									class="option-chip"
+									:class="{ active: isQuickRangeSelected(range) }"
+									@click="selectQuickRange(range)"
+								>
+									<text>{{range.label}}</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeDsFilter">取消</button>
+						<button class="confirm-btn" @click="applyDsFilter">确定</button>
+					</view>
+				</view>
+			</uni-popup>
+			
+			<!-- 难度筛选弹窗 -->
+			<uni-popup ref="difficultyPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">难度筛选</text>
+						<text class="close-btn" @click="closeDifficultyFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<view class="option-list">
+							<view 
+								class="option-item"
+								:class="{ active: tempDifficulty === null }"
+								@click="selectDifficulty(null)"
+							>
+								<text>全部</text>
+							</view>
+							<view 
+								v-for="(label, index) in difficultyLabels" 
+								:key="index"
+								class="option-item difficulty-option"
+								:class="{ 
+									active: tempDifficulty === index,
+									basic: index === 0,
+									advanced: index === 1,
+									expert: index === 2,
+									master: index === 3,
+									remaster: index === 4
+								}"
+								@click="selectDifficulty(index)"
+							>
+								<text>{{label}}</text>
+							</view>
+						</view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeDifficultyFilter">取消</button>
+						<button class="confirm-btn" @click="applyDifficultyFilter">确定</button>
+					</view>
+				</view>
+			</uni-popup>
+			
+			<!-- 达成率筛选弹窗 -->
+			<uni-popup ref="achievementPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">达成率范围筛选</text>
+						<text class="close-btn" @click="closeAchievementFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<view class="form-item ds-range">
+							<input 
+								type="digit" 
+								v-model="achievementFilter.min" 
+								placeholder="最小值"
+								@focus="onInputFocus"
+								@blur="onInputBlur"
+								maxlength="6"
+							/>
+							<text class="range-separator">至</text>
+							<input 
+								type="digit" 
+								v-model="achievementFilter.max" 
+								placeholder="最大值"
+								@focus="onInputFocus"
+								@blur="onInputBlur"
+								maxlength="6"
+							/>
+						</view>
+						<view class="range-tips">
+							<text>* 达成率范围: 0-101.0%</text>
+						</view>
+						<view class="quick-select">
+							<text class="section-title">快速选择</text>
+							<view class="option-grid">
+								<view 
+									v-for="range in achievementRanges" 
+									:key="range.label"
+									class="option-chip"
+									:class="{ active: isQuickAchievementRangeSelected(range) }"
+									@click="selectQuickAchievementRange(range)"
+								>
+									<text>{{range.label}}</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeAchievementFilter">取消</button>
+						<button class="confirm-btn" @click="applyAchievementFilter">确定</button>
+					</view>
+				</view>
+			</uni-popup>
+			
+			<!-- FC/FS筛选弹窗 -->
+			<uni-popup ref="fcFsPopup" type="center">
+				<view class="filter-popup">
+					<view class="popup-header">
+						<text class="title">FC/FS筛选</text>
+						<text class="close-btn" @click="closeFcFsFilter">×</text>
+					</view>
+					<view class="popup-content">
+						<view class="fc-fs-tabs">
+							<view 
+								class="tab-item" 
+								:class="{ active: fcFsTab === 'fc' }"
+								@click="fcFsTab = 'fc'"
+							>FC状态</view>
+							<view 
+								class="tab-item" 
+								:class="{ active: fcFsTab === 'fs' }"
+								@click="fcFsTab = 'fs'"
+							>FS状态</view>
+						</view>
+						
+						<view class="option-list" v-if="fcFsTab === 'fc'">
+							<view 
+								class="option-item"
+								:class="{ active: tempFcType === null }"
+								@click="selectFcType(null)"
+							>
+								<text>全部</text>
+							</view>
+							<view 
+								v-for="(label, type) in fcTypes" 
+								:key="type"
+								class="option-item"
+								:class="{ active: tempFcType === type }"
+								@click="selectFcType(type)"
+							>
+								<text>{{label}}</text>
+							</view>
+						</view>
+						
+						<view class="option-list" v-else>
+							<view 
+								class="option-item"
+								:class="{ active: tempFsType === null }"
+								@click="selectFsType(null)"
+							>
+								<text>全部</text>
+							</view>
+							<view 
+								v-for="(label, type) in fsTypes" 
+								:key="type"
+								class="option-item"
+								:class="{ active: tempFsType === type }"
+								@click="selectFsType(type)"
+							>
+								<text>{{label}}</text>
+							</view>
+						</view>
+					</view>
+					<view class="popup-footer">
+						<button class="cancel-btn" @click="closeFcFsFilter">取消</button>
+						<button class="confirm-btn" @click="applyFcFsFilter">确定</button>
+					</view>
+				</view>
+			</uni-popup>
 		</view>
-		
-		<!-- 排序弹窗 -->
-		<uni-popup ref="sortPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">排序方式</text>
-					<text class="close-btn" @click="closeSortFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<view class="option-list">
-						<view 
-							class="option-item"
-							:class="{ active: tempSortBy === 'ra' }"
-							@click="selectSortBy('ra')"
-						>
-							<text>Rating</text>
-						</view>
-						<view 
-							class="option-item"
-							:class="{ active: tempSortBy === 'achievements' }"
-							@click="selectSortBy('achievements')"
-						>
-							<text>达成率</text>
-						</view>
-						<view 
-							class="option-item"
-							:class="{ active: tempSortBy === 'ds' }"
-							@click="selectSortBy('ds')"
-						>
-							<text>难度</text>
-						</view>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeSortFilter">取消</button>
-					<button class="confirm-btn" @click="applySortFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 版本筛选弹窗 -->
-		<uni-popup ref="versionPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">版本筛选</text>
-					<text class="close-btn" @click="closeVersionFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<scroll-view 
-						scroll-y 
-						class="option-list"
-						:style="{ height: '500rpx' }"
-					>
-						<view 
-							v-for="version in versions" 
-							:key="version"
-							class="option-item"
-							:class="{ active: tempVersion === version }"
-							@click="selectVersion(version)"
-						>
-							<text>{{version}}</text>
-						</view>
-					</scroll-view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeVersionFilter">取消</button>
-					<button class="confirm-btn" @click="applyVersionFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 定数筛选弹窗 -->
-		<uni-popup ref="dsPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">定数范围筛选</text>
-					<text class="close-btn" @click="closeDsFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<view class="form-item ds-range">
-						<input 
-							type="digit" 
-							v-model="dsFilter.min" 
-							placeholder="最小值"
-						
-							@focus="onInputFocus"
-							@blur="onInputBlur"
-							maxlength="5"
-						/>
-						<text class="range-separator">至</text>
-						<input 
-							type="digit" 
-							v-model="dsFilter.max" 
-							placeholder="最大值"
-						
-							@focus="onInputFocus"
-							@blur="onInputBlur"
-							maxlength="5"
-						/>
-					</view>
-					<view class="range-tips">
-						<text>* 定数范围: 1.0-15.0</text>
-					</view>
-					<view class="quick-select">
-						<text class="section-title">快速选择</text>
-						<view class="option-grid">
-							<view 
-								v-for="range in dsRanges" 
-								:key="range.label"
-								class="option-chip"
-								:class="{ active: isQuickRangeSelected(range) }"
-								@click="selectQuickRange(range)"
-							>
-								<text>{{range.label}}</text>
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeDsFilter">取消</button>
-					<button class="confirm-btn" @click="applyDsFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 难度筛选弹窗 -->
-		<uni-popup ref="difficultyPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">难度筛选</text>
-					<text class="close-btn" @click="closeDifficultyFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<view class="option-list">
-						<view 
-							class="option-item"
-							:class="{ active: tempDifficulty === null }"
-							@click="selectDifficulty(null)"
-						>
-							<text>全部</text>
-						</view>
-						<view 
-							v-for="(label, index) in difficultyLabels" 
-							:key="index"
-							class="option-item difficulty-option"
-							:class="{ 
-								active: tempDifficulty === index,
-								basic: index === 0,
-								advanced: index === 1,
-								expert: index === 2,
-								master: index === 3,
-								remaster: index === 4
-							}"
-							@click="selectDifficulty(index)"
-						>
-							<text>{{label}}</text>
-						</view>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeDifficultyFilter">取消</button>
-					<button class="confirm-btn" @click="applyDifficultyFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- 达成率筛选弹窗 -->
-		<uni-popup ref="achievementPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">达成率范围筛选</text>
-					<text class="close-btn" @click="closeAchievementFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<view class="form-item ds-range">
-						<input 
-							type="digit" 
-							v-model="achievementFilter.min" 
-							placeholder="最小值"
-							@focus="onInputFocus"
-							@blur="onInputBlur"
-							maxlength="6"
-						/>
-						<text class="range-separator">至</text>
-						<input 
-							type="digit" 
-							v-model="achievementFilter.max" 
-							placeholder="最大值"
-							@focus="onInputFocus"
-							@blur="onInputBlur"
-							maxlength="6"
-						/>
-					</view>
-					<view class="range-tips">
-						<text>* 达成率范围: 0-101.0%</text>
-					</view>
-					<view class="quick-select">
-						<text class="section-title">快速选择</text>
-						<view class="option-grid">
-							<view 
-								v-for="range in achievementRanges" 
-								:key="range.label"
-								class="option-chip"
-								:class="{ active: isQuickAchievementRangeSelected(range) }"
-								@click="selectQuickAchievementRange(range)"
-							>
-								<text>{{range.label}}</text>
-							</view>
-						</view>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeAchievementFilter">取消</button>
-					<button class="confirm-btn" @click="applyAchievementFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
-		
-		<!-- FC/FS筛选弹窗 -->
-		<uni-popup ref="fcFsPopup" type="center">
-			<view class="filter-popup">
-				<view class="popup-header">
-					<text class="title">FC/FS筛选</text>
-					<text class="close-btn" @click="closeFcFsFilter">×</text>
-				</view>
-				<view class="popup-content">
-					<view class="fc-fs-tabs">
-						<view 
-							class="tab-item" 
-							:class="{ active: fcFsTab === 'fc' }"
-							@click="fcFsTab = 'fc'"
-						>FC状态</view>
-						<view 
-							class="tab-item" 
-							:class="{ active: fcFsTab === 'fs' }"
-							@click="fcFsTab = 'fs'"
-						>FS状态</view>
-					</view>
-					
-					<view class="option-list" v-if="fcFsTab === 'fc'">
-						<view 
-							class="option-item"
-							:class="{ active: tempFcType === null }"
-							@click="selectFcType(null)"
-						>
-							<text>全部</text>
-						</view>
-						<view 
-							v-for="(label, type) in fcTypes" 
-							:key="type"
-							class="option-item"
-							:class="{ active: tempFcType === type }"
-							@click="selectFcType(type)"
-						>
-							<text>{{label}}</text>
-						</view>
-					</view>
-					
-					<view class="option-list" v-else>
-						<view 
-							class="option-item"
-							:class="{ active: tempFsType === null }"
-							@click="selectFsType(null)"
-						>
-							<text>全部</text>
-						</view>
-						<view 
-							v-for="(label, type) in fsTypes" 
-							:key="type"
-							class="option-item"
-							:class="{ active: tempFsType === type }"
-							@click="selectFsType(type)"
-						>
-							<text>{{label}}</text>
-						</view>
-					</view>
-				</view>
-				<view class="popup-footer">
-					<button class="cancel-btn" @click="closeFcFsFilter">取消</button>
-					<button class="confirm-btn" @click="applyFcFsFilter">确定</button>
-				</view>
-			</view>
-		</uni-popup>
 	</view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import SongService from '@/utils/songService.js'
 import playerRecordService from '@/utils/PlayerRecordService.js'
 import { getCoverUrl } from '../../util/coverManager.js'
@@ -928,7 +937,8 @@ const formatDsFilterText = computed(() => {
 const filteredRecords = computed(() => {
 	if (!songService.value) return []
 	
-	return playerRecordService.filterRecordsByMultipleConditions(songService.value, {
+	// 创建一个本地过滤函数来处理'none'类型
+	let records = playerRecordService.filterRecordsByMultipleConditions(songService.value, {
 		version: selectedVersion.value,
 		difficultyIndex: selectedDifficulty.value,
 		dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
@@ -936,11 +946,33 @@ const filteredRecords = computed(() => {
 			max: dsFilter.value.max ? parseFloat(dsFilter.value.max) : 15
 		} : null,
 		achievementRange: selectedAchievementRange.value,
-		fcType: selectedFcType.value,
-		fsType: selectedFsType.value,
 		sortBy: sortBy.value,
 		order: 'desc'
 	})
+	
+	// 额外处理FC筛选
+	if (selectedFcType.value) {
+		if (selectedFcType.value === 'none') {
+			// 筛选无FC的记录
+			records = records.filter(record => !record.fc || record.fc === 'none');
+		} else {
+			// 筛选特定FC类型的记录
+			records = records.filter(record => record.fc === selectedFcType.value);
+		}
+	}
+	
+	// 额外处理FS筛选
+	if (selectedFsType.value) {
+		if (selectedFsType.value === 'none') {
+			// 筛选无FS的记录
+			records = records.filter(record => !record.fs || record.fs === 'none' || record.fs === 'sync');
+		} else {
+			// 筛选特定FS类型的记录
+			records = records.filter(record => record.fs === selectedFsType.value);
+		}
+	}
+	
+	return records;
 })
 
 // 计算分页后的记录
@@ -962,18 +994,42 @@ const formatVersionText = computed(() => {
 	return versionMap[selectedVersion.value] || selectedVersion.value;
 })
 
+// 添加加载状态
+const isLoading = ref(true)
+const isDataReady = ref(false)
+
 // 初始化
-onMounted(() => {
-	const musicList = uni.getStorageSync('musicData')
-	const playerData = uni.getStorageSync('divingFish_records')
+onMounted(async () => {
+	// 先设置加载状态，让页面框架先渲染出来
+	isLoading.value = true
 	
-	songService.value = new SongService(musicList)
-	playerRecordService.initPlayerData(playerData.data)
+	// 使用nextTick确保UI先渲染
+	await nextTick()
 	
-	// 设置默认值
-	selectedDsRange.value = dsRanges[0]
-	
-	updateStats()
+	// 使用setTimeout让主线程先处理UI渲染
+	setTimeout(async () => {
+		try {
+			const musicList = uni.getStorageSync('musicData')
+			const playerData = uni.getStorageSync('divingFish_records')
+			
+			songService.value = new SongService(musicList)
+			playerRecordService.initPlayerData(playerData.data)
+			
+			// 设置默认值
+			selectedDsRange.value = dsRanges[0]
+			
+			// 更新统计信息
+			updateStats()
+			
+			// 数据准备完毕
+			isDataReady.value = true
+		} catch (error) {
+			console.error('加载数据出错:', error)
+		} finally {
+			// 无论成功失败都关闭加载状态
+			isLoading.value = false
+		}
+	}, 100) // 给UI渲染一点时间
 })
 
 // 弹窗相关方法
@@ -1199,7 +1255,7 @@ const shouldShowIcon = (record) => {
 	if (iconDisplay.value === 'fs' && record.fs && record.fs !== 'none' && record.fs !== 'sync') {
 		return true;
 	}
-	if (iconDisplay.value === 'rate' && record.rate) {
+	if (iconDisplay.value === 'rate' && record.rate && ['sssp', 'sss'].includes(record.rate.toLowerCase())) {
 		return true;
 	}
 	return false;
@@ -1215,6 +1271,8 @@ const updateGridSize = (size) => {
 	// 重置到第一页，避免页码超出范围
 	currentPage.value = 1;
 };
+
+
 </script>
 
 <style lang="scss">
@@ -2161,4 +2219,74 @@ const updateGridSize = (size) => {
   height: 100%;
   object-fit: cover;
 }
-</style> 
+
+.fc-fs-tabs {
+	display: flex;
+	margin-bottom: 20rpx;
+	border-radius: 12rpx;
+	overflow: hidden;
+	border: 1rpx solid #eaeaea;
+	
+	.tab-item {
+		flex: 1;
+		text-align: center;
+		padding: 16rpx 0;
+		font-size: 28rpx;
+		color: #64748b;
+		background-color: #f8fafc;
+		position: relative;
+		transition: all 0.3s ease;
+		
+		&.active {
+			color: #6366f1;
+			font-weight: 500;
+			background-color: #fff;
+			box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+			
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 20%;
+				right: 20%;
+				height: 4rpx;
+				background-color: #6366f1;
+				border-radius: 4rpx;
+			}
+		}
+		
+		&:active {
+			opacity: 0.8;
+		}
+	}
+}
+
+// 添加加载状态样式
+.loading-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 80vh;
+	
+	.loading-spinner {
+		width: 80rpx;
+		height: 80rpx;
+		border: 6rpx solid rgba(99, 102, 241, 0.1);
+		border-top: 6rpx solid #6366f1;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin-bottom: 30rpx;
+	}
+	
+	.loading-text {
+		font-size: 30rpx;
+		color: #64748b;
+	}
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+</style>

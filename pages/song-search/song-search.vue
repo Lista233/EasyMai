@@ -8,7 +8,7 @@
           <input 
             v-model="searchKeyword" 
             type="text" 
-            placeholder="请输入乐曲名称|别名|BPM|ID|曲/谱师"
+            placeholder="搜索曲名/别名/BPM/ID/曲师/谱师"
             @input="onSearchInput"
           />
           <view class="view-toggle" @click="toggleViewMode">
@@ -45,6 +45,12 @@
           </button>
         </view>
       </view>
+    </view>
+    
+    <!-- 添加搜索结果计数 -->
+    <view class="search-result-count" v-if="searchResults.length > 0">
+      共找到 <text class="count-highlight">{{ searchResults.length }}</text> 条结果
+      <text class="search-time">(耗时 {{ searchTime }}秒)</text>
     </view>
     
     <!-- 列表视图 - 添加分页 -->
@@ -94,19 +100,37 @@
         </view>
       </view>
       
-      <!-- 添加分页控制 -->
+      <!-- 优化分页控制 -->
       <view class="pagination" v-if="searchResults.length > pageSize">
-        <view class="page-info">
-          <text>{{ currentPage }}/{{ totalPages }} 页</text>
-          <text class="total-count">共 {{ searchResults.length }} 条记录</text>
-        </view>
-        <view class="page-controls">
-          <button class="page-btn" 
-            :disabled="currentPage === 1"
-            @click="currentPage--">上一页</button>
-          <button class="page-btn" 
-            :disabled="currentPage === totalPages"
-            @click="currentPage++">下一页</button>
+        <view class="pagination-container">
+          <!-- 左侧页码输入区域 -->
+          <view class="page-input-wrapper">
+            <text class="page-label">页码:</text>
+            <input 
+              type="number" 
+              v-model="inputPage" 
+              @blur="handlePageInputBlur"
+              @confirm="handlePageInputConfirm"
+              class="page-input"
+            />
+            <text class="page-separator">/</text>
+            <text class="total-pages">{{ totalPages }}</text>
+          </view>
+          
+          <!-- 右侧翻页按钮 -->
+          <view class="page-buttons">
+            <button class="page-btn prev-page" 
+              :disabled="currentPage === 1"
+              @click="currentPage--">
+              上一页
+            </button>
+            
+            <button class="page-btn next-page" 
+              :disabled="currentPage === totalPages"
+              @click="currentPage++">
+              下一页
+            </button>
+          </view>
         </view>
       </view>
     </view>
@@ -152,19 +176,37 @@
         </view>
       </view>
       
-      <!-- 分页控制保持不变 -->
+      <!-- 同样优化网格视图的分页控制 -->
       <view class="pagination" v-if="filteredGridResults.length > 0">
-        <view class="page-info">
-          <text>{{ currentGridPage }}/{{ totalGridPages }} 页</text>
-          <text class="total-count">共 {{ filteredSearchResults.length }} 条记录</text>
-        </view>
-        <view class="page-controls">
-          <button class="page-btn" 
-            :disabled="currentGridPage === 1"
-            @click="currentGridPage--">上一页</button>
-          <button class="page-btn" 
-            :disabled="currentGridPage === totalGridPages"
-            @click="currentGridPage++">下一页</button>
+        <view class="pagination-container">
+          <!-- 左侧页码输入区域 -->
+          <view class="page-input-wrapper">
+            <text class="page-label">页码:</text>
+            <input 
+              type="number" 
+              v-model="inputGridPage" 
+              @blur="handleGridPageInputBlur"
+              @confirm="handleGridPageInputConfirm"
+              class="page-input"
+            />
+            <text class="page-separator">/</text>
+            <text class="total-pages">{{ totalGridPages }}</text>
+          </view>
+          
+          <!-- 右侧翻页按钮 -->
+          <view class="page-buttons">
+            <button class="page-btn prev-page" 
+              :disabled="currentGridPage === 1"
+              @click="currentGridPage--">
+              上一页
+            </button>
+            
+            <button class="page-btn next-page" 
+              :disabled="currentGridPage === totalGridPages"
+              @click="currentGridPage++">
+              下一页
+            </button>
+          </view>
         </view>
       </view>
     </view>
@@ -287,6 +329,9 @@ import {getCoverUrl,initCoverList} from '../../util/coverManager.js'
 // 添加防抖相关变量
 const searchTimeout = ref(null)
 const debounceDelay = 300 // 300毫秒的防抖延迟
+
+// 添加搜索耗时变量
+const searchTime = ref(0)
 
 // 原有的响应式状态
 const searcher = ref(null)
@@ -498,6 +543,9 @@ const onDsInput = (type) => {
 
 // 修改应用定数筛选方法，在提交时校验
 const applyDsFilter = () => {
+  // 开始计时
+  const startTime = Date.now()
+  
   // 校验并修正定数范围
   let min = dsFilter.value.min ? parseFloat(dsFilter.value.min) : null;
   let max = dsFilter.value.max ? parseFloat(dsFilter.value.max) : null;
@@ -521,7 +569,11 @@ const applyDsFilter = () => {
   
   closeDsFilter();
   onSearch();
-};
+  
+  // 结束计时并计算耗时
+  const endTime = Date.now()
+  searchTime.value = ((endTime - startTime) / 1000).toFixed(3)
+}
 
 // 修改搜索方法
 const onSearch = async () => {
@@ -910,15 +962,30 @@ const formatGenreText = computed(() => {
 
 // 修改应用版本筛选方法
 const applyVersionFilter = () => {
+  // 开始计时
+  const startTime = Date.now()
+  
+  // 执行原有的筛选逻辑
   closeVersionFilter()
-  // 确保搜索时能正确使用选择的版本值
   onSearch()
+  
+  // 结束计时并计算耗时
+  const endTime = Date.now()
+  searchTime.value = ((endTime - startTime) / 1000).toFixed(3)
 }
 
 // 应用类别筛选
 const applyGenreFilter = () => {
+  // 开始计时
+  const startTime = Date.now()
+  
+  // 执行原有的筛选逻辑
   closeGenreFilter()
   onSearch()
+  
+  // 结束计时并计算耗时
+  const endTime = Date.now()
+  searchTime.value = ((endTime - startTime) / 1000).toFixed(3)
 }
 
 // 添加处理图片加载优先级的函数
@@ -1035,10 +1102,64 @@ const onSearchInput = (e) => {
     clearTimeout(searchTimeout.value)
   }
   
-  // 设置新的定时器
+  // 设置新的定时器，实现防抖
   searchTimeout.value = setTimeout(() => {
+    // 开始计时
+    const startTime = Date.now()
+    
+    // 执行原有的搜索逻辑
     onSearch()
+    
+    // 结束计时并计算耗时
+    const endTime = Date.now()
+    searchTime.value = ((endTime - startTime) / 1000).toFixed(3)
   }, debounceDelay)
+}
+
+// 添加页码输入相关变量
+const inputPage = ref('1')
+const inputGridPage = ref('1')
+
+// 监听当前页码变化，同步到输入框
+watch(currentPage, (newPage) => {
+  inputPage.value = newPage.toString()
+})
+
+watch(currentGridPage, (newPage) => {
+  inputGridPage.value = newPage.toString()
+})
+
+// 处理页码输入框失焦事件
+const handlePageInputBlur = () => {
+  let page = parseInt(inputPage.value)
+  if (isNaN(page) || page < 1) {
+    page = 1
+  } else if (page > totalPages.value) {
+    page = totalPages.value
+  }
+  currentPage.value = page
+  inputPage.value = page.toString()
+}
+
+// 处理页码输入框确认事件
+const handlePageInputConfirm = () => {
+  handlePageInputBlur()
+}
+
+// 处理网格视图页码输入
+const handleGridPageInputBlur = () => {
+  let page = parseInt(inputGridPage.value)
+  if (isNaN(page) || page < 1) {
+    page = 1
+  } else if (page > totalGridPages.value) {
+    page = totalGridPages.value
+  }
+  currentGridPage.value = page
+  inputGridPage.value = page.toString()
+}
+
+const handleGridPageInputConfirm = () => {
+  handleGridPageInputBlur()
 }
 </script>
 
@@ -1190,12 +1311,13 @@ const onSearchInput = (e) => {
 }
 
 .result-list {
-  padding: 10rpx;
+  padding: 0rpx,10rpx,0rpx,10rpx;
+  margin-top: 0rpx;
   
   .result-item {
     display: flex;
     align-items: flex-start;
-    margin: 20rpx 10rpx;
+    margin: 16rpx 10rpx;
     padding: 24rpx;
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 20rpx;
@@ -1650,9 +1772,10 @@ const onSearchInput = (e) => {
   }
 }
 
-// 网格视图样式
+// 网格视图样式 - 优化图片大小和间距
 .grid-view {
   padding: 10rpx;
+  margin-top: 10rpx;
   
   .grid-controls {
     display: flex;
@@ -1660,7 +1783,7 @@ const onSearchInput = (e) => {
     background-color: #fff;
     padding: 20rpx 30rpx;
     border-radius: 16rpx;
-    margin-bottom: 20rpx;
+    margin-bottom: 16rpx; // 减小控制区域与网格的间距
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
     
     .control-label {
@@ -1672,8 +1795,8 @@ const onSearchInput = (e) => {
     
     .slider-container {
       flex: 1;
-      padding: 0 30rpx 0 10rpx; // 增加右侧padding，让数字和滑块有更多间距
-	  margin-left: 30rpx;
+      padding: 0 30rpx 0 10rpx;
+      margin-left: 30rpx;
     }
   }
   
@@ -1683,16 +1806,16 @@ const onSearchInput = (e) => {
     .grid-items-wrapper {
       display: flex;
       flex-wrap: wrap;
-      gap: 10rpx;
-      margin-bottom: 20rpx;
+      gap: 12rpx; // 减小网格项之间的间距
+      margin-bottom: 16rpx; // 减小与分页的间距
       
       .grid-item {
-        width: calc((100% - (var(--grid-columns) - 1) * 10rpx) / var(--grid-columns));
+        width: calc((100% - (var(--grid-columns) - 1) * 12rpx) / var(--grid-columns)); // 调整宽度计算以匹配新的间距
         background-color: #fff;
         border-radius: 6rpx;
         overflow: hidden;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-        position: relative; // 保留相对定位
+        box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.06); // 减小阴影，让图片更突出
+        position: relative;
         
         &::before {
           content: "";
@@ -1711,49 +1834,139 @@ const onSearchInput = (e) => {
       }
     }
   }
-}
-
-// 添加分页样式
-.pagination {
-  margin-top: 20rpx;
-  padding: 20rpx;
-  background: #fff;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
   
-  .page-info {
-    text-align: center;
-    margin-bottom: 16rpx;
-    
-    .total-count {
-      margin-left: 20rpx;
-      color: #666;
-      font-size: 24rpx;
+  // 添加媒体查询，根据屏幕宽度调整列数
+  @media screen and (min-width: 768px) {
+    .grid-container {
+      --grid-columns: 4; // 在更宽的屏幕上显示更多列
     }
   }
   
-  .page-controls {
+  @media screen and (max-width: 375px) {
+    .grid-container {
+      --grid-columns: 2; // 在较窄的屏幕上减少列数
+    }
+  }
+}
+
+// 修改搜索结果计数样式
+.search-result-count {
+  
+  padding: 30rpx 30rpx;
+  font-size: 28rpx;
+  color: #64748b;
+  background-color: #fff;
+  margin-top: 10rpx;
+  margin-bottom: 10rpx;
+  margin-left:5rpx ;
+  margin-right:5rpx ;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .count-highlight {
+    color: #6366f1;
+    font-weight: 500;
+  }
+  
+  .search-time {
+    font-size: 24rpx;
+    color: #94a3b8;
+    margin-left: auto;
+  }
+}
+
+// 优化分页样式
+.pagination {
+  margin: 20rpx 0;
+  
+  .pagination-container {
     display: flex;
-    justify-content: center;
-    gap: 20rpx;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    border-radius: 16rpx;
+    padding: 16rpx 24rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
     
-    .page-btn {
-      font-size: 28rpx;
-      padding: 12rpx 32rpx;
-      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-      color: #fff;
-      border-radius: 40rpx;
-      box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.2);
+    .page-input-wrapper {
+      display: flex;
+      align-items: center;
       
-      &:disabled {
-        background: #ccc;
-        box-shadow: none;
-        cursor: not-allowed;
+      .page-label {
+        font-size: 28rpx;
+        color: #666;
+        margin-right: 10rpx;
       }
       
-      &:active {
-        transform: translateY(2rpx);
-        box-shadow: 0 2rpx 6rpx rgba(99, 102, 241, 0.2);
+      .page-input {
+        width: 80rpx;
+        height: 60rpx;
+        background-color: #f5f5f5;
+        border: 2rpx solid #e0e0e0;
+        border-radius: 12rpx;
+        text-align: center;
+        font-size: 28rpx;
+        color: #333;
+        padding: 0 10rpx;
+        
+        &:focus {
+          border-color: #6366f1;
+          background-color: #fff;
+        }
+      }
+      
+      .page-separator {
+        margin: 0 10rpx;
+        color: #666;
+        font-size: 28rpx;
+      }
+      
+      .total-pages {
+        font-size: 28rpx;
+        color: #666;
+        min-width: 40rpx;
+        text-align: center;
+      }
+    }
+    
+    .page-buttons {
+      display: flex;
+      align-items: center;
+      
+      .page-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 80rpx;
+        min-width: 140rpx;
+        padding: 0 30rpx;
+        font-size: 30rpx;
+        font-weight: 500;
+        color: #ffffff;
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        border: none;
+        border-radius: 12rpx;
+        transition: all 0.2s ease;
+        box-shadow: 0 4rpx 8rpx rgba(99, 102, 241, 0.2);
+        
+        &:active {
+          transform: scale(0.95);
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          box-shadow: 0 2rpx 4rpx rgba(99, 102, 241, 0.15);
+        }
+        
+        &:disabled {
+          opacity: 0.5;
+          background: linear-gradient(135deg, #a5a6f3 0%, #9698f5 100%);
+          box-shadow: none;
+        }
+        
+        &.prev-page {
+          margin-right: 20rpx;
+        }
       }
     }
   }

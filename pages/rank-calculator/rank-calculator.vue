@@ -58,7 +58,7 @@
     <view class="rank-table-section">
       <view class="section-title">RANK 系数表</view>
       <view class="rank-formula">
-        <text>单曲rating = 歌曲定数 × 系数 × 达成率(取整，不计小数)</text>
+        <text>单曲rating = 歌曲定数 × 系数 × 达成率(取整不计小数)</text>
         <text>歌曲rating = 15个最高单曲rating(舞萌2024分类) + 35个最高单曲rating(舞萌2024以外分类)</text>
       </view>
       
@@ -67,7 +67,7 @@
           <text class="table-cell rank-cell">RANK</text>
           <text class="table-cell">达成率</text>
           <text class="table-cell">系数</text>
-          <text class="table-cell">倍率(达成率*系数)</text>
+          <text class="table-cell">有效区间</text>
         </view>
         
         <view v-for="(rank, index) in rankTable" :key="index" class="table-row">
@@ -331,6 +331,9 @@ onMounted(() => {
       font-weight: 600;
       color: #ffffff;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
     .rank-cell {
@@ -352,6 +355,9 @@ onMounted(() => {
       font-size: 26rpx;
       color: #3c4043;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       
       &.highlight {
         background-color: #e8eaf6;

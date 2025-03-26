@@ -43,18 +43,21 @@ const versionList = ref([
   { name: 'MiLK PLUS', code: '雪' },
   { name: 'maimai FiNALE', code: '輝' },
   { name: 'ALL FiNALE', code: '舞' },
-  { name: 'maimai でらっくす', code: '熊' },
-  { name: 'maimai でらっくす PLUS', code: '華' },
-  { name: 'maimai でらっくす Splash', code: '爽' },
-  { name: 'maimai でらっくす Splash PLUS', code: '煌' },
-  { name: 'maimai でらっくす UNiVERSE', code: '宙' },
-  { name: 'maimai でらっくす UNiVERSE PLUS', code: '星' },
-  { name: 'maimai でらっくす FESTiVAL', code: '祭' },
-  { name: 'maimai でらっくす FESTiVAL PLUS', code: '祝' }
+  { name: 'maimai DX', code: '熊' },
+  { name: 'maimai DX PLUS', code: '華' },
+  { name: 'maimai DX Splash', code: '爽' },
+  { name: 'maimai DX Splash PLUS', code: '煌' },
+  { name: 'maimai DX UNiVERSE', code: '宙' },
+  { name: 'maimai DX UNiVERSE PLUS', code: '星' },
+  { name: 'maimai DX FESTiVAL', code: '祭' },
+  { name: 'maimai DX FESTiVAL PLUS', code: '祝' },
+  { name: 'maimai DX BUDDiES', code: '双' },
+  { name: 'maimai DX BUDDiES PLUS', code: '宴' },
+  { name: 'maimai DX PRiSM', code: '镜' },
 ])
 
 const getVersionClass = (versionName) => {
-  if (versionName.includes('でらっくす')) return 'dx'
+  if (versionName.includes('DX')) return 'dx'
   if (versionName.includes('FiNALE')) return 'finale'
   return 'classic'
 }

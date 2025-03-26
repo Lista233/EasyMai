@@ -14,6 +14,8 @@
 					type="number" 
 					v-model="userRating" 
 					placeholder="请输入您的目标 Rating"
+	
+					@confirm="generateRecommendations"
 				/>
 				<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
 			</view>
@@ -530,13 +532,12 @@ const handleNextPage = () => {
 	font-size: 32rpx;
 	font-weight: 500;
 	color: #1e293b;
-	transition: all 0.3s ease;
+	transition: border-color 0.1s;
 	background-color: #f8fafc;
 }
 
 .rating-input:hover {
 	border-color: #6366f1;
-	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 	background: white;
 	
 }
