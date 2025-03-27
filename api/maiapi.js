@@ -31,6 +31,18 @@ export async function maiGetUserMusicData(userID) {
 		return { error };
 	}
 }
+export async function maiGetUserPreview(userID) {
+	try {
+		
+		return await request({
+			url: `${remoteRoute}/getUserPreview/?userID=${userID}`,
+			method: "GET"
+		});
+	} catch (error) {
+		console.error('获取用户音乐数据失败:', error);
+		return { error };
+	}
+}
 
 export async function divingFishUpdateData(musicdata, importToken) {
 	try {

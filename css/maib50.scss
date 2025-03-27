@@ -33,7 +33,7 @@
 		margin: 0 auto;
 		display: flex;
 		gap: 16rpx;
-		margin-bottom: 24rpx;
+		margin-bottom: 12rpx;
 		padding: 0 10rpx;
 
 		.nav-btn {
@@ -110,9 +110,9 @@
 		.section-title {
 			font-size: 36rpx;
 			font-weight: 800;
-			margin: 32rpx 10rpx;
+			margin: 10rpx 10rpx;
 			color: #333;
-			padding: 12rpx 20rpx;
+			padding: 20rpx 20rpx;
 			border-radius: 12rpx;
 			position: relative;
 			overflow: hidden;
@@ -203,7 +203,7 @@
 		    backdrop-filter: blur(10px);
 		    border-radius: 20rpx;
 		    padding: 32rpx 40rpx;
-		    margin: 20rpx 10rpx 40rpx 10rpx;
+		    margin: 0rpx 10rpx 10rpx 10rpx;
 		    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
 		    text-align: center;
 		    transition: all 0.3s ease;
@@ -351,9 +351,9 @@
 		.b35box, .b15box {
 			display: flex;
 			flex-wrap: wrap;
-			gap: 16rpx;
-			padding: 0 10rpx;
-			margin-bottom: 32rpx;
+			gap: 8rpx;
+			padding: 0rpx 10rpx;
+			margin-bottom: 0rpx;
 			
 			.song-card {
 				position: relative;

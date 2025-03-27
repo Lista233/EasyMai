@@ -6,7 +6,7 @@
 			<button class="nav-btn bind-btn" @click="toggleBindForm"> 
 			<text class="btn-text">{{ jwt_token ? '账号设置' : '绑定账号' }}</text>
 			</button>
-			<button class="nav-btn update-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
+			<button class="nav-btn refresh-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
 		</view>
 		
 		<!-- 绑定账号表单（下拉式） -->
@@ -122,7 +122,7 @@
 							<view class="user-details">
 								<view class="info-item">
 									<text class="label">昵称：</text>
-									<text class="value">{{ nickname || '您还未设置昵称' }}</text>
+									<text class="value">{{ nickname || '您还未设置水鱼账号昵称' }}</text>
 								</view>
 								<view class="info-item">
 									<text class="label">UID：</text>

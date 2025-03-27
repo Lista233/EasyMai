@@ -8,8 +8,8 @@
         </view>
         <view class="user-details">
           <view class="username">{{ nickname || username || '请先登录' }}</view>
-          <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">UID: {{ uid }}</view>
-          <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码获取UID</view>
+          <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view>
+          <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view>
         </view>
         <RatingDisplay 
           :b35rating="b35rating" 
@@ -235,6 +235,8 @@ let avatar=ref('../../static/maiicon/UI_Icon_409503.jpg')
 let QrCode=ref('');
 let uid=ref(-1);
 
+let mainame=ref('')
+
 // 计算属性：根据rating值返回对应的样式类名
 const ratingClass = computed(() => {
   const rating = b15rating.value+b35rating.value;
@@ -340,7 +342,8 @@ onLoad(async () => {
 	nickname.value = uni.getStorageSync('divingFish_nickname');
 	importToken.value = uni.getStorageSync('divingFish_importToken');
 	records.value = uni.getStorageSync('divingFish_records');
-	uid.value = uni.getStorageSync('uid')
+	uid.value = uni.getStorageSync('uid');
+	mainame.value=uni.getStorageSync('mainame');
 	// 判断uid是否为数字，如果不是则设置为-1
 	uid.value = typeof uid.value === 'number' ? uid.value : -1;
 	console.log('uid', uid.value)
@@ -414,7 +417,7 @@ const handleLogout = () => {
         uni.removeStorageSync('uid')
         uni.removeStorageSync('divingFish_username');
         uni.removeStorageSync('qq_channel_uid')
-        
+        uni.removeStorageSync('mainame')
         // 清除 rating 相关数据
         uni.removeStorageSync('b35rating');
         uni.removeStorageSync('b15rating');
@@ -436,7 +439,7 @@ const handleLogout = () => {
         avatar.value = '../../static/maiicon/UI_Icon_409503.jpg';
         QrCode.value = '';
         uid.value = -1;
-        
+        mainame.value='';
         uni.showToast({
           title: '已退出登录',
           icon: 'none',
@@ -537,6 +540,8 @@ async function handleQrConfirm(qrContent) {
    else if (uidResult && (uidResult.data.userID!=-1)) {
       uid.value = uidResult.data.userID;
       uni.setStorageSync('uid', uidResult.data.userID);
+	  mainame.value=(await maiApi.maiGetUserPreview(uid.value)).data.userName;
+	  uni.setStorageSync('mainame', mainame.value);
       await divingFishUpdate();
       uni.showToast({
         title: '二维码绑定成功',
