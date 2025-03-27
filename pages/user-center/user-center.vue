@@ -945,25 +945,32 @@ const checkForUpdates = async () => {
      uni.showLoading({
        title: '检查更新中...'
      });
-	 const response = await getVersion();
-         if (response.data && response.data.version) {
-           // 比较版本号
-		    uni.hideLoading();
-           if (response.data.version === currentVersion.value) {
-             uni.showToast({
-               title: '已是最新版本',
-               icon: 'success',
-               duration: 2000
-             });
+	 // const response = await getVersion();
+  //        if (response.data && response.data.version) {
+  //          // 比较版本号
+		//     uni.hideLoading();
+  //          if (response.data.version === currentVersion.value) {
+  //            uni.showToast({
+  //              title: '已是最新版本',
+  //              icon: 'success',
+  //              duration: 2000
+  //            });
 			 
-             return;
-           }
-     	}
+  //            return;
+  //          }
+  //    	}
      // 调用UpdateChecker组件的checkUpdate方法，传入true表示强制检查
      updateChecker.value.checkUpdate(true).then(hasUpdate => {
        uni.hideLoading();
        
-    
+       // 如果没有更新，显示已是最新版本的提示
+       if (!hasUpdate) {
+         uni.showToast({
+           title: '已是最新版本',
+           icon: 'success',
+           duration: 2000
+         });
+       }
      }).catch(error => {
        uni.hideLoading();
        uni.showToast({

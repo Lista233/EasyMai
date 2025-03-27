@@ -170,6 +170,37 @@ const checkUpdate = async (forceCheck = false) => {
     return false;
   }
 };
+const showUpdateDialog = async (versionData) => {
+  try {
+    // 保存完整的更新信息
+    updateInfo.value = versionData;
+    
+    // 比较版本号
+    const versionCompare = compareVersion(versionData.version, props.currentVersion);
+    
+    // 获取忽略的版本
+    const ignoredVersion = uni.getStorageSync('ignored_version') || '';
+    
+    // 如果有新版本且不是被忽略的版本，则显示更新弹窗
+    if (versionCompare != 0 && versionData.version !== ignoredVersion) {
+      // 根据是否强制更新显示不同弹窗
+      if (versionData.force_update) {
+        forceUpdatePopup.value.open();
+      } else {
+        optionalUpdatePopup.value.open();
+      }
+      return true;
+    } else {
+      // 已是最新版本或用户已忽略此版本
+      emit('skip', updateInfo.value);
+      return false;
+    }
+  } catch (error) {
+    console.error('显示更新弹窗失败:', error);
+    emit('error', error);
+    return false;
+  }
+};
 
 // 处理更新
 const handleUpdate = () => {
@@ -249,7 +280,8 @@ onMounted(() => {
 
 // 暴露方法给父组件
 defineExpose({
-  checkUpdate
+  checkUpdate,
+  showUpdateDialog
 });
 </script>
 
