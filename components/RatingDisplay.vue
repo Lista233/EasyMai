@@ -3,7 +3,7 @@
     <view class="rating-title">{{ isLoggedIn ? '总 Rating' : '欢迎使用' }}</view>
     <view class="rating-value">{{ isLoggedIn ? totalRating : '请先登录' }}</view>
     <view class="rating-subtitle" v-if="isLoggedIn">B35: {{ b35rating }} + B15: {{ b15rating }}</view>
-    <view class="rating-subtitle" v-else>登录后查看您的游戏成绩</view>
+    <view class="rating-subtitle" v-else>登录获取游玩成绩QwQ</view>
   </view>
 </template>
 

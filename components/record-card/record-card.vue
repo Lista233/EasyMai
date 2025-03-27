@@ -41,14 +41,12 @@
 				</text>
 
 				<view class="fc-fs-container">
-					<text class="fc-fs" v-if="record.fc" :class="getFcClass(record.fc)">
-						{{formatCombo(record.fc)}}
+					<text class="fc-fs" :class="record.fc ? getFcClass(record.fc) : 'fc-none'">
+						{{record.fc ? formatCombo(record.fc) : '-'}}
 					</text>
-					<text class="fc-fs" v-else></text>
-					<text class="fc-fs" v-if="record.fs" :class="getFsClass(record.fs)">
-						{{formatFS(record.fs)}}
+					<text class="fc-fs" :class="record.fs ? getFsClass(record.fs) : 'fs-none'">
+						{{record.fs ? formatFS(record.fs) : '-'}}
 					</text>
-					<text class="fc-fs" v-else></text>
 				</view>
 			</view>
 		</view>
@@ -471,6 +469,17 @@
 					&.fs-fsdp {
 						color: #f59e0b;
 						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					// 添加无数据时的样式类
+					&.fc-none {
+						color: #94a3b8;
+						background-color: rgba(148, 163, 184, 0.1);
+					}
+					
+					&.fs-none {
+						color: #94a3b8;
+						background-color: rgba(148, 163, 184, 0.1);
 					}
 				}
 			}

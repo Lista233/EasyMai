@@ -11,15 +11,15 @@
           </view>
           <textarea 
             v-model="qrCodeInput"
-            placeholder="进入舞萌公众号界面,长按二维码识别,将字符串复制到此处,或截图通过相册导入"
+            placeholder="进入舞萌公众号界面->点击玩家二维码->长按二维码识别->将字符串复制到此处"
             class="form-textarea"
             :maxlength="-1"
             :auto-height="true"
           />
-          <button class="import-btn" @click="chooseImage">
+     <!--     <button class="import-btn" @click="chooseImage">
             <text class="btn-icon">📁</text>
             <text class="btn-text">从相册导入/扫码</text>
-          </button>
+          </button> -->
         </view>
       </view>
       <view class="modal-buttons">
@@ -32,7 +32,7 @@
 
 <script setup>
 import { ref } from 'vue';
-
+const qrCodeInput = ref('');
 // 定义props
 const props = defineProps({
   visible: {
@@ -44,8 +44,8 @@ const props = defineProps({
 // 定义emit事件
 const emit = defineEmits(['cancel', 'confirm', 'update:visible']);
 
-// 内部状态
-const qrCodeInput = ref('');
+// // 内部状态
+
 
 // 显示帮助信息
 function showHelp(type) {
@@ -65,20 +65,8 @@ function showHelp(type) {
   });
 }
 
-// 选择图片
-function chooseImage() {
-  uni.chooseImage({
-    count: 1,
-    success: function(res) {
-      // 这里可以添加图片解码逻辑
-      uni.showToast({
-        title: '图片已选择，请等待处理',
-        icon: 'none'
-      });
-      // 实际项目中需要调用接口解析二维码图片
-    }
-  });
-}
+
+
 
 // 取消操作
 function handleCancel() {
@@ -186,7 +174,7 @@ function handleConfirm() {
             box-sizing: border-box;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: #f8fafc;
-            margin-bottom: 24rpx;
+            margin-bottom: 0rpx;
             line-height: 1.6;
             
             &:focus {
@@ -243,7 +231,7 @@ function handleConfirm() {
       }
       
       .modal-buttons {
-        margin-top: 20rpx;
+        margin-top: 10rpx;
         display: flex;
         gap: 16rpx;
         

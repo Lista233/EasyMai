@@ -98,25 +98,35 @@
 				
 				<!-- 已登录状态 -->
 				<template v-else>
-					<button class="logout-btn" @click="handleLogout">
+					<!-- <button class="logout-btn" @click="handleLogout">
 						<text class="logout-icon">⎋登出</text>
 								
-					</button>
+					</button> -->
 				<view class="login-contentbox">
-					<!-- 添加退出登录按钮到左上角 -->
-				
+			
 					
 					<view class="user-info">
 						<view class="user-header">
-							<view class="avatar">👤</view>
+							<view class="avatar-container">
+								<view class="avatar">
+									<image 
+										v-if="userAvatar" 
+										class="avatar-image" 
+										:src="userAvatar" 
+										mode="aspectFill"
+									></image>
+									<text v-else class="avatar-placeholder">👤</text>
+								</view>
+							</view>
+							<view class="username">{{ username || '未设置用户名' }}</view>
 							<view class="user-details">
 								<view class="info-item">
 									<text class="label">昵称：</text>
-									<text class="value">{{ nickname?nickname:'您还未设置昵称' }}</text>
+									<text class="value">{{ nickname || '您还未设置昵称' }}</text>
 								</view>
 								<view class="info-item">
 									<text class="label">UID：</text>
-									<text class="value">{{ uid>0 ? uid : '请先绑定舞萌二维码获取UID' }}</text>
+									<text class="value">{{ uid > 0 ? uid : '请先绑定舞萌二维码获取UID' }}</text>
 								</view>
 							</view>
 						</view>
@@ -303,15 +313,15 @@
 						</view>
 						<textarea 
 							v-model="qrCodeInput"
-							placeholder="进入舞萌公众号界面,长按二维码识别,将字符串复制到此处,或截图通过相册导入"
+							placeholder="进入舞萌公众号界面->点击玩家二维码->长按二维码识别->将字符串复制到此处"
 							class="form-textarea"
 							:maxlength="-1"
 							:auto-height="true"
 						/>
-						<button class="import-btn" @click="chooseImage">
+			<!-- 			<button class="import-btn" @click="chooseImage">
 							<text class="btn-icon">📁</text>
 							<text class="btn-text">从相册导入/扫码</text>
-						</button>
+						</button> -->
 					</view>
 				</view>
 				<view class="modal-buttons">
@@ -391,6 +401,9 @@ const hasLoadedB50 = ref(false);
 // 添加加载状态
 const isLoading = ref(true);
 
+// 添加用户头像
+const userAvatar = ref('../../static/maiicon/UI_Icon_409503.jpg');
+
 onLoad(async () => {
 	console.log(1)
 	// 设置加载状态
@@ -422,6 +435,13 @@ onLoad(async () => {
 			await getb50local();
 			
 			jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
+			
+			// 获取本地存储的头像
+			userAvatar.value = uni.getStorageSync('user_avatar');
+			if(!userAvatar.value)
+			{
+				userAvatar.value='../../static/maiicon/UI_Icon_409503.jpg'
+			}
 		} catch (error) {
 			console.error('加载数据出错:', error);
 		} finally {
@@ -947,16 +967,7 @@ async function handleSettingsSubmit() {
 	
 };
 
-// 添加从相册导入的方法
-const chooseImage = () => {
-   uni.scanCode({
-	scanType:['qrCode'],
-   	success: function (res) {
-   			qrCodeInput.value=res.result
-			console.log(res.result)
-   		}
-   })
-};
+
 
 // 添加注册相关的响应式数据
 const isRegisterForm = ref(false);
@@ -1094,6 +1105,9 @@ const formatCombo = (fc) => fc ? fc.replace('app', 'ap+').replace('ap', 'ap').re
 // 格式化同步显示
 const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC','SC'): '';
 
+// 添加上传头像的方法
+
+
 </script>
 
 <style lang='scss'>
@@ -1183,5 +1197,77 @@ const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC'
 @keyframes spin {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
+}
+
+.user-info {
+  .user-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* padding: 10rpx 10rpx 10rpx; */
+    
+    .avatar-container {
+      margin-bottom: 8rpx;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      
+      .avatar {
+        width: 125rpx;
+        height: 125rpx;
+        border-radius: 6rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f5f5f5;
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
+        
+        .avatar-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .avatar-placeholder {
+          font-size: 55rpx;
+          color: #a0a0a0;
+        }
+      }
+    }
+    
+    .username {
+      text-align: center;
+      font-size: 30rpx;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 4rpx;
+    }
+    
+    .user-details {
+      width: 90%;
+      margin-bottom: 5rpx;
+      
+      .info-item {
+        display: flex;
+        margin-bottom: 6rpx;
+        
+        .label {
+          font-size: 24rpx;
+          color: #666;
+          
+        }
+        
+        .value {
+          font-size: 24rpx;
+          color: #333;
+          font-weight: 500;
+          flex: 1;
+        }
+      }
+    }
+  }
+  
+ 
 }
 </style>

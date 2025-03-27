@@ -193,17 +193,17 @@
     </uni-popup>
 
     <!-- 添加更新检查器组件 -->
-    <UpdateChecker 
-      ref="updateChecker"
-      :current-version="currentVersion"
-      :auto-check="false"
-      @api-refreshed="handleApiRefreshed"
-    />
+   <UpdateChecker
+     ref="updateChecker"
+     :current-version="currentVersion"
+     :auto-check="false"
+     @api-refreshed="handleApiRefreshed"
+   />
   </view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, nextTick } from 'vue';
 import * as maiApi from '../../api/maiapi.js';
 import {onLoad} from '@dcloudio/uni-app'
 import QrCodeModal from '@/components/QrCodeModal.vue';
@@ -212,9 +212,10 @@ import RatingDisplay from '@/components/RatingDisplay.vue';
 import UpdateChecker from '@/components/UpdateChecker.vue'; // 导入更新检查器组件
 import {b50adapter} from '@/util/b50adapter.js'
 import { avatarList as importedAvatarList } from '../../utils/avatarList.js';
-
+import {addAPICount,getVersion} from '@/api/myapi.js';
 // 确保导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
+import { remoteRoute, version } from '../../apiconfig.js';
 
 let b35=ref('')
 let b15=ref('')
@@ -363,41 +364,35 @@ onLoad(async () => {
 });
 // 其他处理函数保持不变
 const handleSettings = () => {
+	
   uni.navigateTo({
     url: '/pages/settings/index'
   });
 };
 
 
-const handleViewScores = () => {
-  uni.navigateTo({
-    url: '/pages/scores/index'
-  });
-};
 
-const handlePlayerRecords = () => {
+const handlePlayerRecords = () => {	
   uni.navigateTo({
     url: '/pages/PlayerRecords/PlayerRecords'
   });
+  addAPICount('PlayerRecords')
 };
 
 const handleB50 = () => {
   uni.navigateTo({
     url: '/pages/maiupdate/maib50'
   });
+  addAPICount('MaiB50')
 };
 
 const handleSongSearch = () => {
   uni.navigateTo({
     url: '/pages/song-search/song-search'
   });
+  addAPICount('SongSearch')
 };
 
-const handleFavorites = () => {
-  uni.navigateTo({
-    url: '/pages/favorites/index'
-  });
-};
 
 const handleLogout = () => {
   uni.showModal({
@@ -438,7 +433,7 @@ const handleLogout = () => {
         qq_channel_uid.value = '';
         jwt_token.value = '';
         records.value = '';
-        avatar.value = '../../static/maiicon/UI_Icon_000001.jpg';
+        avatar.value = '../../static/maiicon/UI_Icon_409503.jpg';
         QrCode.value = '';
         uid.value = -1;
         
@@ -542,7 +537,7 @@ async function handleQrConfirm(qrContent) {
    else if (uidResult && (uidResult.data.userID!=-1)) {
       uid.value = uidResult.data.userID;
       uni.setStorageSync('uid', uidResult.data.userID);
-      
+      await divingFishUpdate();
       uni.showToast({
         title: '二维码绑定成功',
         icon: 'success'
@@ -656,31 +651,39 @@ function navigateToLogin() {
 
 // 添加新的导航函数
 const navigateToRecommend = () => {
+
   uni.navigateTo({
     url: '/pages/song-recommend/song-recommend'
   });
+  	addAPICount('SongRecommend')
 };
 
 const navigateToFavorite = () =>{
 	uni.navigateTo({
 	  url: '/pages/favorites/favorites'
 	});
+	addAPICount('Favorites')
 }
 
 const navigateToChartStats = () => {
+
   uni.navigateTo({
     url: '/pages/song-lottery/song-lottery'
   });
+  	addAPICount('SongLottery')
 };
 
 const navigateToToolbox = () => {
+ 
   uni.navigateTo({
     url: '/pages/toolbox/toolbox'
   });
+   addAPICount('ToolBox')
 };
 
 // 刷新API数据
 const handleRefreshAPI = async () => {
+	
   try {
     uni.showLoading({
       title: '刷新中...',
@@ -692,8 +695,10 @@ const handleRefreshAPI = async () => {
     
     
     uni.hideLoading();
-    
+   
+   
     if (baseDataResults.success) {
+		  addAPICount('RefreshAPI')
       uni.showToast({
         title: '数据已全部更新',
         icon: 'success'
@@ -759,7 +764,7 @@ const handleRefreshAPI = async () => {
 			});
 		}
 	}
-	const timeCutDown=4000;
+	const timeCutDown=10000;
 		let cutDownTime=0;
 		let isProcessing=ref(false);
 async function divingFishUpdate()
@@ -930,43 +935,52 @@ onMounted(() => {
 });
 
 // 添加当前版本号和更新检查器引用
-const currentVersion = ref('1.0.0'); // 替换为你的实际版本号
+const currentVersion = ref(version);
 const updateChecker = ref(null);
 
-// 添加检查更新的方法
-const checkForUpdates = () => {
-  if (updateChecker.value) {
-    uni.showLoading({
-      title: '检查更新中...'
-    });
+// 修改检查更新的方法
+const checkForUpdates = async () => {
+ 
+   if (updateChecker.value) {
+     uni.showLoading({
+       title: '检查更新中...'
+     });
+	 const response = await getVersion();
+         if (response.data && response.data.version) {
+           // 比较版本号
+		    uni.hideLoading();
+           if (response.data.version === currentVersion.value) {
+             uni.showToast({
+               title: '已是最新版本',
+               icon: 'success',
+               duration: 2000
+             });
+			 
+             return;
+           }
+     	}
+     // 调用UpdateChecker组件的checkUpdate方法，传入true表示强制检查
+     updateChecker.value.checkUpdate(true).then(hasUpdate => {
+       uni.hideLoading();
+       
     
-    // 调用UpdateChecker组件的checkUpdate方法，传入true表示强制检查
-    updateChecker.value.checkUpdate(true).then(hasUpdate => {
-      uni.hideLoading();
-      
-      // 如果没有更新，显示已是最新版本的提示
-      if (!hasUpdate) {
-        uni.showToast({
-          title: '已是最新版本',
-          icon: 'success',
-          duration: 2000
-        });
-      }
-    }).catch(error => {
-      uni.hideLoading();
-      uni.showToast({
-        title: '检查更新失败',
-        icon: 'none',
-        duration: 2000
-      });
-      console.error('检查更新失败:', error);
-    });
-  } else {
-    uni.showToast({
-      title: '更新组件未初始化',
-      icon: 'none'
-    });
-  }
+     }).catch(error => {
+       uni.hideLoading();
+       uni.showToast({
+         title: '检查更新失败',
+         icon: 'none',
+         duration: 2000
+       });
+       console.error('检查更新失败:', error);
+     });
+   } else {
+     uni.showToast({
+       title: '更新组件未初始化',
+       icon: 'none'
+     });
+   }
+
+	
 };
 
 // 处理API刷新完成事件
@@ -977,27 +991,6 @@ const handleApiRefreshed = (data) => {
     icon: 'success'
   });
 };
-
-// 在onMounted中获取当前版本
-onMounted(() => {
-  // ... existing code ...
-  
-  // 获取当前应用版本
-  // #ifdef APP-PLUS
-  plus.runtime.getProperty(plus.runtime.appid, (info) => {
-    currentVersion.value = info.version;
-    console.log('当前应用版本:', currentVersion.value);
-  });
-  // #endif
-  
-  // #ifdef H5
-  // 在H5环境中，可以从配置文件或其他地方获取版本号
-  // 这里使用示例版本号
-  currentVersion.value = '1.0.0';
-  // #endif
-  
-  // ... existing code ...
-});
 </script>
 
 <style lang="scss" scoped>
@@ -1044,20 +1037,43 @@ onMounted(() => {
       
       .user-details {
         flex: 1;
-        //min-width: 0;
+        width: 100%;
         justify-content: center;
-		align-content: center;
+        align-items: center;
+        text-align: center;
+        margin: 16rpx 0;
+        
         .username {
           font-size: 36rpx;
           font-weight: bold;
           color: black;
           margin-bottom: 8rpx;
-		  text-align: center;
+          text-align: center;
+          width: 100%;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding: 0 20rpx;
+          box-sizing: border-box;
         }
         
         .user-id {
           font-size: 24rpx;
           color: black;
+          text-align: center;
+          display: block;
+          width: 100%;
+          margin-top: 4rpx;
+        }
+        
+        .hint-text {
+          color: #3b82f6 !important;
+          text-decoration: underline;
+          font-weight: 500;
+          cursor: pointer;
+          display: block;
+          width: 100%;
+          margin-top: 4rpx;
         }
       }
       
@@ -1825,7 +1841,7 @@ onMounted(() => {
     
     .icon-image {
       transform: scale(1.1);
-      background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 100%);
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
       opacity: 0.9;
     }
   }

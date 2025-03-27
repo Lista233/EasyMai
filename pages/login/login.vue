@@ -6,7 +6,7 @@
         <view class="login-header">
           <image class="logo" src="/static/logo.png" mode="aspectFit"></image>
           <view class="app-name"><text>EasyMai</text></view>
-          <view class="app-slogan">舞萌数据查询集成终端</view>
+          <view class="app-slogan">查歌从未如此简单( •̀ ω •́ )✧</view>
           
           <!-- 登录/注册切换tabs -->
           <view class="auth-tabs">
@@ -352,7 +352,7 @@ const handleLogin = async () => {
     loginError.value = '用户名或密码错误';
     uni.showToast({
       title: '用户名或密码错误',
-      icon: 'error'
+      icon: 'none'
     });
   } finally {
     isLoading.value = false;

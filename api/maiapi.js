@@ -10,7 +10,7 @@ export async function maiGetUid(qrcode) {
 	try {
 		addAPICount('getuid')
 		return await request({
-			url: `http://${remoteRoute}/apiqr/?qr_code=${qrcode}`,
+			url: `${remoteRoute}/apiqr/?qr_code=${qrcode}`,
 			method: "GET"
 		});
 	} catch (error) {
@@ -23,7 +23,7 @@ export async function maiGetUserMusicData(userID) {
 	try {
 		
 		return await request({
-			url: `http://${remoteRoute}/getUserMusic/?userID=${userID}`,
+			url: `${remoteRoute}/getUserMusic/?userID=${userID}`,
 			method: "GET"
 		});
 	} catch (error) {

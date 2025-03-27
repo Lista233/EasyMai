@@ -146,7 +146,7 @@ const checkUpdate = async (forceCheck = false) => {
     const ignoredVersion = uni.getStorageSync('ignored_version') || '';
     
     // 如果是强制检查或版本号不同且不是被忽略的版本，则显示更新弹窗
-    if (versionCompare > 0 && (forceCheck || data.version !== ignoredVersion)) {
+    if (versionCompare != 0 && (forceCheck || data.version !== ignoredVersion)) {
       // 保存完整的更新信息，包括 download_url 和 api_version
       updateInfo.value = data;
       

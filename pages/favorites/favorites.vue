@@ -53,7 +53,7 @@
                 <text class="song-artist">类别:{{ song.basic_info.genre || '未知类别' }}</text>
               </view>
             </view>
-            <view class="remove-btn" @click.stop="removeSong(song.id)">
+            <view class="remove-btn" @click.stop="removeSong(song.id,song.selectedDifficulty)">
               <text class="remove-icon">×</text>
             </view>
           </view>
@@ -430,7 +430,7 @@ const createNewFolder = () => {
 };
 
 // 从收藏夹中移除歌曲
-const removeSong = (songId) => {
+const removeSong = (songId,diff) => {
   if (!songId || !currentFolderId.value) return;
   
   // 添加确认弹窗
@@ -444,7 +444,7 @@ const removeSong = (songId) => {
           const folderSongs = allFavorites[currentFolderId.value] || [];
           
           // 从数组中移除歌曲对象
-          const index = folderSongs.findIndex(item => item.id === songId);
+          const index = folderSongs.findIndex(item => item.id === songId && item.difficulty === diff );
           if (index !== -1) {
             folderSongs.splice(index, 1);
             allFavorites[currentFolderId.value] = folderSongs;

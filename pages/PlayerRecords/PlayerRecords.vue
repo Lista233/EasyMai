@@ -1381,8 +1381,8 @@ const updateGridSize = (size) => {
 
 .filter-buttons {
 	display: flex;
-	gap: 16rpx;
-	margin-bottom: 24rpx;
+	gap: 8rpx;
+	margin-bottom: 16rpx;
 	padding: 0 10rpx;
 	
 	.filter-btn {

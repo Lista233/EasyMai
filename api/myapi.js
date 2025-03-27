@@ -6,7 +6,7 @@ export async function getVersion() {
 	try {
 		console.log("我在更新");
 		let res= await request({
-			url: `http://${remoteRoute}/version`,
+			url: `${remoteRoute}/version`,
 			method: "GET",
 			
 		});
@@ -19,8 +19,8 @@ export async function getVersion() {
 }
 export async function addAPICount(apiName) {
 	try {
-		return request({
-			url: `http://${remoteRoute}/stats/record`,
+		return uni.request({
+			url: `${remoteRoute}/stats/record`,
 			method: "POST",
 			data:{"api_name":apiName}
 		});

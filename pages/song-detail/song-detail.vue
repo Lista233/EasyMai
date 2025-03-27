@@ -2001,18 +2001,19 @@ const genreMapping = {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6rpx;
+
     margin-top: -45rpx;
     
     .note-item {
       text-align: center;
-      padding: 16rpx 12rpx;
+      padding: 16rpx 0rpx;
       background: rgba(255, 255, 255, 0.8);
       border-radius: 8rpx;
       backdrop-filter: blur(4px);
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 8rpx;
+      gap: 6rpx;
       min-height: 100rpx;
       min-width: 0;
       width: 100%;

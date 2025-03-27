@@ -975,20 +975,9 @@
 	align-content: center;
 	transform: translateY(5%);
 .user-info {
-	padding: 40rpx 20rpx;
+	padding: 0rpx 20rpx;
 	
-	.avatar {
-		width: 120rpx;
-		height: 120rpx;
-		border-radius: 60rpx;
-		margin: 0 auto 30rpx;
-		background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 48rpx;
-		box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.1);
-	}
+	
 	
 	.info-item {
 		margin: 16rpx 0;
@@ -1014,9 +1003,9 @@
 	
 	.action-buttons {
 		display: flex;
-		gap: 24rpx;  // 增加间距
-		margin: 40rpx 0;
-		padding: 0 30rpx;  // 增加两侧padding
+		gap: 20rpx;  // 增加间距
+		margin: 20rpx 0;
+		padding: 0 20rpx;  // 增加两侧padding
 		
 		.action-btn {
 			flex: 1;
@@ -1029,7 +1018,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: 12rpx;  // 增加图标和文字的间距
+			gap: 8rpx;  // 增加图标和文字的间距
 			transition: all 0.3s ease;
 			box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 			white-space: nowrap;  // 防止文字换行
@@ -1270,7 +1259,7 @@
                 box-sizing: border-box;
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 background: #f8fafc;
-                margin-bottom: 24rpx;
+                margin-bottom: 6rpx;
                 line-height: 1.6;
                 
                 &:focus {
