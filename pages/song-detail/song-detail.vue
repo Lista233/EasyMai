@@ -209,7 +209,7 @@
   </view>
 
   <!-- 修改别名弹窗组件 -->
-  <uni-popup ref="popup" type="center" :mask-click="false">
+  <uni-popup ref="popup" type="center" :mask-click="true">
     <view class="alias-popup">
       <view class="popup-header">
         <text class="title">歌曲别名</text>
@@ -266,6 +266,7 @@
           type="text" 
           v-model="newFolderName" 
           placeholder="输入收藏夹名称" 
+		   @confirm="createNewFolder"
           focus
           @blur="hideNewFolderInput"
         />
