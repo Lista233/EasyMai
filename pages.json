@@ -93,6 +93,9 @@
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
+				//"navigationStyle":"custom",
+				// "hideStatusBar":true,
+				// "hideBottomNavigationIndicator":true
 			}
 		},
 		{

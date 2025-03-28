@@ -132,7 +132,7 @@
             <view class="icon-image" style="-webkit-mask-image: url('/static/icons/refresh.png'); mask-image: url('/static/icons/refresh.png');"></view>
           </view>
           <view class="function-name">刷新API</view>
-          <view class="function-desc">重新从API获取数据(功能异常时使用)</view>
+          <view class="function-desc">重新获取乐曲数据(故障时使用)</view>
         </view>
         
         <!-- 添加检查更新按钮 -->
@@ -1339,11 +1339,11 @@ const handleApiRefreshed = (data) => {
         .function-item:nth-child(1), 
         .function-item:nth-child(2) {
           &::before {
-            background: linear-gradient(90deg, #97a1ff, #768bf3);
+            background: linear-gradient(90deg, #b6eef1, #54a1f9);
           }
           
           .function-icon {
-            color: #8b5cf6;
+            color: #5c9af6;
              background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1351,7 +1351,7 @@ const handleApiRefreshed = (data) => {
         // 第一行微调 - 第二个元素稍微深一点
         .function-item:nth-child(2) {
           &::before {
-            background: linear-gradient(90deg, #97a1ff, #768bf3);
+            background: linear-gradient(90deg, #b6eef1, #54a1f9);
           }
           
           .function-icon {
@@ -1517,7 +1517,7 @@ const handleApiRefreshed = (data) => {
         
         &.my-scores {
           &::before {
-            background: linear-gradient(90deg, #97a1ff, #768bf3);
+            background: linear-gradient(90deg, #b6eef1, #54a1f9);
           }
           
           .function-icon {
@@ -1530,7 +1530,7 @@ const handleApiRefreshed = (data) => {
         
         &.song-search {
           &::before {
-             background: linear-gradient(90deg, #97a1ff, #768bf3);
+            background: linear-gradient(90deg, #b6eef1, #54a1f9);
           }
           
           .function-icon {
@@ -1770,7 +1770,7 @@ const handleApiRefreshed = (data) => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
       opacity: 0.9;
     }
   }
@@ -1779,7 +1779,7 @@ const handleApiRefreshed = (data) => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #93c5fd 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
       opacity: 0.9;
     }
   }
@@ -1843,7 +1843,7 @@ const handleApiRefreshed = (data) => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
       opacity: 0.9;
     }
   }
@@ -1853,7 +1853,7 @@ const handleApiRefreshed = (data) => {
     
     .icon-image {
       transform: scale(1.1);
-      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
       opacity: 0.9;
     }
   }

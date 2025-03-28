@@ -1,12 +1,12 @@
 <template>
 	<view id="index">
 		<view class="button-group">
-			<button class="nav-btn refresh-btn" v-show="jwt_token" @click="handleRefresh">生成B50</button>
+			<button class="nav-btn bind-btn" v-show="jwt_token" @click="handleRefresh">生成B50</button>
 			<!-- <button class="save-btn" @click="saveAsImage()">保存为图片</button> -->
 			<button class="nav-btn bind-btn" @click="toggleBindForm"> 
 			<text class="btn-text">{{ jwt_token ? '账号设置' : '绑定账号' }}</text>
 			</button>
-			<button class="nav-btn refresh-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
+			<button class="nav-btn bind-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
 		</view>
 		
 		<!-- 绑定账号表单（下拉式） -->
@@ -121,12 +121,12 @@
 							<view class="username">{{ username || '未设置用户名' }}</view>
 							<view class="user-details">
 								<view class="info-item">
-									<text class="label">昵称：</text>
+									<text class="label">用户昵称：</text>
 									<text class="value">{{ nickname || '您还未设置水鱼账号昵称' }}</text>
 								</view>
 								<view class="info-item">
-									<text class="label">UID：</text>
-									<text class="value">{{ uid > 0 ? uid : '请先绑定舞萌二维码获取UID' }}</text>
+									<text class="label">绑定QQ：</text>
+									<text class="value">{{ qqid ? qqid : '您还未绑定QQ' }}</text>
 								</view>
 							</view>
 						</view>

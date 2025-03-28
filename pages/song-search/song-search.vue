@@ -380,11 +380,11 @@ const versionMap = {
   'maimai MiLK': 'Milk',
   'MiLK PLUS': 'Milk+',
   'maimai FiNALE': 'Finale',
-  'maimai でらっくす': '舞萌DX2020',
-  'maimai でらっくす Splash': '舞萌DX2021',
-  'maimai でらっくす UNiVERSE': '舞萌DX2022',
-  'maimai でらっくす FESTiVAL': '舞萌DX2023',
-  'maimai でらっくす BUDDiES': '舞萌DX2024'
+  'maimai でらっくす': 'DX2020',
+  'maimai でらっくす Splash': 'DX2021',
+  'maimai でらっくす UNiVERSE': 'DX2022',
+  'maimai でらっくす FESTiVAL': 'DX2023',
+  'maimai でらっくす BUDDiES': 'DX2024'
 }
 
 // 修改反向映射关系，从显示名称映射到原始值
@@ -590,41 +590,38 @@ const onSearch = async () => {
   let bpmRange = null
   let songIdSearch = false
   
-  // 检查BPM搜索格式
-  if (keyword) {
-    // 检查 ">数字" 格式 (大于某BPM)
-    if (/^>\s*\d+(\.\d+)?$/.test(keyword)) {
-      const minBpm = parseFloat(keyword.substring(1).trim())
-      bpmRange = { min: minBpm }
-    } 
-    // 检查 "<数字" 格式 (小于某BPM)
-    else if (/^<\s*\d+(\.\d+)?$/.test(keyword)) {
-      const maxBpm = parseFloat(keyword.substring(1).trim())
-      bpmRange = { max: maxBpm }
-    } 
-    // 检查 "数字~数字" 格式 (BPM范围)
-    else if (/^\d+(\.\d+)?\s*~\s*\d+(\.\d+)?$/.test(keyword)) {
-      const [min, max] = keyword.split('~').map(part => parseFloat(part.trim()))
-      bpmRange = { min, max }
-    } 
-    // 检查纯数字格式 (可能是歌曲ID或精确BPM)
-    else if (/^\d+(\.\d+)?$/.test(keyword)) {
-      // 如果是整数且长度小于等于5，可能是歌曲ID
-      if (Number.isInteger(parseFloat(keyword)) && keyword.length <= 5) {
-        songIdSearch = true
-        // 尝试按ID搜索
-        const song = songService.value.getSongById(keyword)
-        if (song) {
-          matchedIds.add(song.id)
-          // 标记为ID匹配
-          idMatchMap.set(song.id, true)
-        }
+  // 扩展大于号和小于号的匹配模式
+  if (/^[>＞≥≧⩾][\s]*\d+(\.\d+)?$/.test(keyword)) {
+    const minBpm = parseFloat(keyword.replace(/[>＞≥≧⩾\s]/g, ''))
+    bpmRange = { min: minBpm, max: Infinity }
+  } 
+  // 检查小于号格式
+  else if (/^[<＜≤≦⩽][\s]*\d+(\.\d+)?$/.test(keyword)) {
+    const maxBpm = parseFloat(keyword.replace(/[<＜≤≦⩽\s]/g, ''))
+    bpmRange = { min: 0, max: maxBpm }
+  } 
+  // 检查 "数字~数字" 格式 (BPM范围)
+  else if (/^\d+(\.\d+)?\s*~\s*\d+(\.\d+)?$/.test(keyword)) {
+    const [min, max] = keyword.split('~').map(part => parseFloat(part.trim()))
+    bpmRange = { min, max }
+  } 
+  // 检查纯数字格式 (可能是歌曲ID或精确BPM)
+  else if (/^\d+(\.\d+)?$/.test(keyword)) {
+    // 如果是整数且长度小于等于5，可能是歌曲ID
+    if (Number.isInteger(parseFloat(keyword)) && keyword.length <= 5) {
+      songIdSearch = true
+      // 尝试按ID搜索
+      const song = songService.value.getSongById(keyword)
+      if (song) {
+        matchedIds.add(song.id)
+        // 标记为ID匹配
+        idMatchMap.set(song.id, true)
       }
-      
-      // 无论是否找到ID，都尝试按BPM搜索
-      const exactBpm = parseFloat(keyword)
-      bpmRange = { min: exactBpm, max: exactBpm }
     }
+    
+    // 无论是否找到ID，都尝试按BPM搜索
+    const exactBpm = parseFloat(keyword)
+    bpmRange = { min: exactBpm, max: exactBpm }
   }
   
   // 如果是BPM搜索，使用优化的搜索方法
@@ -925,19 +922,26 @@ const formatLevels = (levels) => {
   
   const validLevels = levels.filter(level => level !== "-");
   if (validLevels.length === 0) return '';
+  const lastFourLevels = validLevels.slice(-4);
   
-  return 'Lv.' + validLevels.join('/');
+  return lastFourLevels.join('/');
 }
 
 // 添加格式化歌曲类别的方法
 const formatGenre = (genre) => {
   const genreMap = {
-    'niconico & VOCALOID': 'nico&vocal',
+    'niconico & VOCALOID': 'ボーカロ',
     '音击&中二节奏': '音击&中二',
     '流行&动漫': '流行&动漫',
     '东方Project': '东方',
-    '其他游戏': '其他',
-    '舞萌': '舞萌'
+    '其他游戏': '其他游戏',
+    '舞萌': '舞萌',
+    'niconicoボーカロイド': 'ボーカロ',
+    'POPSアニメ': '流行&动漫',
+    'ゲームバラエティ': '其他游戏',
+    'maimai': '舞萌',
+    'オンゲキCHUNITHM': '音击&中二',
+    '東方Project': '东方',
   };
   
   return genreMap[genre] || genre;
@@ -954,7 +958,13 @@ const formatGenreText = computed(() => {
     '流行&动漫': '流行&动漫',
     '东方Project': '东方',
     '其他游戏': '其他',
-    '舞萌': '舞萌'
+    '舞萌': '舞萌',
+    'niconicoボーカロイド': 'nico&vocal',
+    'POPSアニメ': '流行&动漫',
+    'ゲームバラエティ': '其他',
+    'maimai': '舞萌',
+    'オンゲキCHUNITHM': '音击&中二',
+    '東方Project': '东方',
   };
   
   return genreMap[selectedGenre.value] || selectedGenre.value;
@@ -1163,7 +1173,7 @@ const handleGridPageInputConfirm = () => {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .container {
   padding: 20rpx;
   background: linear-gradient(to bottom, #e0f7fa, #ffffff);
@@ -1385,34 +1395,40 @@ const handleGridPageInputConfirm = () => {
       
       .song-details {
         display: flex;
-        flex-wrap: wrap;
-        gap: 12rpx;
-        margin-bottom: 10rpx;
+        width: 100%;
+        margin-top: 8rpx;
         
-        text {
+        .version, .genre, .difficulty {
+          flex: 1;
+          min-width: 0;
+          padding: 4rpx 12rpx;
           font-size: 24rpx;
-          padding: 6rpx 14rpx;
-          border-radius: 10rpx;
-          box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
-          max-width: 100%;
+          border-radius: 8rpx;
+          margin-right: 8rpx;
+          text-align: center;
+          white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap;
+          margin-bottom: 12rpx;
         }
         
         .version {
-          background-color: rgba(126, 87, 194, 0.1);
-          color: #7e57c2;
+          background-color: #e4f3fd;
+          color: #1890ff;
+          flex: 1;
         }
         
         .genre {
-          background-color: rgba(76, 175, 80, 0.1);
-          color: #4caf50;
+          background-color: #f0ffe4;
+          color: #52c41a;
+          flex: 1;
         }
         
         .difficulty {
-          background-color: rgba(255, 152, 0, 0.1);
-          color: #ff9800;
+          background-color: #fff7e6;
+          color: #fa8c16;
+          flex: 1.4;
+          margin-right: 0;
         }
       }
       

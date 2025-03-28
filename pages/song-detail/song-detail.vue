@@ -208,8 +208,8 @@
     </view>
   </view>
 
-  <!-- 修改弹窗组件 -->
-  <uni-popup ref="popup" type="center">
+  <!-- 修改别名弹窗组件 -->
+  <uni-popup ref="popup" type="center" :mask-click="false">
     <view class="alias-popup">
       <view class="popup-header">
         <text class="title">歌曲别名</text>
@@ -228,8 +228,8 @@
     </view>
   </uni-popup>
 
-  <!-- 收藏弹窗组件 -->
-  <uni-popup ref="favoritePopupRef" type="center">
+  <!-- 修改收藏弹窗组件 -->
+  <uni-popup ref="favoritePopupRef" type="center" :mask-click="true">
     <view class="favorite-popup">
       <view class="popup-header">
         <text class="title">收藏歌曲</text>
@@ -636,9 +636,12 @@ const showAliasDialog = () => {
     }
   }
   
-  if (popup.value) {
-    popup.value.open()
-  }
+  // 优化：延迟打开弹窗，避免UI阻塞
+  setTimeout(() => {
+    if (popup.value) {
+      popup.value.open()
+    }
+  }, 50)
 }
 
 // 关闭别名弹窗
@@ -889,12 +892,71 @@ const isFavorite = ref(false)
 const showingNewFolderInput = ref(false)
 const newFolderName = ref('')
 
-// 显示收藏弹窗
+// 显示收藏弹窗 - 优化加载逻辑
 const showFavoriteDialog = () => {
-  loadFavoriteFolders()
-  checkIfFavorite()
-  if (favoritePopupRef.value) {
-    favoritePopupRef.value.open()
+  // 显示加载提示
+  uni.showLoading({
+    title: '加载中...',
+    mask: true
+  })
+  
+  // 使用setTimeout将耗时操作放入下一个事件循环
+  setTimeout(() => {
+    try {
+      loadFavoriteFolders()
+      checkIfFavorite()
+      
+      // 如果没有收藏夹，创建一个默认收藏夹
+      if (favoriteFolders.value.length === 0) {
+        createDefaultFolder()
+      }
+      
+      // 隐藏加载提示
+      uni.hideLoading()
+      
+      // 打开弹窗
+      nextTick(() => {
+        if (favoritePopupRef.value) {
+          favoritePopupRef.value.open('center')
+        }
+      })
+    } catch (e) {
+      console.error('加载收藏夹失败:', e)
+      uni.hideLoading()
+      uni.showToast({
+        title: '加载收藏夹失败',
+        icon: 'none'
+      })
+    }
+  }, 50)
+}
+
+// 创建默认收藏夹
+const createDefaultFolder = () => {
+  try {
+    const defaultFolder = {
+      id: 'default-' + Date.now().toString(),
+      name: '默认收藏夹',
+      count: 0
+    }
+    
+    // 保存到本地存储
+    const folders = [defaultFolder]
+    uni.setStorageSync('favoriteFolders', folders)
+    
+    // 确保收藏夹对应的歌曲列表存在
+    const allFavorites = uni.getStorageSync('favorites') || {}
+    if (!allFavorites[defaultFolder.id]) {
+      allFavorites[defaultFolder.id] = []
+      uni.setStorageSync('favorites', allFavorites)
+    }
+    
+    // 更新当前页面的收藏夹列表
+    favoriteFolders.value = folders
+    
+    console.log('已创建默认收藏夹')
+  } catch (e) {
+    console.error('创建默认收藏夹失败:', e)
   }
 }
 
@@ -906,10 +968,24 @@ const closeFavoriteDialog = () => {
   showingNewFolderInput.value = false
 }
 
-// 加载收藏夹列表
+// 加载收藏夹列表 - 优化性能
 const loadFavoriteFolders = () => {
   try {
-    const folders = uni.getStorageSync('favoriteFolders') || []
+    let folders = uni.getStorageSync('favoriteFolders') || []
+    
+    // 优化：限制最大显示数量，避免过多渲染
+    if (folders.length > 50) {
+      folders = folders.slice(0, 50)
+    }
+    
+    // 更新每个收藏夹中的歌曲数量
+    const allFavorites = uni.getStorageSync('favorites') || {}
+    
+    folders = folders.map(folder => ({
+      ...folder,
+      count: (allFavorites[folder.id] || []).length
+    }))
+    
     favoriteFolders.value = folders
   } catch (e) {
     console.error('加载收藏夹失败:', e)
@@ -943,82 +1019,94 @@ const checkIfFavorite = () => {
   }
 };
 
-// 添加到收藏夹
+// 添加到收藏夹 - 优化性能
 const addToFavorite = (folderId) => {
   if (!songData.value?.id) return
   
-  try {
-    // 确保收藏夹存在
-    let folders = uni.getStorageSync('favoriteFolders') || [];
-    if (folders.length === 0) {
-      // 创建默认收藏夹
-      const defaultFolder = {
-        id: 'default-' + Date.now().toString(),
-        name: '默认收藏夹',
-        count: 0
-      };
+  // 显示加载提示
+
+  
+  // 使用setTimeout将耗时操作放入下一个事件循环
+  setTimeout(() => {
+    try {
+      // 确保收藏夹存在
+      let folders = uni.getStorageSync('favoriteFolders') || []
       
-      folders.push(defaultFolder);
-      uni.setStorageSync('favoriteFolders', folders);
-      folderId = defaultFolder.id; // 使用新创建的默认收藏夹
-    }
-    
-    const allFavorites = uni.getStorageSync('favorites') || {};
-    
-    // 如果收藏夹不存在，创建一个新的
-    if (!allFavorites[folderId]) {
-      allFavorites[folderId] = [];
-    }
-    
-    // 构建收藏项，包含歌曲ID和难度索引
-    const favoriteItem = {
-      id: songData.value.id,
-      difficulty: currentDiffIndex.value
-    };
-    
-    // 检查是否已经收藏了当前难度
-    const existingIndex = allFavorites[folderId].findIndex(item => 
-      item.id === songData.value.id && item.difficulty === currentDiffIndex.value
-    );
-    
-    if (existingIndex !== -1) {
-      // 已存在当前难度，移除它（取消收藏）
-      allFavorites[folderId].splice(existingIndex, 1);
+      if (folders.length === 0) {
+        // 创建默认收藏夹
+        const defaultFolder = {
+          id: 'default-' + Date.now().toString(),
+          name: '默认收藏夹',
+          count: 0
+        }
+        
+        folders.push(defaultFolder)
+        uni.setStorageSync('favoriteFolders', folders)
+        folderId = defaultFolder.id // 使用新创建的默认收藏夹
+      }
+      
+      const allFavorites = uni.getStorageSync('favorites') || {}
+      
+      // 如果收藏夹不存在，创建一个新的
+      if (!allFavorites[folderId]) {
+        allFavorites[folderId] = []
+      }
+      
+      // 构建收藏项，包含歌曲ID和难度索引
+      const favoriteItem = {
+        id: songData.value.id,
+        difficulty: currentDiffIndex.value
+      }
+      
+      // 检查是否已经收藏了当前难度
+      const existingIndex = allFavorites[folderId].findIndex(item => 
+        item.id === songData.value.id && item.difficulty === currentDiffIndex.value
+      )
+      
+      if (existingIndex !== -1) {
+        // 已存在当前难度，移除它（取消收藏）
+        allFavorites[folderId].splice(existingIndex, 1)
+        uni.hideLoading()
+        uni.showToast({
+          title: '已取消收藏',
+          icon: 'none',
+		  position:'bottom'
+        })
+      } else {
+        // 添加到收藏夹
+        allFavorites[folderId].push(favoriteItem)
+        uni.hideLoading()
+        uni.showToast({
+          title: '收藏成功',
+          icon: 'none',
+		  position:'bottom'
+        })
+      }
+      
+      // 保存更新后的收藏
+      uni.setStorageSync('favorites', allFavorites)
+      
+      // 立即更新收藏状态
+      checkIfFavorite()
+      
+      // 更新收藏夹中的歌曲数量
+      updateFolderCount()
+      
+      // 刷新收藏夹列表以更新选中状态
+      nextTick(() => {
+        loadFavoriteFolders()
+      })
+      
+    } catch (e) {
+      console.error('添加收藏失败:', e)
+      uni.hideLoading()
       uni.showToast({
-        title: '已取消收藏',
+        title: '收藏失败',
         icon: 'none'
-      });
-    } else {
-      // 添加到收藏夹
-      allFavorites[folderId].push(favoriteItem);
-      uni.showToast({
-        title: '收藏成功',
-        icon: 'none'
-      });
+      })
     }
-    
-    // 保存更新后的收藏
-    uni.setStorageSync('favorites', allFavorites);
-    
-    // 立即更新收藏状态
-    checkIfFavorite();
-    
-    // 更新收藏夹中的歌曲数量
-    updateFolderCount();
-    
-    // 刷新收藏夹列表以更新选中状态
-    nextTick(() => {
-      loadFavoriteFolders();
-    });
-    
-  } catch (e) {
-    console.error('添加收藏失败:', e);
-    uni.showToast({
-      title: '收藏失败',
-      icon: 'none'
-    });
-  }
-};
+  }, 50)
+}
 
 // 显示新建收藏夹输入框
 const showNewFolderInput = () => {
@@ -1425,51 +1513,50 @@ const genreMapping = {
 
 .alias-popup {
   width: 600rpx;
-  background: #ffffff;
-  border-radius: 12rpx;
+  max-width: 90vw;
+  background-color: #fff;
+  border-radius: 20rpx;
   overflow: hidden;
-
+  will-change: transform; /* 提示浏览器这个元素会有变换 */
+  transform: translateZ(0); /* 启用GPU加速 */
+  
   .popup-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20rpx 30rpx;
-    border-bottom: 2rpx solid #e2e8f0;
+    padding: 26rpx 30rpx;
+    border-bottom: 2rpx solid #f0f0f0;
+    background-color: #f9f9f9;
     
     .title {
-      font-size: 32rpx;
+      font-size: 34rpx;
       font-weight: bold;
-      color: #1e293b;
+      color: #333;
     }
     
     .close-btn {
       font-size: 40rpx;
-      color: #64748b;
+      color: #999;
       padding: 10rpx;
-      cursor: pointer;
     }
   }
 
   .alias-list {
-    padding: 20rpx 30rpx;
-    max-height: 600rpx;
+    max-height: 60vh;
     overflow-y: auto;
+    padding: 20rpx 30rpx;
     
     .alias-item {
-      padding: 15rpx 0;
-      border-bottom: 2rpx solid #f1f5f9;
-      color: #334155;
+      padding: 16rpx 0;
+      border-bottom: 1rpx solid #f0f0f0;
       font-size: 28rpx;
-      
-      &:last-child {
-        border-bottom: none;
-      }
+      color: #333;
     }
     
     .no-alias {
-      text-align: center;
-      color: #94a3b8;
       padding: 40rpx 0;
+      text-align: center;
+      color: #999;
       font-size: 28rpx;
     }
   }
@@ -2485,73 +2572,92 @@ const genreMapping = {
 
 .favorite-popup {
   width: 600rpx;
-  background: white;
+  max-width: 90vw;
+  background-color: #fff;
   border-radius: 20rpx;
   overflow: hidden;
+  will-change: transform; /* 提示浏览器这个元素会有变换 */
+  transform: translateZ(0); /* 启用GPU加速 */
   
   .popup-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 24rpx;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 26rpx 30rpx;
+    border-bottom: 2rpx solid #f0f0f0;
+    background-color: #f9f9f9;
     
     .title {
-      font-size: 32rpx;
-      font-weight: 600;
+      font-size: 34rpx;
+      font-weight: bold;
       color: #333;
     }
     
     .close-btn {
       font-size: 40rpx;
       color: #999;
-      padding: 0 10rpx;
+      padding: 10rpx;
     }
   }
   
   .folder-list {
-    max-height: 600rpx;
+    max-height: 60vh;
     overflow-y: auto;
-    padding: 30rpx;
+    padding: 20rpx 30rpx;
     
     .folder-item {
+      padding: 20rpx 24rpx;
+      border-bottom: 1rpx solid #f0f0f0;
+      font-size: 28rpx;
+      color: #333;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 24rpx 30rpx;
-      border-bottom: 1px solid #f0f0f0;
-      gap: 10rpx;
-     
+      border-radius: 8rpx;
+      margin-bottom: 16rpx;
+      
       &.folder-selected {
-        background-color: #7c3aed10; /* 淡紫色背景 */
-        border-left: 8rpx solid #7c3aed; /* 紫色左边框 */
+        background-color: rgba(124, 77, 255, 0.1);
       }
       
       .folder-info {
         display: flex;
         align-items: center;
-        gap: 10rpx;
-      }
-      
-      .folder-name {
-        font-size: 28rpx;
-        color: #333;
-      }
-      
-      .folder-count {
-        font-size: 24rpx;
-        color: #666;
+        gap: 8rpx;
+        
+        .folder-name {
+          font-weight: 500;
+        }
+        
+        .folder-count {
+          color: #999;
+          font-size: 24rpx;
+        }
       }
       
       .folder-check {
-        color: #7c3aed; /* 紫色对勾 */
+        width: 40rpx;
+        height: 40rpx;
+        border-radius: 50%;
+        background-color: #7c4dff;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24rpx;
         font-weight: bold;
-        font-size: 32rpx;
       }
+    }
+    
+    .new-folder {
+      color: #7c4dff;
+      border: 1rpx dashed #7c4dff;
+      background-color: rgba(124, 77, 255, 0.05);
+      justify-content: center;
+      margin-top: 30rpx;
       
-      &.new-folder {
-        color: #3b82f6;
-        background-color: #f0f7ff;
+      &:active {
+        background-color: rgba(124, 77, 255, 0.1);
       }
     }
     
@@ -2568,13 +2674,13 @@ const genreMapping = {
   
   .new-folder-input {
     display: flex;
-    padding: 20rpx;
-    border-top: 1px solid #f0f0f0;
+    padding: 20rpx 30rpx;
+    border-top: 1rpx solid #f0f0f0;
     
     input {
       flex: 1;
-      height: 80rpx;
-      border: 1px solid #d1d5db;
+      height: 70rpx;
+      border: 1rpx solid #ddd;
       border-radius: 8rpx;
       padding: 0 20rpx;
       font-size: 28rpx;
@@ -2582,11 +2688,11 @@ const genreMapping = {
     
     .create-btn {
       margin-left: 20rpx;
-      height: 80rpx;
-      line-height: 80rpx;
+      height: 70rpx;
+      line-height: 70rpx;
       padding: 0 30rpx;
-      background: #3b82f6;
-      color: white;
+      background-color: #6366f1;
+      color: #fff;
       border-radius: 8rpx;
       font-size: 28rpx;
     }

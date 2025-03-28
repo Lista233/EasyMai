@@ -933,9 +933,31 @@ const formatDsFilterText = computed(() => {
 	}
 })
 
-// 计算筛选后的记录
+// 修改 filteredRecords 计算属性，添加缓存机制
+const cachedRecords = ref([])
+const lastFilterParams = ref(null)
+
 const filteredRecords = computed(() => {
 	if (!songService.value) return []
+	
+	// 创建当前筛选参数的快照
+	const currentParams = {
+		version: selectedVersion.value,
+		difficulty: selectedDifficulty.value,
+		dsMin: dsFilter.value.min ? parseFloat(dsFilter.value.min) : 1,
+		dsMax: dsFilter.value.max ? parseFloat(dsFilter.value.max) : 15,
+		achievementMin: achievementFilter.value.min ? parseFloat(achievementFilter.value.min) : undefined,
+		achievementMax: achievementFilter.value.max ? parseFloat(achievementFilter.value.max) : undefined,
+		sortBy: sortBy.value,
+		fcType: selectedFcType.value,
+		fsType: selectedFsType.value
+	}
+	
+	// 检查参数是否与上次相同，如果相同则返回缓存结果
+	if (lastFilterParams.value && 
+		JSON.stringify(lastFilterParams.value) === JSON.stringify(currentParams)) {
+		return cachedRecords.value
+	}
 	
 	// 创建一个本地过滤函数来处理'none'类型
 	let records = playerRecordService.filterRecordsByMultipleConditions(songService.value, {
@@ -971,6 +993,10 @@ const filteredRecords = computed(() => {
 			records = records.filter(record => record.fs === selectedFsType.value);
 		}
 	}
+	
+	// 更新缓存和参数
+	lastFilterParams.value = currentParams
+	cachedRecords.value = records
 	
 	return records;
 })
@@ -1381,13 +1407,15 @@ const updateGridSize = (size) => {
 
 .filter-buttons {
 	display: flex;
-	gap: 8rpx;
+	flex-wrap: wrap; // 添加换行支持
+	gap: 12rpx; // 增加间距
 	margin-bottom: 16rpx;
 	padding: 0 10rpx;
 	
 	.filter-btn {
 		flex: 1;
-		height: 100rpx;
+		min-width: 160rpx; // 设置最小宽度
+		height: 90rpx; // 稍微减小高度
 		border-radius: 16rpx;
 		border: none;
 		font-size: 28rpx;
@@ -1418,17 +1446,17 @@ const updateGridSize = (size) => {
 		}
 		
 		.btn-content {
-			height: 120rpx; // 固定高度
+			height: 100rpx; // 调整高度
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			gap: 10rpx; // 均匀分布空间
+			gap: 8rpx; // 减小间距
 			
 			.btn-title {
 				margin: 0;
 				padding: 0;
-				font-size: 22rpx;
+				font-size: 24rpx; // 稍微增大字体
 				color: #ffffff;
 				text-align: center;
 				line-height: 1; // 设置行高为1
@@ -1441,9 +1469,16 @@ const updateGridSize = (size) => {
 				color: rgba(255, 255, 255, 0.9);
 				text-align: center;
 				line-height: 1; // 设置行高为1
+				@include text-ellipsis; // 添加文本省略
+				max-width: 140rpx; // 限制最大宽度
 			}
 		}
 	}
+}
+
+// 移除第二行类，因为现在使用flex-wrap
+.second-row {
+	margin-top: 0; // 移除顶部边距
 }
 
 .view-controls {
