@@ -216,7 +216,7 @@ import { avatarList as importedAvatarList } from '../../utils/avatarList.js';
 import {addAPICount,getVersion} from '@/api/myapi.js';
 // 确保导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
-import { remoteRoute, version } from '../../apiconfig.js';
+import { remoteRoute, version } from '@/static/apiconfig.js'
 
 let b35=ref('')
 let b15=ref('')
@@ -539,7 +539,8 @@ function handleQrCode() {
 		success:(res)=>{if(res.confirm)
 		{
 		showQrModal.value = true;
-		qrCodeInput.value = '';	}
+		// qrCodeInput.value = '';
+			}
 		}
 	})
  
@@ -547,7 +548,17 @@ function handleQrCode() {
 
 // 处理二维码提交
 async function handleQrConfirm(qrContent) {
-  if (!qrContent) return;
+  if (!(qrContent)) return;
+  
+  // 检查二维码格式是否正确
+  if (!qrContent.includes('SGWCMAID')) {
+    uni.showToast({
+      title: '二维码格式错误',
+      icon: 'none',
+      duration: 1000
+    });
+    return;
+  }
   
   try {
 	  console.log('二维码'+qrContent)

@@ -637,7 +637,7 @@ const onSearch = async () => {
     }, {
       exactVersion: true,
       exactGenre: true,
-      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
+      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : 3,
       includeEqual: true
     })
     
@@ -723,7 +723,18 @@ const onSearch = async () => {
         
         // 如果选择了特定难度
         if (difficultyIndex >= 0) {
+          // 修复：检查歌曲是否有选定的难度
+          // 对于Re:Master难度(索引4)，需要特别检查歌曲是否有这个难度
+          if (difficultyIndex === 4 && (!song.ds || song.ds.length <= 4 || song.level[4] === "-")) {
+            return false; // 歌曲没有Re:Master难度，直接排除
+          }
+          
           const ds = song.ds[difficultyIndex]
+          // 如果ds不存在，说明没有这个难度
+          if (ds === undefined) {
+            return false;
+          }
+          
           if (dsFilter.value.min && ds < Number(dsFilter.value.min)) {
             return false
           }
@@ -761,7 +772,7 @@ const onSearch = async () => {
     }, {
       exactVersion: true,
       exactGenre: true,
-      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
+      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : 3,
       includeEqual: true
     })
   }
@@ -1259,7 +1270,7 @@ const handleGridPageInputConfirm = () => {
         overflow: hidden;
         box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.15);
         min-width: 0;
-        height: 116rpx;
+        height: 125rpx;
         display: flex;
         
         &:active {
@@ -1298,7 +1309,7 @@ const handleGridPageInputConfirm = () => {
             border-radius: 10rpx;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 92%;
+            max-width: 100%;
             width: auto;
             text-align: center;
             line-height: 1.2;
@@ -1440,7 +1451,7 @@ const handleGridPageInputConfirm = () => {
         border-radius: 8rpx;
         max-height: 80rpx;
         overflow: hidden;
-        
+        min-height: 20rpx;
         .match-info {
           display: block;
           overflow: hidden;

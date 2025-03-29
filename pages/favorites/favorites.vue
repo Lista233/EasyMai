@@ -34,6 +34,11 @@
     <view class="songs-section" v-if="!loading">
       <view v-if="favoriteFolders.length > 0">
         <view v-if="currentSongs.length > 0">
+          <view class="random-song-btn" @click="selectRandomSong">
+         
+            <text class="random-text">随机选歌</text>
+          </view>
+          
           <view 
             v-for="(song, index) in currentSongs" 
             :key="index" 
@@ -49,8 +54,10 @@
             <view class="song-info">
               <text class="song-title">{{ song.title }}</text>
               <view class="song-details">
-                <text class="song-version">版本:{{ formatVersion(song.basic_info.from) }}</text>
-                <text class="song-artist">类别:{{ song.basic_info.genre || '未知类别' }}</text>
+                <!-- <text class="song-artist">{{ song.basic_info?.artist || '未知艺术家' }}</text> -->
+                <text class="song-version">{{ formatVersion(song.basic_info.from) }}</text>
+                <text class="song-genre">{{ formatGenre(song.basic_info.genre || '未知类别') }}</text>
+                <text class="song-bpm" v-if="song.basic_info?.bpm">BPM {{ song.basic_info.bpm }}</text>
               </view>
             </view>
             <view class="remove-btn" @click.stop="removeSong(song.id,song.selectedDifficulty)">
@@ -123,6 +130,74 @@
         </view>
       </view>
     </uni-popup>
+    
+    <!-- 随机选歌弹窗 -->
+    <uni-popup ref="randomSongPopupRef" type="center">
+      <view class="random-song-popup">
+        <view class="popup-header">
+          <text class="title">随机选歌</text>
+          <text class="close-btn" @click="closeRandomSongPopup">×</text>
+        </view>
+        <view class="popup-content">
+          <view class="cover-wrapper">
+            <view 
+              class="cover-container" 
+              :class="{ clickable: selectedRandomSong && !isRolling }"
+              @click="handleCoverClick"
+            >
+              <image 
+                v-if="isRolling && currentSongs.length > 0" 
+                class="rolling-cover" 
+                :src="getCoverUrl(rollingSongs[currentRollingIndex].id)" 
+                mode="aspectFill"
+              ></image>
+              <image 
+                v-else-if="selectedRandomSong" 
+                class="selected-cover" 
+                :src="getCoverUrl(selectedRandomSong.id)" 
+                mode="aspectFill"
+              ></image>
+              <view v-else class="placeholder-cover">
+                <text>准备开始</text>
+              </view>
+            </view>
+            
+            <!-- 难度标识放在封面下方 -->
+            <view 
+              v-if="selectedRandomSong && !isRolling" 
+              class="difficulty-badge" 
+              :class="getDifficultyClass(selectedRandomSong.selectedDifficulty)"
+            >
+              {{ getDifficultyName(selectedRandomSong.selectedDifficulty) }} {{ selectedRandomSong.ds[selectedRandomSong.selectedDifficulty] }}
+            </view>
+          </view>
+          
+          <view class="song-info" v-if="selectedRandomSong && !isRolling">
+            <text class="song-title">{{ selectedRandomSong.title }}</text>
+            <text class="song-artist">{{ selectedRandomSong.basic_info?.artist || '未知艺术家' }}</text>
+            
+            <!-- 添加BPM和谱师信息 -->
+            <view class="song-details">
+              <text class="bpm-info" v-if="selectedRandomSong.basic_info?.bpm">BPM: {{ selectedRandomSong.basic_info.bpm }}</text>
+              <text class="charter-info" v-if="getCharter(selectedRandomSong)">谱师: {{ getCharter(selectedRandomSong) }}</text>
+            </view>
+          </view>
+          
+          <view class="rolling-tip" v-else-if="isRolling">
+            <text>点击停止选择</text>
+          </view>
+        </view>
+        <view class="popup-footer">
+          <button 
+            class="action-btn" 
+            :class="{ 'stop-btn': isRolling, 'play-btn': !isRolling }" 
+            @click="toggleRolling"
+          >
+            {{ isRolling ? '点击停止' : '再抽一次' }}
+          </button>
+        </view>
+      </view>
+    </uni-popup>
   </view>
 </template>
 
@@ -141,6 +216,38 @@ const newFolderName = ref('');
 const currentFolderId = ref('');
 const currentSongs = ref([]);
 
+// 随机选歌相关变量
+const randomSongPopupRef = ref(null);
+const isRolling = ref(false);
+const rollingSongs = ref([]);
+const currentRollingIndex = ref(0);
+const selectedRandomSong = ref(null);
+const rollingInterval = ref(null);
+const rollingSpeed = ref(100); // 初始滚动速度(毫秒)
+const maxRollingTime = 5000; // 最大滚动时间(毫秒)
+const rollingStartTime = ref(0);
+const usedRandomIndices = ref({}); // 改为对象，按收藏夹ID存储已使用的索引
+
+// 格式化曲风
+const formatGenre = (genre) => {
+  const genreMap = {
+    'niconico & VOCALOID': 'nico&vocal',
+    '音击&中二节奏': '音击&中二',
+    '流行&动漫': '流行&动漫',
+    '东方Project': '东方',
+    '其他游戏': '其他游戏',
+    '舞萌': '舞萌',
+    'niconicoボーカロイド': 'nico&vocal',
+    'POPSアニメ': '流行&动漫',
+    'ゲームバラエティ': '其他游戏',
+    'maimai': '舞萌',
+    'オンゲキCHUNITHM': '音击&中二',
+    '東方Project': '东方',
+  };
+  
+  return genreMap[genre] || genre;
+};
+
 // 添加版本映射关系
 const versionMap = {
   'maimai': 'maimai',
@@ -156,11 +263,11 @@ const versionMap = {
   'maimai MiLK': 'Milk',
   'MiLK PLUS': 'Milk+',
   'maimai FiNALE': 'Finale',
-  'maimai でらっくす': '舞萌DX2020',
-  'maimai でらっくす Splash': '舞萌DX2021',
-  'maimai でらっくす UNiVERSE': '舞萌DX2022',
-  'maimai でらっくす FESTiVAL': '舞萌DX2023',
-  'maimai でらっくす BUDDiES': '舞萌DX2024'
+  'maimai でらっくす': 'DX2020',
+  'maimai でらっくす Splash': 'DX2021',
+  'maimai でらっくす UNiVERSE': 'DX2022',
+  'maimai でらっくす FESTiVAL': 'DX2023',
+  'maimai でらっくす BUDDiES': 'DX2024'
 };
 
 // 格式化版本显示
@@ -253,6 +360,11 @@ const selectFolder = (folderId) => {
   
   currentFolderId.value = folderId;
   loadFavoriteSongs();
+  
+  // 切换收藏夹时重置随机选歌状态
+  if (!usedRandomIndices.value[folderId]) {
+    usedRandomIndices.value[folderId] = [];
+  }
 };
 
 // 加载收藏的歌曲
@@ -593,6 +705,151 @@ const showEditFolderDialog = (folder) => {
 const getSongCover = (songId) => {
   return getCoverUrl(songId);
 };
+
+// 显示随机选歌弹窗
+const selectRandomSong = () => {
+  if (currentSongs.value.length === 0) {
+    uni.showToast({
+      title: '收藏夹中没有歌曲',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  // 确保当前收藏夹的索引数组存在
+  if (!usedRandomIndices.value[currentFolderId.value]) {
+    usedRandomIndices.value[currentFolderId.value] = [];
+  }
+  
+  // 重置状态
+  isRolling.value = false;
+  selectedRandomSong.value = null;
+  
+  // 准备滚动歌曲列表
+  prepareRollingSongs();
+  
+  // 打开弹窗
+  if (randomSongPopupRef.value) {
+    randomSongPopupRef.value.open();
+  }
+};
+
+// 准备滚动歌曲列表
+const prepareRollingSongs = () => {
+  // 复制当前歌曲列表
+  rollingSongs.value = [...currentSongs.value];
+  
+  // 如果已经使用了所有索引，则重置
+  if (usedRandomIndices.value[currentFolderId.value].length >= currentSongs.value.length) {
+    usedRandomIndices.value[currentFolderId.value] = [];
+  }
+  
+  // 打乱歌曲顺序
+  for (let i = rollingSongs.value.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rollingSongs.value[i], rollingSongs.value[j]] = [rollingSongs.value[j], rollingSongs.value[i]];
+  }
+};
+
+// 切换滚动状态
+const toggleRolling = () => {
+  if (isRolling.value) {
+    stopRolling();
+  } else {
+    startRolling();
+  }
+};
+
+// 开始滚动
+const startRolling = () => {
+  if (rollingSongs.value.length === 0) return;
+  
+  isRolling.value = true;
+  currentRollingIndex.value = 0;
+  rollingStartTime.value = Date.now();
+  
+  // 设置滚动间隔
+  rollingInterval.value = setInterval(() => {
+    currentRollingIndex.value = (currentRollingIndex.value + 1) % rollingSongs.value.length;
+    
+    // 计算已经滚动的时间
+    const elapsedTime = Date.now() - rollingStartTime.value;
+    
+    // 根据已经滚动的时间调整速度
+    if (elapsedTime > maxRollingTime * 0.7) {
+      // 减慢速度
+      clearInterval(rollingInterval.value);
+      rollingInterval.value = setInterval(() => {
+        currentRollingIndex.value = (currentRollingIndex.value + 1) % rollingSongs.value.length;
+      }, rollingSpeed.value * 3);
+    }
+    
+    // 如果超过最大滚动时间，自动停止
+    if (elapsedTime > maxRollingTime) {
+      stopRolling();
+    }
+  }, rollingSpeed.value);
+};
+
+// 停止滚动
+const stopRolling = () => {
+  if (!isRolling.value) return;
+  
+  clearInterval(rollingInterval.value);
+  isRolling.value = false;
+  
+  // 选择一个未使用过的随机索引
+  let availableIndices = [];
+  for (let i = 0; i < currentSongs.value.length; i++) {
+    if (!usedRandomIndices.value[currentFolderId.value].includes(i)) {
+      availableIndices.push(i);
+    }
+  }
+  
+  // 如果没有可用索引，则重置并使用所有索引
+  if (availableIndices.length === 0) {
+    usedRandomIndices.value[currentFolderId.value] = [];
+    availableIndices = Array.from({ length: currentSongs.value.length }, (_, i) => i);
+  }
+  
+  // 随机选择一个可用索引
+  const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+  usedRandomIndices.value[currentFolderId.value].push(randomIndex);
+  
+  // 设置选中的歌曲
+  selectedRandomSong.value = currentSongs.value[randomIndex];
+};
+
+// 关闭随机选歌弹窗
+const closeRandomSongPopup = () => {
+  if (isRolling.value) {
+    clearInterval(rollingInterval.value);
+    isRolling.value = false;
+  }
+  
+  if (randomSongPopupRef.value) {
+    randomSongPopupRef.value.close();
+  }
+};
+
+// 处理封面点击事件
+const handleCoverClick = () => {
+  if (selectedRandomSong.value && !isRolling.value) {
+    closeRandomSongPopup();
+    navigateToDetail(selectedRandomSong.value.id, selectedRandomSong.value.selectedDifficulty);
+  } else if (isRolling.value) {
+    stopRolling();
+  }
+};
+
+// 获取谱师信息
+const getCharter = (song) => {
+  if (!song || !song.charts || !song.selectedDifficulty) return '';
+  
+  // 获取选中难度的谱师
+  const chart = song.charts[song.selectedDifficulty];
+  return chart?.charter || '';
+};
 </script>
 
 <style lang="scss">
@@ -649,29 +906,35 @@ const getSongCover = (songId) => {
    }
 }
 
-
 .folder-tabs {
   margin-bottom: 30rpx;
+  max-height: 100rpx;
   
   .folder-scroll {
-    white-space: nowrap;
     width: 100%;
+    height: 100%;
   }
   
   .folder-tabs-inner {
-    display: inline-flex;
-    padding: 0 10rpx;
+    display: flex;
+    flex-direction: row;
+    padding: 10rpx;
+    white-space: nowrap;
+    height: 80rpx;
+    min-width: 100%;
   }
   
   .folder-tab {
     display: inline-flex;
     align-items: center;
-    padding: 16rpx 30rpx;
+    height: 80rpx;
+    padding: 0 30rpx;
     margin-right: 20rpx;
     background-color: #ffffff;
     border-radius: 30rpx;
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
+    flex-shrink: 0;
     
     &.active {
       background-color: #6366f1;
@@ -757,7 +1020,7 @@ const getSongCover = (songId) => {
       }
       
       &.remaster {
-        background-color: rgb(236, 199, 254);
+        background-color: rgb(225, 181, 247);
       }
     }
   }
@@ -770,8 +1033,8 @@ const getSongCover = (songId) => {
     overflow: hidden;
     
     .song-title {
-      font-size: 28rpx;
-      font-weight: 600;
+      font-size: 30rpx;
+      font-weight: 500;
       color: #334155;
       white-space: nowrap;
       overflow: hidden;
@@ -786,7 +1049,7 @@ const getSongCover = (songId) => {
         top: 50%;
         transform: translateY(-50%);
         width: 8rpx;
-        height: 24rpx;
+        height: 30rpx;
         background-color: #6366f1;
         border-radius: 4rpx;
       }
@@ -796,8 +1059,13 @@ const getSongCover = (songId) => {
       display: flex;
       flex-wrap: wrap;
       gap: 10rpx;
-      
-      .song-artist, .song-version {
+      justify-content: center;
+      align-items: center;
+      .song-artist, .song-version, .song-genre, .song-bpm {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         font-size: 24rpx;
         color: #64748b;
         padding: 4rpx 12rpx;
@@ -813,6 +1081,16 @@ const getSongCover = (songId) => {
       .song-artist {
         background-color: #fdfbf0;
         color: #f1a25d;
+      }
+      
+      .song-genre {
+        background-color: #f0fdf4;
+        color: #16a34a;
+      }
+      
+      .song-bpm {
+        background-color: #f4f0fd;
+        color: #6e5df1;
       }
     }
   }
@@ -1000,6 +1278,254 @@ const getSongCover = (songId) => {
           color: #ef4444;
           background-color: #fef2f2;
         }
+      }
+    }
+  }
+}
+
+/* 随机歌曲按钮样式 */
+.random-song-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #6366f1;
+  padding: 16rpx;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.random-icon {
+  font-size: 36rpx;
+  margin-right: 10rpx;
+}
+
+.random-text {
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+/* 随机选歌弹窗样式 - 优化版 */
+.random-song-popup {
+  width: 600rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx 30rpx;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #f9f9f9;
+    
+    .title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .close-btn {
+      font-size: 40rpx;
+      color: #999;
+      padding: 0 10rpx;
+    }
+  }
+  
+  .popup-content {
+    padding: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .cover-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20rpx;
+      
+      .cover-container {
+        width: 300rpx;
+        height: 300rpx;
+        border-radius: 12rpx;
+        overflow: hidden;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+        border: 4rpx solid #f0f0f0;
+        margin-bottom: 10rpx; /* 减少封面与难度标识的间距 */
+        
+        &.clickable {
+          cursor: pointer;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.2s;
+          }
+          
+          &:hover::after {
+            opacity: 1;
+          }
+        }
+        
+        .rolling-cover, .selected-cover {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .placeholder-cover {
+          width: 100%;
+          height: 100%;
+          background-color: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #999;
+        }
+      }
+      
+      .difficulty-badge {
+        width: 260rpx; /* 固定宽度，接近封面宽度 */
+        padding: 10rpx 0; /* 增加高度 */
+        border-radius: 10rpx; /* 减小圆角 */
+        font-size: 28rpx; /* 增大字体 */
+        font-weight: bold;
+        text-align: center;
+        color: white;
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+        
+        &.basic {
+          background-color: rgb(83, 206, 134);
+        }
+        
+        &.advanced {
+          background-color: rgb(227, 206, 42);
+          color: #333;
+        }
+        
+        &.expert {
+          background-color: rgba(225, 71, 87, 1);
+        }
+        
+        &.master {
+          background-color: rgba(156, 136, 255, 1);
+        }
+        
+        &.remaster {
+          background-color: rgb(236, 199, 254);
+        
+        }
+      }
+    }
+    
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background-color: #f9f9f9;
+      padding: 16rpx;
+      border-radius: 12rpx;
+      
+      .song-title {
+        font-size: 36rpx; /* 增大标题字体 */
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8rpx;
+        text-align: center;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-bottom: 12rpx; /* 为分隔线留出空间 */
+        position: relative; /* 为伪元素定位 */
+        
+        &::after { /* 添加标题下方分隔线 */
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80%;
+          height: 1px;
+          background-color: #e0e0e0;
+        }
+      }
+      
+      .song-artist {
+        font-size: 24rpx;
+        color: #666;
+        margin-top: 8rpx; /* 添加与分隔线的间距 */
+        margin-bottom: 12rpx;
+        text-align: center;
+        width: 100%;
+      }
+      
+      /* 添加BPM和谱师信息样式 */
+      .song-details {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10rpx;
+        margin-top: 4rpx;
+        width: 100%;
+        
+        .bpm-info, .charter-info {
+          font-size: 22rpx;
+          color: #666;
+          background-color: #ffffff;
+          padding: 4rpx 12rpx;
+          border-radius: 6rpx;
+          border: 1px solid #eaeaea;
+        }
+      }
+    }
+    
+    .rolling-tip {
+      margin-top: 20rpx;
+      font-size: 28rpx;
+      color: #666;
+      background-color: #f5f5f5;
+      padding: 8rpx 16rpx;
+      border-radius: 8rpx;
+    }
+  }
+  
+  .popup-footer {
+    display: flex;
+    justify-content: center;
+    padding: 24rpx 30rpx;
+    border-top: 1px solid #f0f0f0;
+    gap: 20rpx;
+    background-color: #f9f9f9;
+    
+    .action-btn {
+      flex: 1;
+      height: 80rpx;
+      line-height: 80rpx;
+      text-align: center;
+      border-radius: 40rpx;
+      font-size: 28rpx;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+      
+      &.stop-btn {
+        background-color: #ff6b6b;
+        color: white;
+      }
+      
+      &.play-btn {
+        background-color: #6366f1;
+        color: white;
       }
     }
   }

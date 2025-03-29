@@ -266,7 +266,7 @@
           type="text" 
           v-model="newFolderName" 
           placeholder="输入收藏夹名称" 
-		   @confirm="createNewFolder"
+		  @confirm="createNewFolder"
           focus
           @blur="hideNewFolderInput"
         />

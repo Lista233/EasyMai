@@ -81,8 +81,18 @@ class SongService {
 
     return this.songList.filter(song => {
       // 如果指定了难度，只检查该难度的ds
-      if (difficulty !== null && difficulty >= 0 && difficulty < song.ds.length) {
-        const targetDs = song.ds[difficulty]
+      if (difficulty !== null && difficulty >= 0) {
+        // 特别处理Re:Master难度(索引4)
+        if (difficulty === 4 && (!song.ds || song.ds.length <= 4 || song.level[4] === "-")) {
+          return false; // 歌曲没有Re:Master难度，直接排除
+        }
+        
+        // 确保难度索引在有效范围内
+        if (difficulty >= song.ds.length) {
+          return false;
+        }
+        
+        const targetDs = song.ds[difficulty];
         return includeEqual 
           ? targetDs >= min && targetDs <= max
           : targetDs > min && targetDs < max
@@ -710,7 +720,18 @@ class SongService {
       
       // 6. 检查谱师和定数范围（需要按难度检查）
       // 如果指定了难度，只检查该难度
-      if (difficulty !== null && difficulty >= 0 && difficulty < song.charts?.length) {
+      if (difficulty !== null && difficulty >= 0) {
+        // 检查歌曲是否有指定的难度
+        // 特别处理Re:Master难度(索引4)
+        if (difficulty === 4 && (!song.ds || song.ds.length <= 4 || song.level[4] === "-")) {
+          return false; // 歌曲没有Re:Master难度，直接排除
+        }
+        
+        // 确保难度索引在有效范围内
+        if (difficulty >= song.charts?.length) {
+          return false;
+        }
+        
         let difficultyMatched = true;
         
         // 检查谱师
@@ -727,6 +748,11 @@ class SongService {
         
         // 检查定数范围
         if (dsRange && (dsRange.min !== undefined || dsRange.max !== undefined) && difficultyMatched) {
+          // 确保该难度的定数存在
+          if (!song.ds || !song.ds[difficulty]) {
+            return false;
+          }
+          
           const targetDs = song.ds[difficulty];
           const min = dsRange.min !== undefined ? dsRange.min : 0;
           const max = dsRange.max !== undefined ? dsRange.max : Infinity;

@@ -1,4 +1,4 @@
-import {remoteRoute,aliasRoute} from '@/apiconfig.js'
+import {remoteRoute,aliasRoute} from '@/static/apiconfig.js'
 import {request} from './customRequest.js'
 
 

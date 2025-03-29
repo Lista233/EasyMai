@@ -3,7 +3,7 @@
  * @param {Object} options - 请求选项
  * @returns {Promise} - 请求结果
  */
-import {remoteRoute,aliasRoute} from '@/apiconfig.js'
+import {remoteRoute,aliasRoute} from '@/static/apiconfig.js'
 import {request} from '../api/customRequest.js'
 import {addAPICount} from '../api/myapi.js'
 export async function maiGetUid(qrcode) {
