@@ -707,7 +707,7 @@ const tempFsType = ref(null)
 
 // FC类型映射
 const fcTypes = {
-	'none': '无FC',
+	'none': '未FC',
 	'fc': 'FC',
 	'fcp': 'FC+',
 	'ap': 'AP',
@@ -716,7 +716,7 @@ const fcTypes = {
 
 // FS类型映射
 const fsTypes = {
-	'none': '无FS',
+	'none': '未FS',
 	'fs': 'FS',
 	'fsp': 'FS+',
 	'fsd': 'FSD',
@@ -824,7 +824,8 @@ const selectFcType = (type) => {
 
 // 选择FS类型
 const selectFsType = (type) => {
-	tempFsType.value = type
+	tempFcType.value = null;
+	tempFsType.value = type;
 }
 
 // 应用FC/FS筛选

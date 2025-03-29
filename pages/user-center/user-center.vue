@@ -15,6 +15,7 @@
           :b35rating="b35rating" 
           :b15rating="b15rating"
           :isLoggedIn="isLoggedIn"
+		  @click="updateRecord"
         />
       </view>
     </view>
@@ -249,6 +250,30 @@ const ratingClass = computed(() => {
   if (rating >= 12000) return 'copper';
   return 'default';
 });
+
+async function updateRecord(){
+	if(!isLoggedIn.value)
+	{
+		uni.navigateTo({
+			url:'/pages/login/login'
+		})
+		return;
+	}
+	else{
+	uni.showLoading({
+	  title: '获取成绩中...'
+	});
+	records.value = await maiApi.divingFishGetRecords(jwt_token.value);
+	console.log(records.value);
+	uni.setStorageSync('divingFish_records', records.value);
+	await getb50();
+	uni.hideLoading();
+	uni.showToast({
+		title:'成绩获取成功',
+		icon:'none'
+	})
+	}
+}
 
 // 从本地获取b50数据并计算rating
 function calculateRatingFromLocalB50() {
