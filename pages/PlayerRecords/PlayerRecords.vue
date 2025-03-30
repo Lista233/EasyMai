@@ -440,7 +440,7 @@
 						<view class="form-item ds-range">
 							<input 
 								type="digit" 
-								v-model="achievementFilter.min" 
+								v-model="tempAchievementFilter.min" 
 								placeholder="最小值"
 								@focus="onInputFocus"
 								@blur="onInputBlur"
@@ -449,7 +449,7 @@
 							<text class="range-separator">至</text>
 							<input 
 								type="digit" 
-								v-model="achievementFilter.max" 
+								v-model="tempAchievementFilter.max" 
 								placeholder="最大值"
 								@focus="onInputFocus"
 								@blur="onInputBlur"
@@ -696,6 +696,10 @@ const achievementFilter = ref({
 	max: ''
 })
 const selectedAchievementRange = ref(null)
+const tempAchievementFilter = ref({
+	min: '',
+	max: ''
+})
 
 // 添加FC/FS筛选相关
 const fcFsPopup = ref(null)
@@ -738,27 +742,32 @@ const achievementRanges = [
 
 // 检查是否选中了快速选择达成率范围
 const isQuickAchievementRangeSelected = (range) => {
-	if (!achievementFilter.value.min && !achievementFilter.value.max && range.label === '全部') {
+	if (!tempAchievementFilter.value.min && !tempAchievementFilter.value.max && range.label === '全部') {
 		return true
 	}
 	
-	return parseFloat(achievementFilter.value.min) === range.min && 
-		   parseFloat(achievementFilter.value.max) === range.max
+	return parseFloat(tempAchievementFilter.value.min) === range.min && 
+		   parseFloat(tempAchievementFilter.value.max) === range.max
 }
 
 // 快速选择达成率范围
 const selectQuickAchievementRange = (range) => {
 	if (range.label === '全部') {
-		achievementFilter.value.min = ''
-		achievementFilter.value.max = ''
+		tempAchievementFilter.value.min = ''
+		tempAchievementFilter.value.max = ''
 	} else {
-		achievementFilter.value.min = range.min.toString()
-		achievementFilter.value.max = range.max.toString()
+		tempAchievementFilter.value.min = range.min.toString()
+		tempAchievementFilter.value.max = range.max.toString()
 	}
 }
 
 // 显示达成率筛选弹窗
 const showAchievementFilter = () => {
+	// 复制当前筛选值到临时变量
+	tempAchievementFilter.value = {
+		min: achievementFilter.value.min,
+		max: achievementFilter.value.max
+	}
 	achievementPopup.value.open()
 }
 
@@ -769,6 +778,12 @@ const closeAchievementFilter = () => {
 
 // 应用达成率筛选
 const applyAchievementFilter = () => {
+	// 从临时变量复制到实际筛选值
+	achievementFilter.value = {
+		min: tempAchievementFilter.value.min,
+		max: tempAchievementFilter.value.max
+	}
+	
 	// 解析输入值
 	let min = achievementFilter.value.min === '' ? 0 : parseFloat(achievementFilter.value.min)
 	let max = achievementFilter.value.max === '' ? 101 : parseFloat(achievementFilter.value.max)
