@@ -626,6 +626,10 @@ const onSearch = async () => {
   
   // 如果是BPM搜索，使用优化的搜索方法
   if (bpmRange) {
+    // 修改这里，传递正确的difficulty参数
+    // 如果选择了"任意难度"，则传递null或undefined，而不是默认的3
+    const difficulty = selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined;
+    
     const bpmResults = songService.value.searchSongsOptimized({
       bpmRange,
       version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
@@ -637,7 +641,7 @@ const onSearch = async () => {
     }, {
       exactVersion: true,
       exactGenre: true,
-      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : 3,
+      difficulty: difficulty,
       includeEqual: true
     })
     
@@ -762,6 +766,9 @@ const onSearch = async () => {
     })
   } else if (!keyword) {
     // 如果没有关键词，只有筛选条件，则直接使用筛选条件搜索
+    // 修改这里，传递正确的difficulty参数
+    const difficulty = selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined;
+    
     results = songService.value.searchSongsOptimized({
       version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
       genre: selectedGenre.value || undefined,
@@ -772,7 +779,7 @@ const onSearch = async () => {
     }, {
       exactVersion: true,
       exactGenre: true,
-      difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : 3,
+      difficulty: difficulty,
       includeEqual: true
     })
   }

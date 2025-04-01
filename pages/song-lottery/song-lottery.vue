@@ -61,17 +61,22 @@
       <view :class="['cover-grid', `columns-${songCount}`]">
         <view 
           v-for="(song, index) in currentSongs" 
-          :key="index"
+          :key="index" 
           class="cover-item"
           @click="handleCoverClick(song)"
         >
-          <image 
+          <view 
             class="song-cover" 
-            :src="getCoverUrl(song.id)" 
-            mode="aspectFill"
-          ></image>
-          <view class="song-info" v-if="!isRunning && hasStarted">
-            <view class="song-title">{{ song.title || '未知歌曲' }}</view>
+            :class="[`border-${getDifficultyClass(song)}`]"
+          >
+            <image 
+              class="song-cover-image" 
+              :src="getCoverUrl(song?.id)" 
+              mode="aspectFill"
+            ></image>
+          </view>
+          <view class="song-info" v-if="song">
+            <view class="song-title">{{ song.title }}</view>
             <view class="song-id">ID: {{ song.id }}</view>
           </view>
         </view>
@@ -127,14 +132,19 @@
           >
             <view class="history-date">{{ formatDate(historyTimestamps[index]) }}</view>
             <view class="history-songs">
-              <image 
-                v-for="song in item"
-                :key="song.id"  
-                class="history-cover" 
-                :src="getCoverUrl(song.id)" 
-                mode="aspectFill"
+              <view 
+                v-for="song in item" 
+                :key="song.id" 
+                class="history-cover-wrapper"
+                :class="[`border-${getDifficultyClass(song)}`]"
                 @click="handleCoverClick(song)"
-              ></image>
+              >
+                <image 
+                  class="history-cover" 
+                  :src="getCoverUrl(song.id)" 
+                  mode="aspectFill"
+                ></image>
+              </view>
             </view>
           </view>
         </view>
@@ -279,7 +289,7 @@ const updateFilteredSongs = () => {
     }
     
     // 添加类型筛选
-    if (selectedGenre.value && selectedGenre.value !== '全部类型') {
+    if (selectedGenre.value && selectedGenre.value !== '任意类别') {
       searchParams.genre = selectedGenre.value;
     }
     
@@ -301,20 +311,14 @@ const updateFilteredSongs = () => {
         }
       }
     }
-      // let results = songService.value.searchSongs({
-      //   version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
-      //   genre: selectedGenre.value || undefined,
-      //   dsRange: (dsFilter.value.min || dsFilter.value.max) ? {
-      //     min: dsFilter.value.min ? Number(dsFilter.value.min) : undefined,
-      //     max: dsFilter.value.max ? Number(dsFilter.value.max) : undefined
-      //   } : undefined
-      // }, {
-      //   difficulty: selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined,
-      //   exactVersion: true,
-      //   exactGenre: true
-      // })
-    // 使用SongService的searchSongs方法进行综合筛选
-    let searchResults = songService.value.searchSongs(searchParams);
+
+    // 使用SongService的searchSongsOptimized方法进行综合筛选
+    // 这样可以获取匹配的难度信息
+    let searchResults = songService.value.searchSongsOptimized(searchParams, {
+      exactVersion: true,
+      exactGenre: true,
+      includeEqual: true
+    });
     
     // 筛选掉ID大于5位数的歌曲
     searchResults = searchResults.filter(song => {
@@ -323,6 +327,7 @@ const updateFilteredSongs = () => {
     });
     
     // 去重处理，确保同一首歌曲不会因为不同难度而重复出现
+    // 同时保留匹配的难度信息
     const uniqueSongIds = new Set();
     const uniqueSongs = [];
     
@@ -432,9 +437,12 @@ watch(songCount, (newCount) => {
 // 处理封面点击
 const handleCoverClick = (song) => {
   if (!isRunning.value && hasStarted.value && song) {
-    // 跳转到歌曲详情页
+    // 获取匹配的难度索引（如果存在）
+    const difficulty = song.matchedDifficulty !== undefined ? song.matchedDifficulty : 3;
+    
+    // 跳转到歌曲详情页，并带上难度参数
     uni.navigateTo({
-      url: `/pages/song-detail/song-detail?songId=${song.id}`,
+      url: `/pages/song-detail/song-detail?songId=${song.id}&difficulty=${difficulty}`,
       animationType: 'pop-in',
       animationDuration: 200
     });
@@ -464,6 +472,24 @@ const formatDate = (timestamp) => {
 // 选择历史记录中的歌曲
 const selectHistoryItem = (song) => {
   handleCoverClick(song);
+};
+
+// 添加获取难度样式类的方法
+const getDifficultyClass = (song) => {
+  if (!song || song.matchedDifficulty === undefined) return '';
+  
+  const difficultyIndex = song.matchedDifficulty;
+  const classes = ['basic', 'advanced', 'expert', 'master', 'remaster'];
+  return classes[difficultyIndex] || '';
+};
+
+// 添加获取难度名称的方法
+const getDifficultyName = (song) => {
+  if (!song || song.matchedDifficulty === undefined) return '';
+  
+  const difficultyIndex = song.matchedDifficulty;
+  const names = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:Master'];
+  return names[difficultyIndex] || '';
 };
 </script>
 
@@ -762,17 +788,125 @@ const selectHistoryItem = (song) => {
             display: flex;
             flex-wrap: wrap;
             
-            .history-cover {
+            .history-cover-wrapper {
               width: 120rpx;
               height: 120rpx;
-              border-radius: 10rpx;
-              margin-right: 16rpx;
-              margin-bottom: 16rpx;
+              margin-right: 10rpx;
+              margin-bottom: 10rpx;
+            }
+            
+            .history-cover {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
             }
           }
         }
       }
     }
+  }
+}
+
+/* 添加难度边框样式 */
+.song-cover, .history-cover-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-width: 9rpx;
+  border-style: solid;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  
+  &.border-basic {
+    border-color: rgb(83, 206, 134);
+  }
+  
+  &.border-advanced {
+    border-color: rgb(227, 206, 42);
+  }
+  
+  &.border-expert {
+    border-color: rgba(225, 71, 87, 1);
+  }
+  
+  &.border-master {
+    border-color: rgba(156, 136, 255, 1);
+  }
+  
+  &.border-remaster {
+    border-color: rgb(253, 163, 249);
+  }
+}
+
+/* 修改历史记录封面样式 */
+.history-cover-wrapper {
+  width: 120rpx;
+  height: 120rpx;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+  display: inline-block;
+}
+
+.history-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 修改封面图片样式 */
+.cover-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  
+  .song-cover {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  
+  .song-cover-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.history-cover-wrapper {
+  border-width: 7rpx;
+}
+/* 添加难度标签样式 */
+.difficulty-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4rpx 0;
+  font-size: 20rpx;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.6);
+  
+  &.basic {
+    background-color: rgb(83, 206, 134);
+  }
+  
+  &.advanced {
+    background-color: rgb(227, 206, 42);
+    color: #333;
+  }
+  
+  &.expert {
+    background-color: rgba(225, 71, 87, 1);
+  }
+  
+  &.master {
+    background-color: rgba(156, 136, 255, 1);
+  }
+  
+  &.remaster {
+    background-color: rgb(236, 199, 254);
   }
 }
 </style> 

@@ -8,8 +8,8 @@
         </view>
         <view class="user-details">
           <view class="username">{{ nickname || username || '请先登录' }}</view>
-          <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view>
-          <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view>
+          <!-- <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view> -->
+          <!-- <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view> -->
         </view>
         <RatingDisplay 
           :b35rating="b35rating" 
@@ -100,13 +100,13 @@
 		  <view class="function-desc">查看我收藏的乐曲</view>
 		</view>
 		
-    <view class="function-item update-scores" @click="divingFishUpdate">
+<!--    <view class="function-item update-scores" @click="divingFishUpdate">
 		  <view class="function-icon">
 		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/upload.png'); mask-image: url('/static/icons/upload.png');"></view>
 		  </view>
 		  <view class="function-name">更新成绩</view>
 		  <view class="function-desc">更新水鱼查分器成绩</view>
-		</view>
+		</view> -->
         <!-- 账号设置 -->
         <view class="function-item account-settings" @click="handleAccountSettings">
           <view class="function-icon">
@@ -116,13 +116,13 @@
           <view class="function-desc">管理个人账号</view>
         </view>
         
-        <view class="function-item qr-code" @click="handleQrCode">
+   <!--     <view class="function-item qr-code" @click="handleQrCode">
           <view class="function-icon">
             <view class="icon-image" style="-webkit-mask-image: url('/static/icons/qrcode.png'); mask-image: url('/static/icons/qrcode.png');"></view>
           </view>
           <view class="function-name">绑定二维码</view>
           <view class="function-desc">关联舞萌DX账号</view>
-        </view>
+        </view> -->
 
 		
 		
@@ -1524,7 +1524,7 @@ const handleApiRefreshed = (data) => {
           }
           
           .function-icon {
-            color: #6366f1;
+            color: #f765ae;
             background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1637,7 +1637,7 @@ const handleApiRefreshed = (data) => {
          }
          
          .function-icon {
-           color: #8b5cf6;
+           color: #f765ae;;
           background: rgba(255, 255, 255, 0.9);
          }
         }
@@ -1870,7 +1870,7 @@ const handleApiRefreshed = (data) => {
     background: rgba(255, 255, 255, 0.9);
    
     .icon-image {
-      background: linear-gradient(135deg, #fda4cf 0%, #e11d48 100%);
+      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
       opacity: 0.85;
     }
   }
@@ -1889,7 +1889,7 @@ const handleApiRefreshed = (data) => {
     
     .icon-image {
       transform: scale(1.1);
-      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
+        background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
       opacity: 0.9;
     }
   }
@@ -1898,7 +1898,7 @@ const handleApiRefreshed = (data) => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+         background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
       opacity: 0.95;
     }
   }
@@ -1908,7 +1908,7 @@ const handleApiRefreshed = (data) => {
     
     .icon-image {
       transform: scale(1.2);
-      background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
       opacity: 0.95;
     }
   }

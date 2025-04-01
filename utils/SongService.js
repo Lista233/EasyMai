@@ -104,20 +104,34 @@ class SongService {
           ? currentDs >= min && currentDs <= max
           : currentDs > min && currentDs < max
       })
-    }).map(song => ({
-      id: song.id,
-      title: song.title,
-      ds: song.ds,
-      level: song.level,
-      matchingDifficulties: song.ds.map((currentDs, index) => ({
+    }).map(song => {
+      // 找出所有匹配的难度
+      const matchingDifficulties = song.ds.map((currentDs, index) => ({
         difficulty: index,
         ds: currentDs,
         level: song.level[index],
         matches: includeEqual 
           ? currentDs >= min && currentDs <= max
           : currentDs > min && currentDs < max
-      })).filter(diff => diff.matches)
-    }))
+      })).filter(diff => diff.matches);
+      
+      // 选择索引最高的匹配难度
+      const highestMatchingDifficulty = matchingDifficulties.length > 0 
+        ? matchingDifficulties.reduce((prev, current) => 
+            prev.difficulty > current.difficulty ? prev : current
+          ) 
+        : null;
+      
+      return {
+        id: song.id,
+        title: song.title,
+        ds: song.ds,
+        level: song.level,
+        matchingDifficulties: matchingDifficulties,
+        // 添加最高匹配难度
+        highestMatchingDifficulty: highestMatchingDifficulty
+      }
+    })
   }
 
   /**
@@ -811,10 +825,10 @@ class SongService {
       // 添加匹配的难度索引到歌曲对象
       song.matchedDifficulties = matchedDifficulties;
       
-      // 如果有匹配的难度，选择第一个作为默认匹配难度
+      // 如果有匹配的难度，选择索引最高的作为默认匹配难度
       // 如果没有特定匹配的难度（例如只匹配了版本或艺术家），则默认选择Master难度(3)或最高可用难度
       if (matchedDifficulties.length > 0) {
-        song.matchedDifficulty = matchedDifficulties[0];
+        song.matchedDifficulty = Math.max(...matchedDifficulties);
       } else {
         song.matchedDifficulty = Math.min(3, song.charts?.length - 1 || 0);
       }
@@ -852,7 +866,7 @@ class SongService {
       
       let matched = false;
       let matchType = '';
-      let matchedDifficulty = defaultDifficulty;
+      let matchedDifficulties = [];
       
       // 1. 检查歌曲名称
       const songTitle = song.title?.toLowerCase() || '';
@@ -878,8 +892,7 @@ class SongService {
             if (exact ? charter === keywordLower : charter.includes(keywordLower)) {
               matched = true;
               matchType = 'charter';
-              matchedDifficulty = i; // 记录匹配的难度索引
-              break;
+              matchedDifficulties.push(i); // 记录匹配的难度索引
             }
           }
         }
@@ -888,7 +901,15 @@ class SongService {
       if (matched) {
         // 添加匹配信息到歌曲对象
         song.matchType = matchType;
-        song.matchedDifficulty = matchedDifficulty;
+        
+        // 如果是谱师匹配且有多个匹配难度，选择索引最高的
+        if (matchType === 'charter' && matchedDifficulties.length > 0) {
+          song.matchedDifficulty = Math.max(...matchedDifficulties);
+        } else {
+          // 对于标题或艺术家匹配，使用默认难度
+          song.matchedDifficulty = defaultDifficulty;
+        }
+        
         return true;
       }
       

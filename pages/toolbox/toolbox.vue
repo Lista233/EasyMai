@@ -46,7 +46,11 @@
           <view class="tool-name">单曲Rating计算</view>
           <view class="tool-desc">根据定数及达成率算出Rating</view>
         </view>
-       
+       <view class="tool-card" @click="navigateTo('/pages/test1/index')">
+         <view class="tool-icon">🔢</view>
+         <view class="tool-name">达成率计算</view>
+         <view class="tool-desc">根据Notes算出达成率</view>
+       </view>
 		<view class="tool-card" @click="navigateTo('/pages/version-map/version-map')">
 		  <view class="tool-icon">📊</view>
 		  <view class="tool-name">版本名称对照表</view>

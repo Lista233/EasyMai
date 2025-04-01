@@ -1,12 +1,12 @@
 <template>
 	<view id="index">
 		<view class="button-group">
-			<button class="nav-btn bind-btn" v-show="jwt_token" @click="handleRefresh">生成B50</button>
+			<button class="nav-btn bind-btn" v-show="jwt_token" @click="handleRefresh">刷新B50(不会生图)</button>
 			<!-- <button class="save-btn" @click="saveAsImage()">保存为图片</button> -->
 			<button class="nav-btn bind-btn" @click="toggleBindForm"> 
 			<text class="btn-text">{{ jwt_token ? '账号设置' : '绑定账号' }}</text>
 			</button>
-			<button class="nav-btn bind-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button>
+			<!-- <button class="nav-btn bind-btn" v-show="jwt_token" @click="divingFishUpdate">更新成绩</button> -->
 		</view>
 		
 		<!-- 绑定账号表单（下拉式） -->
@@ -132,12 +132,12 @@
 						</view>
 						
 						<view class="action-buttons">
-							<button class="action-btn qr-btn" @click="showQrCodeInput">
+							<!-- <button class="action-btn qr-btn" @click="showQrCodeInput">
 								<text class="btn-text">绑定二维码</text>
 							</button>
 							<button class="action-btn upload-btn" @click="divingFishUpdate">
 								<text class="btn-text">更新成绩</text>
-							</button>
+							</button> -->
 							<button class="action-btn settings-btn" @click="openSettingsModal">
 								<text class="btn-text">{{ jwt_token ? '账号信息' : '绑定账号' }}</text>
 							</button>

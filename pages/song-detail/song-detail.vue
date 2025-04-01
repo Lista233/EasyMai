@@ -129,6 +129,7 @@
               v-for="(type, index) in noteTypes" 
               :key="type"
               :class="{'skeleton-card': dataLoading || statsLoading}"
+              @click="showLossCalculator(index)"
             >
               <text class="note-type">{{ type }}</text>
               <text class="note-count" v-if="!dataLoading && !statsLoading">{{ getNoteCount(index) }}</text>
@@ -275,6 +276,20 @@
     </view>
   </uni-popup>
 
+  <!-- 添加弹出层 -->
+  <uni-popup ref="lossPopup" type="center">
+    <view class="loss-calculator-popup">
+      <view class="popup-header">
+        <text class="popup-title">容错计算</text>
+        <text class="close-btn" @click="closeLossCalculator">×</text>
+      </view>
+      <maimai-loss-calculator 
+        :noteData="currentChartNoteData"
+        :useExternalData="true"
+      />
+    </view>
+  </uni-popup>
+
 </template>
 
 <script setup>
@@ -286,6 +301,7 @@ import { onLoad, onHide, onShow } from '@dcloudio/uni-app'
 import { getCoverUrl, isLoading } from '@/util/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
 import {openBiliSearch} from '@/utils/biliUtils.js'
+import MaimaiLossCalculator from '@/components/maimai-loss-calculator/index.vue'
 
 // 加载状态控制
 const pageLoaded = ref(false)  // 页面基础结构是否加载完成
@@ -456,15 +472,30 @@ const getNoteCount = (index) => {
   const chart = songData.value?.charts[currentDiffIndex.value]
   // 如果没有chart数据，返回0
   if (!chart) return 0
-  // 对于TOUCH类型（index === 4），如果没有数据则返回0
-  if (index === 4) {
-    return chart?.notes[index] || 0
+  
+  // 获取notes数组
+  const notes = chart?.notes || []
+  
+  // 判断是否为DX谱面（notes数组长度为5）
+  const isDXChart = notes.length === 5
+  
+  // 对于TOUCH类型（index === 4）和BREAK类型（index === 3）需要特殊处理
+  if (isDXChart) {
+    // 在DX谱面中，第4个元素是BREAK，第5个元素是TOUCH
+    if (index === 3) {
+      // 显示BREAK时，返回notes[4]的值
+      return notes[4] || 0
+    } else if (index === 4) {
+      // 显示TOUCH时，返回notes[3]的值
+      return notes[3] || 0
+    }
   }
+  
   // 其他类型正常返回，如果没有数据返回0
-  return chart?.notes[index] ?? 0
+  return notes[index] ?? 0
 }
 
-// 如果需要获取当前难度的谱面信息
+// 如果需要获取当前难度的谱面信息，也需要修改
 const currentChart = computed(() => {
   if (dataLoading.value) return { notes: [0, 0, 0, 0, 0], charter: '-' }
   
@@ -475,8 +506,20 @@ const currentChart = computed(() => {
       charter: '-'
     }
   }
-  // 如果notes数组长度不足5，补充到5个元素
-  const notes = [...(chart.notes || []), 0, 0, 0, 0, 0].slice(0, 5)
+  
+  // 获取原始notes数组
+  const originalNotes = [...(chart.notes || []), 0, 0, 0, 0, 0].slice(0, 5)
+  
+  // 判断是否为DX谱面（notes数组长度为5）
+  const isDXChart = chart.notes && chart.notes.length === 5
+  
+  // 如果是DX谱面，调整BREAK和TOUCH的位置
+  let notes = [...originalNotes]
+  if (isDXChart) {
+    // 交换第4个和第5个元素的位置
+    [notes[3], notes[4]] = [notes[4], notes[3]]
+  }
+  
   return {
     notes,
     charter: chart.charter || '-'
@@ -1246,6 +1289,61 @@ const genreMapping = {
   '东方Project': ['东方Project', '東方Project'],
   '其他游戏': ['其他游戏', 'ゲームバラエティ'],
 }
+
+// 当前谱面的音符数据
+const currentChartNoteData = computed(() => {
+  const chart = songData.value?.charts[currentDiffIndex.value];
+  if (!chart || !chart.notes) {
+    return {
+      tap: 0,
+      hold: 0,
+      slide: 0,
+      touch: 0,
+      break: 0,
+      total: 0
+    };
+  }
+
+  // 判断是否为DX谱面
+  const isDXChart = chart.notes.length === 5;
+  
+  if (isDXChart) {
+    return {
+      tap: chart.notes[0] || 0,
+      hold: chart.notes[1] || 0,
+      slide: chart.notes[2] || 0,
+      touch: chart.notes[3] || 0,
+      break: chart.notes[4] || 0,
+      total: chart.notes.reduce((sum, count) => sum + (count || 0), 0)
+    };
+  } else {
+    return {
+      tap: chart.notes[0] || 0,
+      hold: chart.notes[1] || 0,
+      slide: chart.notes[2] || 0,
+      touch: 0,
+      break: chart.notes[3] || 0,
+      total: chart.notes.reduce((sum, count) => sum + (count || 0), 0)
+    };
+  }
+});
+
+// 显示损失计算器
+const showLossCalculator = (index) => {
+  if (lossPopup.value) {
+    lossPopup.value.open();
+  }
+};
+
+// 关闭损失计算器
+const closeLossCalculator = () => {
+  if (lossPopup.value) {
+    lossPopup.value.close();
+  }
+};
+
+// 添加 lossPopup ref
+const lossPopup = ref(null);
 </script>
 
 <style lang="scss">
@@ -2698,5 +2796,34 @@ const genreMapping = {
       font-size: 28rpx;
     }
   }
+}
+
+/* 添加弹出层样式 */
+.loss-calculator-popup {
+  background-color: #fff;
+  border-radius: 16rpx;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 40rpx;
+  color: #666;
+  padding: 10rpx;
 }
 </style> 
