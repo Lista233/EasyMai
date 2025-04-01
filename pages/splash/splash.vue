@@ -72,11 +72,11 @@ const handleApiRefreshed = (data) => {
 // 跳转到主页
 const navigateToMain = () => {
   // 只有在更新检查完成后才跳转
-  if (updateCheckCompleted.value) {
+ // if (updateCheckCompleted.value) {
     uni.reLaunch({
       url: '/pages/user-center/user-center'
     })
-  }
+  //}
 }
 
 // 检查是否为首次启动
@@ -164,8 +164,9 @@ onMounted(() => {
   console.log('Splash page mounted')
   console.log('当前应用版本:', appVersion.value)
   setTimeout(() => {
-    checkUpdates()
-  }, 500)
+    navigateToMain();
+   // checkUpdates()
+  }, 200)
 })
 </script>
 
