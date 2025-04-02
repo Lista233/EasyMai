@@ -387,49 +387,49 @@ const versionMap = {
   'maimai でらっくす BUDDiES': 'DX2024'
 }
 
-// 修改反向映射关系，从显示名称映射到原始值
 const reverseVersionMap = {
-  'maimai': 'maimai',
-  'maimai+': 'maimai PLUS',
-  'Green': 'maimai GreeN',
-  'Green+': 'maimai GreeN PLUS',
-  'Orange': 'maimai ORANGE',
-  'Orange+': 'maimai ORANGE PLUS',
-  'Pink': 'maimai PiNK',
-  'Pink+': 'maimai PiNK PLUS',
-  'Murasaki': 'maimai MURASAKi',
-  'Murasaki+': 'maimai MURASAKi PLUS',
-  'Milk': 'maimai MiLK',
-  'Milk+': 'MiLK PLUS',
-  'Finale': 'maimai FiNALE',
-  '舞萌DX2020': 'maimai でらっくす',
-  '舞萌DX2021': 'maimai でらっくす Splash',
-  '舞萌DX2022': 'maimai でらっくす UNiVERSE',
-  '舞萌DX2023': 'maimai でらっくす FESTiVAL',
-  '舞萌DX2024': 'maimai でらっくす BUDDiES'
+  '任意版本': '',
+  '(真)-maimai': 'maimai',
+  '(真)-maimai PLUS': 'maimai PLUS',
+  '(檄)-GreeN': 'maimai GreeN',
+  '(超)-GreeN PLUS': 'maimai GreeN PLUS',
+  '(橙)-ORANGE': 'maimai ORANGE',
+  '(暁)-ORANGE PLUS': 'maimai ORANGE PLUS',
+  '(桃)-PiNK': 'maimai PiNK',
+  '(櫻)-PiNK PLUS': 'maimai PiNK PLUS',
+  '(紫)-MURASAKi': 'maimai MURASAKi',
+  '(菫)-MURASAKi PLUS': 'maimai MURASAKi PLUS',
+  '(白)-MiLK': 'maimai MiLK',
+  '(雪)-MiLK PLUS': 'MiLK PLUS',
+  '(輝)-FiNALE': 'maimai FiNALE',
+  '(熊華)-舞萌DX2020': 'maimai でらっくす',
+  '(爽煌)-舞萌DX2021': 'maimai でらっくす Splash',
+  '(宙星)-舞萌DX2022': 'maimai でらっくす UNiVERSE',
+  '(祭祝)-舞萌DX2023': 'maimai でらっくす FESTiVAL',
+  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES'
 }
 
 // 版本列表（使用显示名称）
 const versions = [
-  '任意版本',
-  'maimai',
-  'maimai+',
-  'Green',
-  'Green+',
-  'Orange',
-  'Orange+',
-  'Pink',
-  'Pink+',
-  'Murasaki',
-  'Murasaki+',
-  'Milk',
-  'Milk+',
-  'Finale',
-  '舞萌DX2020',
-  '舞萌DX2021',
-  '舞萌DX2022',
-  '舞萌DX2023',
-  '舞萌DX2024'
+	'任意版本',
+	'(真)-maimai',
+	'(真)-maimai PLUS',
+	'(檄)-GreeN',
+	'(超)-GreeN PLUS',
+	'(橙)-ORANGE',
+	'(暁)-ORANGE PLUS',
+	'(桃)-PiNK',
+	'(櫻)-PiNK PLUS',
+	'(紫)-MURASAKi',
+	'(菫)-MURASAKi PLUS',
+	'(白)-MiLK',
+	'(雪)-MiLK PLUS',
+	'(輝)-FiNALE',
+	'(熊華)-舞萌DX2020',
+	'(爽煌)-舞萌DX2021',
+	'(宙星)-舞萌DX2022',
+	'(祭祝)-舞萌DX2023',
+	'(双宴)-舞萌DX2024'
 ]
 
 // 歌曲类别列表
@@ -1240,7 +1240,6 @@ const handleGridPageInputConfirm = () => {
       
       .view-toggle {
         margin-left: 20rpx;
-        padding: 10rpx;
         border-radius: 50%;
         background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
         display: flex;
@@ -1248,12 +1247,20 @@ const handleGridPageInputConfirm = () => {
         justify-content: center;
         transition: all 0.3s ease;
         box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.25);
-        height: 36rpx;
-        width: 36rpx;
+        height: 60rpx;
+        width: 60rpx;
+        position: relative;
         
         &:active {
           transform: scale(0.9);
           box-shadow: 0 2rpx 6rpx rgba(99, 102, 241, 0.2);
+        }
+        
+        uni-icons {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
       }
     }

@@ -188,6 +188,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import * as maiApi from "../../api/maiapi.js";
+import * as h5Api from "@/api/h5api.js"
 // 如果没有在pages.json中配置easycom规则，需要手动导入
 // import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue';
 
@@ -312,12 +313,29 @@ const handleLogin = async () => {
   try {
     isLoading.value = true;
     
-    // 调用真实登录API
-    let res = await maiApi.divingFishLogin(loginForm.username, loginForm.password);
+    // 调用登录API
+    const res = await maiApi.divingFishLogin(loginForm.username, loginForm.password);
+    console.log('登录响应:', res);
     
-    // 从响应头中获取JWT令牌
-    let headerCookie = res.header['set-cookie'];
-    jwt_token.value = headerCookie.split(';', 1)[0].split('=')[1];
+    // #ifdef H5
+    // H5环境从响应数据中获取token
+    jwt_token.value = res.data.token;
+    // #endif
+    
+    // #ifndef H5
+    // 非H5环境从header中获取cookie
+    let headerCookie = res.header && res.header['set-cookie'];
+    if (headerCookie) {
+      jwt_token.value = headerCookie.split(';', 1)[0].split('=')[1];
+    } else {
+      throw new Error('无法获取登录令牌');
+    }
+    // #endif
+    
+    // 确保token不为空
+    if (!jwt_token.value) {
+      throw new Error('登录失败，无法获取令牌');
+    }
     
     // 保存JWT令牌和用户名到本地存储
     uni.setStorageSync('divingFish_jwt_token', jwt_token.value);

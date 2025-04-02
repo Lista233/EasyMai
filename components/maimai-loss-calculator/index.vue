@@ -195,12 +195,12 @@ const selectedNoteType = computed(() => noteTypes[selectedNoteTypeIndex.value]);
 // 是否为BREAK音符
 const isBreakNote = computed(() => selectedNoteType.value.name === 'BREAK');
 
-// 音符数量 - 现在从外部数据获取或使用默认值
+// 音符数量 - 修改默认值为0
 const noteCount = computed(() => {
   if (props.useExternalData) {
-    return props.noteData[selectedNoteType.value.key] || 1;
+    return props.noteData[selectedNoteType.value.key] || 0;
   }
-  return 1; // 默认值
+  return 0; // 默认值改为0
 });
 
 // 谱面总物量 - 现在从外部数据获取或使用默认值
@@ -341,10 +341,10 @@ const calculateBreakBonusWeight = () => {
   return 0; // 如果没有BREAK音符，则返回0
 };
 
-// 计算当前音符类型占总权重的百分比
+// 计算当前音符类型占总权重的百分比 - 添加音符数量为0的判断
 const calculateWeightPercentage = () => {
   const totalWeight = calculateTotalWeight();
-  if (totalWeight === 0) return 0;
+  if (totalWeight === 0 || noteCount.value === 0) return 0;
   
   const typeWeight = selectedNoteType.value.weight * noteCount.value;
   return (typeWeight / totalWeight) * 100;
@@ -384,8 +384,26 @@ const calculateToleranceCount = (tolerancePercent, judgmentType) => {
   return count;
 };
 
-// 计算损失
+// 计算损失 - 添加音符数量为0的判断
 const calculate = () => {
+  // 如果音符数量为0，所有损失值设为0
+  if (noteCount.value === 0) {
+    if (isBreakNote.value) {
+      Object.keys(singleNoteLoss.value).forEach(key => {
+        singleNoteLoss.value[key] = 0;
+      });
+      Object.keys(singleNoteBonusLoss.value).forEach(key => {
+        singleNoteBonusLoss.value[key] = 0;
+      });
+    } else {
+      singleNoteLoss.value.great = 0;
+      singleNoteLoss.value.good = 0;
+      singleNoteLoss.value.miss = 0;
+    }
+    showResults.value = true;
+    return;
+  }
+
   // 计算总权重
   const totalWeight = calculateTotalWeight();
   

@@ -601,14 +601,12 @@ const getDifficultyName = (song) => {
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
     
     .cover-grid {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       gap: 20rpx;
       margin-bottom: 30rpx;
       
       &.columns-1 {
-        grid-template-columns: 1fr;
-        
-        // 为单首歌曲添加特殊样式，使其宽度更小
         .cover-item {
           width: 50%;
           margin: 0 auto;
@@ -616,15 +614,21 @@ const getDifficultyName = (song) => {
       }
       
       &.columns-2 {
-        grid-template-columns: 1fr 1fr;
+        .cover-item {
+          width: calc((100% - 20rpx) / 2);
+        }
       }
       
       &.columns-3 {
-        grid-template-columns: 1fr 1fr 1fr;
+        .cover-item {
+          width: calc((100% - 40rpx) / 3);
+        }
       }
       
       &.columns-4 {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
+        .cover-item {
+          width: calc((100% - 60rpx) / 4);
+        }
       }
       
       .cover-item {

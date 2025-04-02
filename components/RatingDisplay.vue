@@ -1,5 +1,5 @@
 <template>
-  <view class="rating-container" :class="[ratingClass, { 'not-logged': !isLoggedIn }]">
+  <view class="rating-container" :class="[ratingClass, { 'not-logged': !isLoggedIn, 'dark-mode': isDarkMode }]" @click="handleClick">
     <view class="rating-title">{{ isLoggedIn ? '总 Rating' : '欢迎使用' }}</view>
     <view class="rating-value">{{ isLoggedIn ? totalRating : '请先登录' }}</view>
     <view class="rating-subtitle" v-if="isLoggedIn">B35: {{ b35rating }} + B15: {{ b15rating }}</view>
@@ -8,7 +8,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, inject, ref } from 'vue';
+
+// 注入全局深色模式状态
+const isDarkMode = inject('isDarkMode', ref(false)); // 提供默认值防止注入失败
 
 // 定义props
 const props = defineProps({
@@ -41,13 +44,21 @@ const ratingClass = computed(() => {
   if (total >= 12000) return 'copper';
   return 'default';
 });
+
+// 添加 emit 定义
+const emit = defineEmits(['click']);
+
+// 添加点击处理函数
+function handleClick() {
+  emit('click');
+}
 </script>
 
 <style lang="scss" scoped>
 .rating-container {
   width: 100%;
   max-width: 650rpx;
-  margin: 20rpx auto 30rpx;
+  margin: 10rpx auto 30rpx;
   padding: 24rpx 30rpx;
   border-radius: 20rpx;
   background: rgba(255, 255, 255, 0.95);
@@ -59,6 +70,25 @@ const ratingClass = computed(() => {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-sizing: border-box;
+  
+  // 暗色模式基础样式
+  &.dark-mode {
+    background: rgba(30, 30, 40, 0.95);
+    border: 1px solid rgba(60, 60, 70, 0.7);
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    
+    .rating-title {
+      color: #a0aec0;
+    }
+    
+    .rating-value {
+      color: #e0e0e0;
+    }
+    
+    .rating-subtitle {
+      color: #718096;
+    }
+  }
   
   &::before {
     content: '';
@@ -85,12 +115,16 @@ const ratingClass = computed(() => {
     color: #334155;
     line-height: 1.2;
     margin-bottom: 6rpx;
+    display: block;
+    width: 100%;
   }
   
   .rating-subtitle {
     font-size: 22rpx;
     color: #94a3b8;
     font-weight: 500;
+    display: block;
+    width: 100%;
   }
   
   // 默认主题细节增强
@@ -102,6 +136,7 @@ const ratingClass = computed(() => {
     .rating-value {
       background: linear-gradient(135deg, #34d399, #10b981);
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
     }
   }
@@ -115,6 +150,7 @@ const ratingClass = computed(() => {
     .rating-value {
       background: linear-gradient(135deg, #fb923c, #ea580c);
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
     }
   }
@@ -128,6 +164,7 @@ const ratingClass = computed(() => {
     .rating-value {
       background: linear-gradient(135deg, #60a5fa, #2563eb);
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
     }
   }
@@ -149,6 +186,7 @@ const ratingClass = computed(() => {
       );
       background-size: 200% 100%;
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
       animation: gold-shine 6s linear infinite;
     }
@@ -171,6 +209,7 @@ const ratingClass = computed(() => {
       );
       background-size: 200% 100%;
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
       animation: gold-shine 4s linear infinite;
     }
@@ -206,6 +245,7 @@ const ratingClass = computed(() => {
       );
       background-size: 300% 100%;
       -webkit-background-clip: text;
+      background-clip: text;
       color: transparent;
       animation: rainbow-text 8s linear infinite;
     }
@@ -248,7 +288,22 @@ const ratingClass = computed(() => {
     font-size: 48rpx;
     background: linear-gradient(135deg, #94a3b8, #64748b);
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
+  }
+  
+  // 暗色模式未登录状态样式
+  &.dark-mode {
+    &::before {
+      background: linear-gradient(90deg, #64748b, #475569);
+    }
+    
+    .rating-value {
+      background: linear-gradient(135deg, #64748b, #475569);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
   }
 }
 </style> 

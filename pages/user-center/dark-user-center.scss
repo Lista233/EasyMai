@@ -1,0 +1,756 @@
+.user-center.dark-mode {
+    position: relative;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #121212 0%, #1e1e2d 100%);
+    padding: 40rpx 20rpx 60rpx;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    box-sizing: border-box;
+    color: #f0f0f0;
+    
+    .user-info-container {
+      max-width: 750rpx;
+      margin: 0 auto 40rpx;
+      
+      .theme-toggle {
+        position: absolute;
+        top: 20rpx;
+        right: 20rpx;
+        z-index: 10;
+        width: 80rpx;
+        height: 80rpx;
+        border-radius: 50%;
+        background: rgba(40, 40, 50, 0.9);
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:active {
+          transform: scale(0.95);
+        }
+        
+        .theme-icon {
+          width: 50rpx;
+          height: 50rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          .icon-image {
+            width: 40rpx;
+            height: 40rpx;
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+          }
+        }
+        
+        .sun-icon .icon-image {
+          background: linear-gradient(135deg, #d97706, #92400e);
+        }
+        
+        .moon-icon .icon-image {
+          background: linear-gradient(135deg, #4f46e5, #3730a3);
+        }
+      }
+      
+      .user-card {
+        background: rgba(30, 30, 40, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24rpx;
+        padding: 40rpx 30rpx;
+        box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        border: 1px solid rgba(50, 50, 60, 0.7);
+        animation: fadeInDown 1s;
+        
+        .avatar-container {
+          position: relative;
+          cursor: pointer;
+          padding: 4rpx;
+        }
+        
+        .avatar {
+          width: 150rpx;
+          height: 150rpx;
+          border-radius: 16rpx;
+          border: 4rpx solid #2a2a35;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+          box-sizing: border-box;
+          display: block;
+        }
+        
+        .user-details {
+          flex: 1;
+          width: 100%;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          margin-bottom:0rpx;
+          
+          .username {
+            font-size: 36rpx;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 8rpx;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 20rpx;
+            box-sizing: border-box;
+          }
+          
+          .user-id {
+            font-size: 24rpx;
+            color: #c0c0c0;
+            text-align: center;
+            display: block;
+            width: 100%;
+            margin-top: 4rpx;
+          }
+          
+          .hint-text {
+            color: #63a7ff !important;
+            text-decoration: underline;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 4rpx;
+          }
+        }
+        
+        .rating-wrapper {
+          width: 100%;
+          margin-top: 0rpx;
+          display: block;
+        }
+      }
+    }
+    
+    .modules-container {
+      max-width: 800rpx;
+      margin: -20rpx auto 40rpx;
+      
+      .section-title {
+        font-size: 32rpx;
+        font-weight: 800;
+        margin: 28rpx auto;
+        margin-bottom: 20rpx;
+        margin-top: -25rpx;
+        color: #f0f0f0;
+        padding: 10rpx 20rpx;
+        border-radius: 12rpx;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        min-width: 300rpx;
+        width: 90%;
+        padding-top: 15rpx;
+        padding-bottom: 25rpx;
+        text-align: center;
+        background: transparent;
+        box-shadow: none;
+        opacity: 0.7;
+        margin-left: auto;
+        margin-right: auto;
+        
+        .title-content {
+          position: relative;
+          display: inline-block;
+          padding: 0 30rpx;
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          
+          &::before,
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 0;
+            height: 70%;
+            background: linear-gradient(to bottom, #1a78c2, #2a8c3a);
+            border-radius: 4rpx;
+            transform: translateY(-50%);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+          }
+          
+          &::before {
+            left: 0;
+          }
+          
+          &::after {
+            right: 0;
+          }
+        }
+        
+        &.has-data {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 95%;
+          margin-left: auto;
+          margin-right: auto;
+          background: linear-gradient(135deg, rgba(35,35,45,0.9), rgba(30,30,40,0.9));
+          box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2);
+          backdrop-filter: blur(10px);
+          opacity: 1;
+          
+          .title-content {
+            &::before,
+            &::after {
+              width: 8rpx;
+              opacity: 1;
+            }
+          }
+        }
+        
+        // 暗色模式适配
+        .dark-mode & {
+          &.has-data {
+            background: linear-gradient(135deg, rgba(44,44,46,0.9), rgba(44,44,46,0.9));
+          }
+        }
+      }
+      
+      .function-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15rpx;
+        margin-bottom: 40rpx;
+        
+        &.account-grid {
+          grid-template-columns: repeat(2, 1fr);
+          
+          // 第一行 - 蓝紫色系列(深色版)
+          .function-item:nth-child(1), 
+          .function-item:nth-child(2) {
+            &::before {
+              background: linear-gradient(90deg, #326a75, #1a4b7c);
+            }
+            
+            .function-icon {
+              color: #4880c0;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          // 第一行微调
+          .function-item:nth-child(2) {
+            &::before {
+              background: linear-gradient(90deg, #326a75, #1a4b7c);
+            }
+            
+            .function-icon {
+              color: #5c2eb0;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          // 第二行 - 靛蓝色系列(深色版)
+          .function-item:nth-child(3), 
+          .function-item:nth-child(4) {
+            &::before {
+              background: linear-gradient(90deg, #7a2952, #571a49);
+            }
+            
+            .function-icon {
+              color: #b03e7a;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          // 第二行微调
+          .function-item:nth-child(4) {
+            &::before {
+              background: linear-gradient(90deg, #7a2952, #571a49);
+            }
+            
+            .function-icon {
+              color: #a71c71;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          // 第三行 - 紫色系列(深色版)
+          .function-item:nth-child(5), 
+          .function-item:nth-child(6) {
+            &::before {
+              background: linear-gradient(90deg, #4a2980, #35207a);
+            }
+            
+            .function-icon {
+              color: #7b41b6;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          // 第三行微调
+          .function-item:nth-child(6) {
+            &::before {
+              background: linear-gradient(90deg, #4a2980, #35207a);
+            }
+            
+            .function-icon {
+              color: #6b27a8;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+        }
+        
+        .function-item {
+          background: #252530;
+          border-radius: 16rpx;
+          padding: 25rpx 20rpx 30rpx;
+          box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.2);
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 140rpx;
+            border-top-left-radius: 16rpx;
+            border-top-right-radius: 16rpx;
+            opacity: 0.25;
+            z-index: 0;
+          }
+          
+          .function-icon {
+            font-size: 48rpx;
+            margin-bottom: 20rpx;
+            background: transparent;
+            width: 100rpx;
+            height: 100rpx;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16rpx;
+            position: relative;
+            box-shadow: none;
+            z-index: 1;
+            color: #ffffff;
+            
+            &::after, &::before {
+              display: none;
+            }
+          }
+          
+          .function-name {
+            font-size: 32rpx;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top:15rpx;
+            margin-bottom:3rpx;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .function-desc {
+            font-size: 22rpx;
+            color: #a0aec0;
+            line-height: 1.4;
+            position: relative;
+            z-index: 1;
+          }
+          
+          &:active {
+            transform: translateY(2rpx) scale(0.98);
+            box-shadow: 0 2rpx 6rpx rgba(0,0,0,0.3);
+          }
+          
+          // 统一使用深色调
+          &.refresh-api {
+            &::before {
+              background: linear-gradient(90deg, #3e4099, #2c2e7a);
+            }
+            
+            .function-icon {
+              color: #b83a77;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.account-settings {
+            &::before {
+              background: linear-gradient(90deg, #4a2980, #35207a);
+            }
+            
+            .function-icon {
+              color: #b83a77;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+        
+          &.qr-code {
+            &::before {
+              background: linear-gradient(90deg, #473780, #352780);
+            }
+            
+            .function-icon {
+              color: #b83a77;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.my-scores {
+            &::before {
+              background: linear-gradient(90deg, #326a75, #1a4b7c);
+            }
+            
+            .function-icon {
+              color: #6b27a8;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.song-search {
+            &::before {
+              background: linear-gradient(90deg, #326a75, #1a4b7c);
+            }
+            
+            .function-icon {
+              color: #4e50c0;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.song-recommend {
+            &::before {
+              background: linear-gradient(90deg, #7a2952, #571a49);
+            }
+            
+            .function-icon {
+              color: #a71c71;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.data-analysis {
+            &::before {
+              background: linear-gradient(90deg, #7a2952, #571a49);
+            }
+            
+            .function-icon {
+              color: #b03e7a;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.chart-stats {
+            &::before {
+              background: linear-gradient(90deg, #4a2980, #35207a);
+            }
+            
+            .function-icon {
+              color: #a64add;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.toolbox {
+            &::before {
+              background: linear-gradient(90deg, #473780, #2c2150);
+            }
+            
+            .function-icon {
+              color: #4e50c0;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.update-data {
+            &::before {
+              background: linear-gradient(90deg, #442d99, #2c1f6c);
+            }
+            
+            .function-icon {
+              color: #5c2eb0;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.check-update {
+            &::before {
+              background: linear-gradient(90deg, #473780, #352780);
+            }
+            
+            .function-icon {
+              color: #b83a77;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.favorite {
+            &::before {
+              background: linear-gradient(90deg, #825609, #704200);
+            }
+            
+            .function-icon {
+              color: #b07308;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+          
+          &.update-scores {
+            &::before {
+              background: linear-gradient(90deg, #1f6d4e, #0a4834);
+            }
+            
+            .function-icon {
+              color: #0b7855;
+              background: rgba(40, 40, 50, 0.85);
+            }
+          }
+        }
+      }
+    }
+    
+    .login-button {
+      margin: 40rpx auto;
+      width: 80%;
+      height: 88rpx;
+      background: linear-gradient(135deg, #3e4099 0%, #2c2e7a 100%);
+      border-radius: 44rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+      
+      .login-text {
+        color: white;
+        font-size: 32rpx;
+        font-weight: 600;
+      }
+      
+      &:active {
+        transform: scale(0.98);
+        background: linear-gradient(135deg, #2c2e7a 0%, #252264 100%);
+      }
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20rpx);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes rainbow-bg {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+    
+    @keyframes rainbow-text {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+    
+    @keyframes gold-shine {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+  }
+  
+  // 添加UID提示样式
+  .hint-text {
+    color: #63a7ff !important;
+  }
+  
+  .avatar-selector {
+    background: #252530;
+    border-radius: 24rpx 24rpx 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 40rpx);
+    max-height: 70vh;
+    box-sizing: border-box;
+    
+    .avatar-selector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx;
+      border-bottom: 2rpx solid #343444;
+      
+      .avatar-selector-title {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #ffffff;
+      }
+      
+      .close-btn {
+        font-size: 40rpx;
+        color: #a0aec0;
+        padding: 0 20rpx;
+      }
+    }
+    
+    .avatar-grid {
+      max-height: 60vh;
+      padding: 20rpx;
+      box-sizing: border-box;
+      
+      .avatar-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20rpx;
+        padding-bottom: 40rpx;
+        
+        .avatar-item {
+          aspect-ratio: 1;
+          border-radius: 16rpx;
+          overflow: hidden;
+          box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.3);
+          transition: all 0.3s ease;
+          
+          &:active {
+            transform: scale(0.95);
+          }
+          
+          .avatar-option {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+      }
+    }
+  }
+  
+  // 添加图标图片样式
+  .function-icon {
+    .icon-image {
+      width: 70rpx;
+      height: 70rpx;
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+    }
+  }
+  
+  // 功能中心图标样式
+  .function-item {
+    &.song-search .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+      }
+    }
+    
+    &.my-scores .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+      }
+    }
+    
+    &.song-recommend .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #952353 100%);
+      }
+    }
+    
+    &.data-analysis .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #952353 100%);
+      }
+    }
+    
+    &.chart-stats .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+  
+      .icon-image {
+        background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
+      }
+    }
+    
+    &.toolbox .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
+      }
+    }
+    
+    &.qr-code .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+      }
+    }
+    
+    &.account-settings .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+     
+      .icon-image {
+        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+      }
+    }
+    
+    &.favorite .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+      }
+    }
+    
+    &.update-scores .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+      }
+    }
+    
+    &.refresh-api .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+      }
+    }
+    
+    &.check-update .function-icon {
+      background: rgba(40, 40, 50, 0.9);
+      
+      .icon-image {
+        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+      }
+    }
+  } 

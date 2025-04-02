@@ -65,8 +65,8 @@
       <!-- 难度切换器 -->
       <view class="difficulty-switcher">
         <view 
-          v-for="(diff, index) in difficulties" 
-          :key="diff.name"
+          v-for="(diff, index) in difficulties.slice(0, 4)" 
+          :key="index"
           class="difficulty-tab"
           :class="{ 
             active: currentDiffIndex === index,
@@ -74,15 +74,25 @@
             'skeleton-tab': dataLoading
           }"
           @click="!dataLoading && switchDifficulty(index)"
-          v-show="!dataLoading && (index < songData?.charts?.length && diff.name !== 'Re:Mas' || 
-                  (diff.name === 'Re:Mas' && songData?.charts?.length >= 5))"
         >
           <text>{{ diff.name }}</text>
           <text class="level">Lv.{{ songData?.level[index] }}</text>
         </view>
         
-        <!-- 加载中的骨架屏 -->
-        <view v-if="dataLoading" v-for="i in 5" :key="`skeleton-${i}`" class="difficulty-tab skeleton-tab"></view>
+        <!-- 只有当确认存在第五个难度时才显示 Re:Master -->
+        <view 
+          v-if="hasReMaster"
+          class="difficulty-tab"
+          :class="{ 
+            active: currentDiffIndex === 4,
+            'remaster': true,
+            'skeleton-tab': dataLoading
+          }"
+          @click="!dataLoading && switchDifficulty(4)"
+        >
+          <text>{{ difficulties[4].name }}</text>
+          <text class="level">Lv.{{ songData?.level[4] }}</text>
+        </view>
       </view>
 
       <!-- 难度详情 -->
@@ -826,7 +836,7 @@ const copyCharter = (charter) => {
   }
 }
 
-// 修改 navToBiliBili 函数
+// 修改 navToBiliBili 函数，添加更多容错处理
 function navToBiliBili(keyword) {
   // 显示加载弹窗
   uni.showLoading({
@@ -839,40 +849,103 @@ function navToBiliBili(keyword) {
     uni.hideLoading();
   }, 10000);
 
-  // 使用 uni-app 的页面生命周期来处理隐藏和显示
-  const hideCallback = () => {
-    // 页面隐藏时不关闭loading
-    clearTimeout(timeout);
-  };
-
-  const showCallback = () => {
-    // 页面再次显示时关闭loading
-    uni.hideLoading();
-    // 清除事件监听
-    uni.$off('page-show', showCallback);
-    uni.$off('page-hide', hideCallback);
-  };
-
-  // 注册页面隐藏和显示的监听
-  uni.$once('page-hide', hideCallback);
-  uni.$once('page-show', showCallback);
+  // 构建搜索关键词
+  const searchKeyword = keyword || songData.value?.title || '';
   
-  // 跳转到B站，并处理用户取消的情况
-  openBiliSearch(keyword, {
+  // #ifdef MP-WEIXIN
+  // 微信小程序环境下，使用webview跳转到B站网页
+  try {
+    const encodedUrl = encodeURIComponent(`https://search.bilibili.com/all?keyword=${encodeURIComponent(searchKeyword)}`);
+    const encodedTitle = encodeURIComponent('B站搜索');
+    
+    uni.navigateTo({
+      url: `/pages/webview/webview?url=${encodedUrl}&title=${encodedTitle}`,
+      success: function() {
+        console.log('跳转B站webview成功');
+        clearTimeout(timeout);
+        uni.hideLoading();
+      },
+      fail: function(err) {
+        console.error('跳转B站webview失败:', err);
+        clearTimeout(timeout);
+        uni.hideLoading();
+        
+        // 跳转失败时，提示用户并提供复制关键词的选项
+        uni.showModal({
+          title: '跳转失败',
+          content: '无法跳转到B站页面，是否复制搜索关键词？',
+          confirmText: '复制',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              uni.setClipboardData({
+                data: searchKeyword,
+                success: () => {
+                  uni.showToast({
+                    title: '关键词已复制，请手动打开B站搜索',
+                    icon: 'none',
+                    duration: 2000
+                  });
+                }
+              });
+            }
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error('跳转B站出错:', error);
+    clearTimeout(timeout);
+    uni.hideLoading();
+    
+    // 出现异常时，提供复制关键词的选项
+    uni.showModal({
+      title: '跳转出错',
+      content: '跳转B站时出现错误，是否复制搜索关键词？',
+      confirmText: '复制',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          uni.setClipboardData({
+            data: searchKeyword,
+            success: () => {
+              uni.showToast({
+                title: '关键词已复制，请手动打开B站搜索',
+                icon: 'none',
+                duration: 2000
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+  // #endif
+  
+  // #ifdef H5
+  // H5环境下，直接打开B站网页
+  window.open(`https://search.bilibili.com/all?keyword=${encodeURIComponent(searchKeyword)}`, '_blank');
+  clearTimeout(timeout);
+  uni.hideLoading();
+  // #endif
+  
+  // #ifdef APP-PLUS
+  // APP环境下，使用原有的openBiliSearch方法
+  openBiliSearch(searchKeyword, {
     showError: true,
     useWebFallback: true
   }).then(result => {
     // 如果用户取消了跳转（result为false），关闭加载框
     if (!result) {
-      uni.hideLoading();
       clearTimeout(timeout);
-      uni.$off('page-show', showCallback);
-      uni.$off('page-hide', hideCallback);
+      uni.hideLoading();
     }
   });
+  // #endif
 }
 
-// 在页面的生命周期钩子中
+// 保留原有的页面生命周期钩子，但仅在APP环境下使用
+// #ifdef APP-PLUS
 onHide(() => {
   uni.$emit('page-hide');
 });
@@ -880,6 +953,7 @@ onHide(() => {
 onShow(() => {
   uni.$emit('page-show');
 });
+// #endif
 
 // 添加复制ID功能
 const copyId = () => {
@@ -1344,6 +1418,26 @@ const closeLossCalculator = () => {
 
 // 添加 lossPopup ref
 const lossPopup = ref(null);
+
+// 判断是否应该显示某个难度
+const shouldHideDifficulty = (index, diffName) => {
+  // 如果没有歌曲数据或者正在加载中，不隐藏
+  if (!songData.value || dataLoading.value) return false;
+  
+  // 检查该难度是否有有效的等级
+  const level = songData.value.level[index];
+  console.log(level);
+  // 如果等级是 "-" 或者不存在，则隐藏该难度
+  return level === "-" || level === undefined || level === null;
+};
+
+// 添加计算属性判断是否有 Re:Master 难度
+const hasReMaster = computed(() => {
+  if (!songData.value || dataLoading.value) return false;
+  
+  const reMasterLevel = songData.value.level[4];
+  return reMasterLevel !== "-" && reMasterLevel !== undefined && reMasterLevel !== null;
+});
 </script>
 
 <style lang="scss">

@@ -125,9 +125,13 @@
 							:max="5" 
 							:value="gridSize" 
 							:step="1"
-							:block-size="18"
+							:block-size="16"
 							@change="onGridSizeChange"
 							show-value
+							activeColor="#818cf8"
+							backgroundColor="#e2e8f0"
+							blockColor="#6366f1"
+							class="custom-slider"
 						/>
 					</view>
 					<view class="icon-toggle">
@@ -168,7 +172,13 @@
 						@click="navigateToDetail(record.song_id, record.level_index)"
 					>
 						<view class="cover-image" :class="`level-${record.level_index}`">
-							<image :src="getSongCover(record.song_id)" mode="aspectFill" />
+							<image 
+								:src="getSongCover(record.song_id)" 
+								mode="aspectFill" 
+								lazy-load 
+								@error="handleImageError"
+								style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"
+							/>
 							
 							<!-- 灰色遮罩 -->
 							<view class="icon-overlay" v-if="shouldShowIcon(record)"></view>
@@ -592,17 +602,17 @@ const dsRanges = [
 const versionMap = {
 	'maimai': 'maimai',
 	'maimai PLUS': 'maimai+',
-	'maimai GreeN': 'Green',
-	'maimai GreeN PLUS': 'Green+',
-	'maimai ORANGE': 'Orange',
-	'maimai ORANGE PLUS': 'Orange+',
-	'maimai PiNK': 'Pink',
-	'maimai PiNK PLUS': 'Pink+',
-	'maimai MURASAKi': 'Murasaki',
-	'maimai MURASAKi PLUS': 'Murasaki+',
-	'maimai MiLK': 'Milk',
-	'MiLK PLUS': 'Milk+',
-	'maimai FiNALE': 'Finale',
+	'maimai GreeN': 'GreeN',
+	'maimai GreeN PLUS': 'GreeN+',
+	'maimai ORANGE': 'ORANGE',
+	'maimai ORANGE PLUS': 'ORANGE+',
+	'maimai PiNK': 'PiNK',
+	'maimai PiNK PLUS': 'PiNK+',
+	'maimai MURASAKi': 'MURASAKi',
+	'maimai MURASAKi PLUS': 'MURASAKi+',
+	'maimai MiLK': 'MiLK',
+	'MiLK PLUS': 'MiLK+',
+	'maimai FiNALE': 'FiNALE',
 	'maimai でらっくす': '舞萌DX2020',
 	'maimai でらっくす Splash': '舞萌DX2021',
 	'maimai でらっくす UNiVERSE': '舞萌DX2022',
@@ -612,47 +622,48 @@ const versionMap = {
 
 // 修改反向映射关系，从显示名称映射到原始值
 const reverseVersionMap = {
-	'maimai': 'maimai',
-	'maimai+': 'maimai PLUS',
-	'Green': 'maimai GreeN',
-	'Green+': 'maimai GreeN PLUS',
-	'Orange': 'maimai ORANGE',
-	'Orange+': 'maimai ORANGE PLUS',
-	'Pink': 'maimai PiNK',
-	'Pink+': 'maimai PiNK PLUS',
-	'Murasaki': 'maimai MURASAKi',
-	'Murasaki+': 'maimai MURASAKi PLUS',
-	'Milk': 'maimai MiLK',
-	'Milk+': 'MiLK PLUS',
-	'Finale': 'maimai FiNALE',
-	'舞萌DX2020': 'maimai でらっくす',
-	'舞萌DX2021': 'maimai でらっくす Splash',
-	'舞萌DX2022': 'maimai でらっくす UNiVERSE',
-	'舞萌DX2023': 'maimai でらっくす FESTiVAL',
-	'舞萌DX2024': 'maimai でらっくす BUDDiES'
+  '任意版本': '',
+  '(真)-maimai': 'maimai',
+  '(真)-maimai PLUS': 'maimai PLUS',
+  '(檄)-GreeN': 'maimai GreeN',
+  '(超)-GreeN PLUS': 'maimai GreeN PLUS',
+  '(橙)-ORANGE': 'maimai ORANGE',
+  '(暁)-ORANGE PLUS': 'maimai ORANGE PLUS',
+  '(桃)-PiNK': 'maimai PiNK',
+  '(櫻)-PiNK PLUS': 'maimai PiNK PLUS',
+  '(紫)-MURASAKi': 'maimai MURASAKi',
+  '(菫)-MURASAKi PLUS': 'maimai MURASAKi PLUS',
+  '(白)-MiLK': 'maimai MiLK',
+  '(雪)-MiLK PLUS': 'MiLK PLUS',
+  '(輝)-FiNALE': 'maimai FiNALE',
+  '(熊華)-舞萌DX2020': 'maimai でらっくす',
+  '(爽煌)-舞萌DX2021': 'maimai でらっくす Splash',
+  '(宙星)-舞萌DX2022': 'maimai でらっくす UNiVERSE',
+  '(祭祝)-舞萌DX2023': 'maimai でらっくす FESTiVAL',
+  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES'
 }
 
 // 版本列表（使用显示名称）
 const versions = [
 	'任意版本',
-	'maimai',
-	'maimai+',
-	'Green',
-	'Green+',
-	'Orange',
-	'Orange+',
-	'Pink',
-	'Pink+',
-	'Murasaki',
-	'Murasaki+',
-	'Milk',
-	'Milk+',
-	'Finale',
-	'舞萌DX2020',
-	'舞萌DX2021',
-	'舞萌DX2022',
-	'舞萌DX2023',
-	'舞萌DX2024'
+	'(真)-maimai',
+	'(真)-maimai PLUS',
+	'(檄)-GreeN',
+	'(超)-GreeN PLUS',
+	'(橙)-ORANGE',
+	'(暁)-ORANGE PLUS',
+	'(桃)-PiNK',
+	'(櫻)-PiNK PLUS',
+	'(紫)-MURASAKi',
+	'(菫)-MURASAKi PLUS',
+	'(白)-MiLK',
+	'(雪)-MiLK PLUS',
+	'(輝)-FiNALE',
+	'(熊華)-舞萌DX2020',
+	'(爽煌)-舞萌DX2021',
+	'(宙星)-舞萌DX2022',
+	'(祭祝)-舞萌DX2023',
+	'(双宴)-舞萌DX2024'
 ]
 
 // 当前统计信息
@@ -1232,9 +1243,20 @@ const getAchievementClass = (achievement) => {
 	return 'normal'
 }
 
-// 获取歌曲封面
+// 获取歌曲封面并处理错误
 const getSongCover = (songId) => {
-	return getCoverUrl(songId)
+	try {
+		const coverUrl = getCoverUrl(songId);
+		return coverUrl || '../../static/default_cover.jpg';
+	} catch (error) {
+		console.error('获取封面出错:', error, songId);
+		return '../../static/default_cover.jpg';
+	}
+}
+
+// 处理图片加载错误
+const handleImageError = (e) => {
+	console.log('图片加载失败:', e);
 }
 
 // 修改 navigateToDetail 函数，添加难度索引参数
@@ -1317,7 +1339,7 @@ const updateGridSize = (size) => {
 
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 // 先定义文本省略混入
 @mixin text-ellipsis {
 	white-space: nowrap;
@@ -1375,8 +1397,8 @@ const updateGridSize = (size) => {
 	
 	.stats-row {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 16rpx;
+		flex-wrap: wrap; // 添加换行支持
+		gap: 16rpx; // 增加间距
 		margin-top: 16rpx;
 		
 		&.fc-row {
@@ -1545,8 +1567,14 @@ const updateGridSize = (size) => {
 				min-width: 70rpx;
 			}
 			
-			slider {
+			/* 调整slider容器样式 */
+			.custom-slider {
 				flex: 1;
+				width: 80%;
+				justify-self: start;
+				margin: 0;
+				height: 60rpx; /* 减小高度 */
+				padding: 0; /* 移除内边距 */
 			}
 		}
 		
@@ -1578,42 +1606,83 @@ const updateGridSize = (size) => {
 .songs-container {
 	&.grid-view {
 		position: relative;
-		display: grid;
-		gap: 10rpx;
-		padding: 10rpx;
+		display: flex;  
+		flex-wrap: wrap;  
+		gap: 6rpx; // 保持水平间距
+		row-gap: 4rpx; // 特别设置垂直间距更小
+		padding: 8rpx; // 保持内边距
 		padding-bottom: 120rpx;
 		
-		&.grid-size-2 {
-			grid-template-columns: repeat(2, 1fr);
+		&.grid-size-2 .song-item {
+			width: calc((100% - 6rpx) / 2);  
 		}
 		
-		&.grid-size-3 {
-			grid-template-columns: repeat(3, 1fr);
+		&.grid-size-3 .song-item {
+			width: calc((100% - 12rpx) / 3);  
 		}
 		
-		&.grid-size-4 {
-			grid-template-columns: repeat(4, 1fr);
+		&.grid-size-4 .song-item {
+			width: calc((100% - 18rpx) / 4);  
 		}
 		
-		&.grid-size-5 {
-			grid-template-columns: repeat(5, 1fr);
+		&.grid-size-5 .song-item {
+			width: calc((100% - 24rpx) / 5);  
 		}
 		
 		.song-item {
 			position: relative;
-			border-radius: 8rpx;
+			border-radius: 10rpx;
 			overflow: hidden;
-			aspect-ratio: 1;
+			margin-bottom: 0; // 移除底部间距，因为我们现在使用row-gap
+			box-sizing: border-box;
+			border: 1px solid rgba(0,0,0,0.08);
+			box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.04);
+			
+			&::before {
+				content: "";
+				display: block;
+				padding-top: 100%;
+			}
 			
 			.cover-image {
-				position: relative;
+				position: absolute;
+				top: 0;
+				left: 0;
 				width: 100%;
 				height: 100%;
+				border-radius: 4px;
+				border: 3px solid transparent;
+				box-sizing: border-box;
+				
+				&.level-0 {
+					border-color: #1EA15D;
+				}
+				
+				&.level-1 {
+					border-color: #F6B40C;
+				}
+				
+				&.level-2 {
+					border-color: #E9485D;
+				}
+				
+				&.level-3 {
+					border-color: #9E45E2;
+				}
+				
+				&.level-4 {
+					border-color: rgba(190, 170, 245, 1);
+				}
 				
 				image {
+					position: absolute;
+					top: 0;
+					left: 0;
 					width: 100%;
 					height: 100%;
+					
 					object-fit: cover;
+					z-index: 1;
 				}
 				
 				// 灰色遮罩
@@ -1627,30 +1696,39 @@ const updateGridSize = (size) => {
 					z-index: 5;
 				}
 				
-				// 新增图标容器
+				// 图标容器
 				.icon-container {
 					position: absolute;
 					top: 0;
 					left: 0;
-					right: 0;
-					bottom: 0;
+					width: 100%;
+					height: 100%;
 					display: flex;
 					justify-content: center;
 					align-items: center;
 					z-index: 10;
+					
+					// 确保图标本身也居中
+					.icon-badge, .icon-rate {
+						align-self: center;
+						justify-self: center;
+						position: absolute;
+						top: 50%;
+						left: 50%;
+						transform: translate(-50%, -50%);
+					}
 				}
 				
 				// 基础图标样式
 				.icon-badge {
 					width: 100rpx;
 					height: 100rpx;
-					//margin-top: 60%; // 向下偏移到封面下半部分
 				}
 				
-				// Rate图标特定样式 - 保持256:120的比例
+				// Rate图标特定样式
 				.icon-rate {
 					width: 120rpx;
-					height: 56rpx; // 按照256:120的比例计算高度
+					height: 56rpx;
 				}
 			}
 		}
@@ -1784,7 +1862,7 @@ const updateGridSize = (size) => {
 				width: 140rpx;
 				height: 140rpx;
 				border-radius: 8rpx;
-				object-fit: cover;
+			
 				background-color: #f5f5f5;
 				border: 2px solid transparent;
 				box-sizing: border-box;
@@ -2237,9 +2315,9 @@ const updateGridSize = (size) => {
 /* 网格视图中的封面图片难度边框 */
 .grid-view .cover-image {
   position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-  border: 2px solid transparent;
+ // overflow: hidden;
+  border-radius: 4px;
+  border: 3px solid;
   box-sizing: border-box;
 }
 
@@ -2340,4 +2418,17 @@ const updateGridSize = (size) => {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
 }
+
+/* 自定义slider样式 */
+.custom-slider {
+  width: 100%;
+  margin: 0;
+  height: 60rpx; /* 减小高度 */
+  
+  /* 移除深度选择器，避免重复样式 */
+}
+
+/* 使用全局样式，避免重复定义滑块 */
+/* 注意：这些样式可能需要放在App.vue或全局样式文件中 */
+
 </style>

@@ -1,0 +1,237 @@
+/* 用户中心深色模式样式 */
+.dark-mode {
+  .user-center {
+    background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+    
+    .user-info-container {
+      .user-card {
+        background: rgba(30, 30, 30, 0.95);
+        border: 1px solid rgba(50, 50, 50, 0.7);
+        box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+        
+        .avatar {
+          border: 4rpx solid #2a2a2a;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+        }
+        
+        .user-details {
+          .username {
+            color: #e0e0e0;
+          }
+          
+          .user-id {
+            color: #b0b0b0;
+          }
+          
+          .hint-text {
+            color: #60a5fa !important;
+          }
+        }
+      }
+    }
+    
+    .modules-container {
+      .section-title {
+        color: #e0e0e0;
+        
+        &.has-data {
+          background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(40, 40, 40, 0.9));
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+        }
+      }
+      
+      .function-grid {
+        .function-item {
+          background: #2a2a2a;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+          
+          .function-name {
+            color: #e0e0e0;
+          }
+          
+          .function-desc {
+            color: #a0a0a0;
+          }
+          
+          &:active {
+            box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.3);
+          }
+          
+          // 保持图标颜色不变，但调整背景
+          .function-icon {
+            background: rgba(40, 40, 40, 0.85) !important;
+          }
+        }
+        
+        &.account-grid {
+          // 保持原有的渐变色，但稍微调暗
+          .function-item:nth-child(1), 
+          .function-item:nth-child(2),
+          .function-item:nth-child(3), 
+          .function-item:nth-child(4),
+          .function-item:nth-child(5), 
+          .function-item:nth-child(6) {
+            &::before {
+              opacity: 0.2;
+            }
+          }
+        }
+      }
+    }
+    
+    .login-button {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4rpx 12rpx rgba(99, 102, 241, 0.3);
+      
+      &:active {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      }
+    }
+  }
+  
+  // 头像选择器深色模式
+  .avatar-selector {
+    background: #2a2a2a;
+    
+    .avatar-selector-header {
+      border-bottom: 2rpx solid #3a3a3a;
+      
+      .avatar-selector-title {
+        color: #e0e0e0;
+      }
+      
+      .close-btn {
+        color: #a0a0a0;
+      }
+    }
+    
+    .avatar-grid {
+      .avatar-list {
+        .avatar-item {
+          box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+  
+  // 弹窗组件深色模式
+  .uni-popup {
+    .uni-popup__wrapper {
+      background-color: #2a2a2a !important;
+    }
+  }
+  
+  // 设置弹窗深色模式
+  .settings-modal,
+  .qr-code-modal {
+    background-color: #2a2a2a !important;
+    
+    .modal-title {
+      color: #e0e0e0 !important;
+    }
+    
+    .modal-content {
+      color: #b0b0b0 !important;
+    }
+    
+    .input-field {
+      background-color: #3a3a3a !important;
+      color: #e0e0e0 !important;
+      border: 1px solid #4a4a4a !important;
+    }
+    
+    .button {
+      &.primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+      }
+      
+      &.secondary {
+        background: #3a3a3a !important;
+        color: #e0e0e0 !important;
+      }
+    }
+  }
+  
+  // RatingDisplay组件深色模式
+  .rating-display {
+    background-color: rgba(40, 40, 40, 0.7) !important;
+    
+    .rating-title {
+      color: #e0e0e0 !important;
+    }
+    
+    .rating-value {
+      color: #e0e0e0 !important;
+    }
+    
+    .rating-detail {
+      color: #b0b0b0 !important;
+    }
+    
+    // 保持彩虹色等特效不变
+    &.rainbow .rating-value,
+    &.bright-gold .rating-value,
+    &.gold .rating-value,
+    &.blue .rating-value,
+    &.copper .rating-value {
+      -webkit-background-clip: text !important;
+      color: transparent !important;
+    }
+  }
+  
+  // UpdateChecker组件深色模式
+  .update-checker {
+    background-color: #2a2a2a !important;
+    
+    .update-title {
+      color: #e0e0e0 !important;
+    }
+    
+    .update-content {
+      color: #b0b0b0 !important;
+    }
+    
+    .update-button {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    }
+  }
+  
+  // 加载提示深色模式
+  .uni-loading {
+    background-color: rgba(30, 30, 30, 0.7) !important;
+    
+    .uni-loading-text {
+      color: #e0e0e0 !important;
+    }
+  }
+  
+  // Toast提示深色模式
+  .uni-toast {
+    background-color: rgba(30, 30, 30, 0.9) !important;
+    
+    .uni-toast__text {
+      color: #e0e0e0 !important;
+    }
+  }
+}
+
+// 深色模式下的图标样式调整
+.dark-mode {
+  .function-item {
+    &.song-search .function-icon .icon-image,
+    &.my-scores .function-icon .icon-image,
+    &.song-recommend .function-icon .icon-image,
+    &.data-analysis .function-icon .icon-image,
+    &.chart-stats .function-icon .icon-image,
+    &.toolbox .function-icon .icon-image,
+    &.qr-code .function-icon .icon-image,
+    &.account-settings .function-icon .icon-image,
+    &.favorite .function-icon .icon-image,
+    &.update-scores .function-icon .icon-image,
+    &.refresh-api .function-icon .icon-image,
+    &.check-update .function-icon .icon-image {
+      // 保持原有的渐变色，但提高亮度以在深色背景下更加明显
+      opacity: 1 !important;
+    }
+  }
+} 

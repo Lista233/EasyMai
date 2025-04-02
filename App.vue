@@ -2,9 +2,9 @@
 import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
 import * as maiApi from './api/maiapi.js'
 import {addAPICount} from '@/api/myapi.js'
-import { ref, onMounted } from 'vue'
-// 导入 uni-popup 组件
-import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
+import { ref, onMounted, provide } from 'vue'
+
+
 
 	/*
 	本地存储:
@@ -40,7 +40,8 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 		'b35rating',         // 添加 B35 rating 存储
 		'b15rating',         // 添加 B15 rating 存储
 		'totalRating',       // 添加总 rating 存储
-		'lastLaunchDate'     // 添加上次启动日期存储
+		'lastLaunchDate',     // 添加上次启动日期存储
+		'isDarkMode'         // 添加深色模式存储
 	]
    // uni.clearStorage()
 	// 初始化本地存储
@@ -128,6 +129,58 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 		}
 	}
 
+	// 创建全局深色模式状态
+	const isDarkMode = ref(uni.getStorageSync('isDarkMode') === 'true' ? true : false);
+
+	// 提供给整个应用的全局状态和方法
+	provide('isDarkMode', isDarkMode);
+
+	// 提供切换主题的方法
+	function toggleDarkMode() {
+		isDarkMode.value = !isDarkMode.value;
+		// 保存到本地存储
+		uni.setStorageSync('isDarkMode', isDarkMode.value.toString());
+		// 应用主题
+		applyTheme();
+	}
+	provide('toggleDarkMode', toggleDarkMode);
+
+	// 应用主题到页面
+	function applyTheme() {
+		if (isDarkMode.value) {
+			// 设置顶部状态栏颜色为深色
+			uni.setNavigationBarColor({
+				frontColor: '#ffffff',
+				backgroundColor: '#1c1c1e',
+				animation: {
+					duration: 300,
+					timingFunc: 'easeIn'
+				}
+			});
+			
+			// 设置底部导航栏为深色模式
+	
+		} else {
+			// 设置顶部状态栏颜色为浅色
+			uni.setNavigationBarColor({
+				frontColor: '#000000',
+				backgroundColor: '#f8f8f8',
+				animation: {
+					duration: 300,
+					timingFunc: 'easeIn'
+				}
+			});
+			
+		
+		}
+	}
+	provide('applyTheme', applyTheme);
+
+	// 初始化主题
+	function initTheme() {
+		applyTheme();
+	}
+
 	// App 生命周期
 	onLaunch(() => {
 		console.log('App Launch')
@@ -157,5 +210,12 @@ import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue
 </template>
 
 <style>
-	/*每个页面公共css */
+@import './styles/theme.scss';
+
+/* 全局样式 */
+page {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
 </style>

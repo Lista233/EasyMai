@@ -1,9 +1,19 @@
 <template>
-  <view class="user-center">
+  <view class="user-center" :class="{'dark-mode': isDarkMode}">
     <!-- 顶部用户信息区域 -->
     <view class="user-info-container">
+      <!-- 添加黑夜模式切换按钮 -->
+      <view class="theme-toggle" @click="toggleDarkMode">
+        <view class="theme-icon" :class="isDarkMode ? 'moon-icon' : 'sun-icon'">
+          <view class="icon-image" :style="{
+            '-webkit-mask-image': `url('/static/icons/${isDarkMode ? 'moon' : 'sun'}.png')`, 
+            'mask-image': `url('/static/icons/${isDarkMode ? 'moon' : 'sun'}.png')`
+          }"></view>
+        </view>
+      </view>
+      
       <view class="user-card">
-      <view class="avatar-container" @click="showAvatarSelector">
+        <view class="avatar-container" @click="showAvatarSelector">
           <image class="avatar" :src="avatar || '/static/default-avatar.jpg'" mode="aspectFill"></image>
         </view>
         <view class="user-details">
@@ -11,12 +21,15 @@
           <!-- <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view> -->
           <!-- <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view> -->
         </view>
-        <RatingDisplay 
-          :b35rating="b35rating" 
-          :b15rating="b15rating"
-          :isLoggedIn="isLoggedIn"
-		  @click="updateRecord"
-        />
+        <view class="rating-wrapper">
+          <RatingDisplay 
+            :b35rating="b35rating" 
+            :b15rating="b15rating"
+            :isLoggedIn="isLoggedIn"
+            :isDarkMode="isDarkMode"
+            @click="updateRecord"
+          />
+        </view>
       </view>
     </view>
     
@@ -54,15 +67,15 @@
           <view class="function-desc">基于你的水平推荐歌曲</view>
         </view>
         
-		<!-- 数据分析 -->
-		<view class="function-item data-analysis" @click="handleB50">
-		  <view class="function-icon">
-		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/b50.png'); mask-image: url('/static/icons/b50.png');"></view>
-		  </view>
-		  <view class="function-name">B50查询</view>
-		  <view class="function-desc">来查查你的Best50</view>
-		</view>
-		
+        <!-- 数据分析 -->
+        <view class="function-item data-analysis" @click="handleB50">
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/b50.png'); mask-image: url('/static/icons/b50.png');"></view>
+          </view>
+          <view class="function-name">B50查询</view>
+          <view class="function-desc">来查查你的Best50</view>
+        </view>
+        
         <!-- 热门乐曲排行 -->
         <view class="function-item chart-stats" @click="navigateToChartStats">
           <view class="function-icon">
@@ -81,7 +94,6 @@
           <view class="function-desc">实用工具与小功能</view>
         </view>
         
-   
       </view>
       
       <view class="section-title has-data">
@@ -90,23 +102,14 @@
       
       <view class="function-grid account-grid">
         <!-- 绑定二维码 -->
-     
-		
-		<view class="function-item favorite" @click="navigateToFavorite">
-		  <view class="function-icon">
-		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/favorites.png'); mask-image: url('/static/icons/favorites.png');"></view>
-		  </view>
-		  <view class="function-name">我的收藏</view>
-		  <view class="function-desc">查看我收藏的乐曲</view>
-		</view>
-		
-<!--    <view class="function-item update-scores" @click="divingFishUpdate">
-		  <view class="function-icon">
-		    <view class="icon-image" style="-webkit-mask-image: url('/static/icons/upload.png'); mask-image: url('/static/icons/upload.png');"></view>
-		  </view>
-		  <view class="function-name">更新成绩</view>
-		  <view class="function-desc">更新水鱼查分器成绩</view>
-		</view> -->
+        <view class="function-item favorite" @click="navigateToFavorite">
+          <view class="function-icon">
+            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/favorites.png'); mask-image: url('/static/icons/favorites.png');"></view>
+          </view>
+          <view class="function-name">我的收藏</view>
+          <view class="function-desc">查看我收藏的乐曲</view>
+        </view>
+        
         <!-- 账号设置 -->
         <view class="function-item account-settings" @click="handleAccountSettings">
           <view class="function-icon">
@@ -116,19 +119,7 @@
           <view class="function-desc">管理个人账号</view>
         </view>
         
-   <!--     <view class="function-item qr-code" @click="handleQrCode">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/qrcode.png'); mask-image: url('/static/icons/qrcode.png');"></view>
-          </view>
-          <view class="function-name">绑定二维码</view>
-          <view class="function-desc">关联舞萌DX账号</view>
-        </view> -->
-
-		
-		
-	
-
-    <view class="function-item refresh-api" @click="handleRefreshAPI">
+        <view class="function-item refresh-api" @click="handleRefreshAPI">
           <view class="function-icon">
             <view class="icon-image" style="-webkit-mask-image: url('/static/icons/refresh.png'); mask-image: url('/static/icons/refresh.png');"></view>
           </view>
@@ -194,19 +185,19 @@
     </uni-popup>
 
     <!-- 添加更新检查器组件 -->
-   <UpdateChecker
-     ref="updateChecker"
-     :current-version="currentVersion"
-     :auto-check="false"
-     @api-refreshed="handleApiRefreshed"
-   />
+    <UpdateChecker
+      ref="updateChecker"
+      :current-version="currentVersion"
+      :auto-check="false"
+      @api-refreshed="handleApiRefreshed"
+    />
   </view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch, inject } from 'vue';
 import * as maiApi from '../../api/maiapi.js';
-import {onLoad} from '@dcloudio/uni-app'
+import { onLoad, onShow } from '@dcloudio/uni-app'
 import QrCodeModal from '@/components/QrCodeModal.vue';
 import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
 import RatingDisplay from '@/components/RatingDisplay.vue';
@@ -218,10 +209,15 @@ import {addAPICount,getVersion} from '@/api/myapi.js';
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
 import { remoteRoute, version } from '@/static/apiconfig.js'
 
+// 注入全局深色模式状态和切换方法
+const isDarkMode = inject('isDarkMode');
+const toggleDarkMode = inject('toggleDarkMode');
+const applyTheme = inject('applyTheme');
+
 let b35=ref('')
 let b15=ref('')
-let b15rating=ref(0)
 let b35rating=ref(0)
+let b15rating=ref(0)
 
 let username=ref('')
 let password=ref('')
@@ -237,6 +233,12 @@ let QrCode=ref('');
 let uid=ref(-1);
 
 let mainame=ref('')
+   // #ifdef APP-PLUS
+plus.android.importClass("android.view.Window");
+const main = plus.android.runtimeMainActivity();
+const window = main.getWindow();
+const Color = plus.android.importClass("android.graphics.Color");   
+  // #endif
 
 // 计算属性：根据rating值返回对应的样式类名
 const ratingClass = computed(() => {
@@ -390,6 +392,22 @@ onLoad(async () => {
 	
 	await getb50local();
 });
+
+// 在页面显示时应用主题到导航栏
+onShow(() => {
+  // 设置页面标题
+  uni.setNavigationBarTitle({
+    title: '用户中心'
+  });
+  
+  // 应用当前主题到导航栏
+  applyTheme();
+  updateNativeTabBar();
+  // 更新tabbar样式
+  //updateTabBarStyle();
+  //getNativeTabBar();
+});
+
 // 其他处理函数保持不变
 const handleSettings = () => {
 	
@@ -451,8 +469,8 @@ const handleLogout = () => {
         // 重置响应式变量
         b35.value = '';
         b15.value = '';
-        b15rating.value = 0;
         b35rating.value = 0;
+        b15rating.value = 0;
         username.value = '';
         password.value = '';
         nickname.value = '';
@@ -965,6 +983,12 @@ const selectAvatar = (iconPath) => {
 // 确保在组件挂载后初始化弹窗
 onMounted(() => {
   console.log('组件已挂载');
+  // 从本地存储加载主题设置
+  const savedTheme = uni.getStorageSync('theme_mode');
+  if (savedTheme === 'dark') {
+    isDarkMode.value = true;
+  }
+  
   // 确保弹窗组件已正确初始化
   setTimeout(() => {
     if (avatarPopup.value) {
@@ -1039,9 +1063,56 @@ const handleApiRefreshed = (data) => {
     icon: 'success'
   });
 };
+
+// 添加更新tabbar样式的函数
+const updateTabBarStyle = () => {
+  if (isDarkMode.value) {
+    uni.setTabBarStyle({
+      color: '#666666',
+      selectedColor: '#818cf8',
+      backgroundColor: '#1c1c1e', // 深色模式下的黑色背景
+      borderStyle: 'black'
+    });
+  } else {
+    uni.setTabBarStyle({
+      color: '#999999',
+      selectedColor: '#6366f1',
+      backgroundColor: '#ffffff', // 浅色模式下的白色背景
+      borderStyle: 'white'
+    });
+  }
+};
+
+// 添加更新原生TabBar样式的函数
+const updateNativeTabBar = () => {
+  // #ifdef APP-PLUS
+  if(uni.getSystemInfoSync().platform === 'android') {
+    try {
+      if(isDarkMode.value) {
+        // 深色模式
+        window.setNavigationBarColor(Color.parseColor('#1c1c1e'));
+      } else {
+        // 浅色模式
+        window.setNavigationBarColor(Color.parseColor('#ffffff'));
+      }
+      
+      console.log('TabBar样式已更新');
+    } catch(e) {
+      console.error('更新原生TabBar样式失败:', e);
+    }
+  }
+  // #endif
+};
+
+watch(isDarkMode, () => {
+  uni.setStorageSync('theme_mode', isDarkMode.value ? 'dark' : 'light');
+  applyTheme();
+  updateNativeTabBar(); // 这里的调用会根据平台条件编译
+});
 </script>
 
 <style lang="scss" scoped>
+@import './dark-user-center.scss';
 .user-center {
   position: relative;
   min-height: 100vh;
@@ -1053,6 +1124,54 @@ const handleApiRefreshed = (data) => {
   .user-info-container {
     max-width: 750rpx;
     margin: 0 auto 40rpx;
+    
+    .theme-toggle {
+      position: absolute;
+      top: 20rpx;
+      right: 20rpx;
+      z-index: 10;
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:active {
+        transform: scale(0.95);
+      }
+      
+      .theme-icon {
+        width: 50rpx;
+        height: 50rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .icon-image {
+          width: 40rpx;
+          height: 40rpx;
+          -webkit-mask-size: contain;
+          mask-size: contain;
+          -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+          -webkit-mask-position: center;
+          mask-position: center;
+        }
+      }
+      
+      .sun-icon .icon-image {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+      }
+      
+      .moon-icon .icon-image {
+        background: linear-gradient(135deg, #6366f1, #4f46e5);
+      }
+    }
     
     .user-card {
       background: rgba(255, 255, 255, 0.95);
@@ -1089,7 +1208,7 @@ const handleApiRefreshed = (data) => {
         justify-content: center;
         align-items: center;
         text-align: center;
-        margin: 16rpx 0;
+        margin-bottom:0rpx;
         
         .username {
           font-size: 36rpx;
@@ -1125,178 +1244,49 @@ const handleApiRefreshed = (data) => {
         }
       }
       
-      .rating-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20rpx;
-        padding: 20rpx 40rpx;
-        margin: 10rpx;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
-        text-align: center;
-        width: 80%;
-        border: 1px solid rgba(255, 255, 255, 0.7);
-        position: relative;
-        
-        .rating-title {
-          font-size: 24rpx;
-          font-weight: 500;
-          letter-spacing: 2rpx;
-          opacity: 0.7;
-          text-transform: uppercase;
-          margin-bottom: 8rpx;
-          position: relative;
-          z-index: 1;
-        }
-        
-        .rating-value {
-          font-size: 56rpx;
-          font-weight: 800;
-          line-height: 1.2;
-          position: relative;
-          z-index: 1;
-          margin: 4rpx 0;
-        }
-        
-        .rating-subtitle {
-          font-size: 20rpx;
-          font-weight: 500;
-          opacity: 0.5;
-          letter-spacing: 1rpx;
-          margin-top: 4rpx;
-        }
-        
-        // 默认样式（<12000）
-        &.default {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
-          .rating-title, .rating-subtitle { color: #64748b; }
-          .rating-value { color: #1e293b; }
-        }
-        
-        // 铜色样式（12000+）
-        &.copper {
-          background: linear-gradient(135deg, #fde4cf 0%, #d6a285 100%);
-          .rating-title, .rating-subtitle { color: rgba(124, 45, 18, 0.8); }
-          .rating-value {
-              background: linear-gradient(135deg, #c2410c, #9a3412);
-              -webkit-background-clip: text;
-              color: transparent;
-          }
-        }
-        
-        // 蓝色样式（13000+）
-        &.blue {
-          background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
-          .rating-title, .rating-subtitle { color: rgba(30, 58, 138, 0.8); }
-          .rating-value {
-              background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-              -webkit-background-clip: text;
-              color: transparent;
-          }
-        }
-        
-        // 金色样式（14000+）
-        &.gold {
-          background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
-          .rating-title, .rating-subtitle { color: rgba(146, 64, 14, 0.8); }
-          .rating-value {
-              background: linear-gradient(135deg, #d97706, #92400e);
-              -webkit-background-clip: text;
-              color: transparent;
-          }
-        }
-        
-        // 亮金色样式（14500+）
-        &.bright-gold {
-          background: linear-gradient(135deg, #fef9c3 0%, #fde047 100%);
-          .rating-title, .rating-subtitle { color: rgba(133, 77, 14, 0.8); }
-          .rating-value {
-              background: linear-gradient(135deg, #facc15, #eab308);
-              -webkit-background-clip: text;
-              color: transparent;
-          }
-        }
-        
-        // 彩虹色样式（15000+）
-        &.rainbow {
-          background: linear-gradient(135deg, #fff8f8 0%, #fff4f4 100%);
-          &::before {
-              content: '';
-              position: absolute;
-              top: 0;
-              left: -50%;
-              right: -50%;
-              bottom: 0;
-              background: linear-gradient(
-                  90deg,
-                  rgba(255, 82, 82, 0.2),
-                  rgba(255, 186, 0, 0.2),
-                  rgba(0, 255, 127, 0.2),
-                  rgba(0, 191, 255, 0.2),
-                  rgba(148, 0, 211, 0.2),
-                  rgba(255, 82, 82, 0.2),
-              );
-              background-size: 400% 100%;
-              animation: rainbow-bg 16s linear infinite;
-              filter: blur(8px);
-              opacity: 0.6;
-          }
-          
-          .rating-title, .rating-subtitle { 
-              color: rgba(30, 41, 59, 0.7);
-          }
-          
-          .rating-value {
-              background: linear-gradient(
-                  90deg,
-                  #ff3232,
-                  #ffb511,
-                  #11dd88,
-                  #00bfff,
-                  #8965d3,
-                  #ff3232
-              );
-              background-size: 300% 100%;
-              -webkit-background-clip: text;
-              color: transparent;
-              animation: rainbow-text 24s linear infinite;
-          }
-        }
+      .rating-wrapper {
+        width: 100%;
+        margin-top: 0rpx;
+        display: block;
       }
     }
   }
   
   .modules-container {
-    max-width: 750rpx;
-    margin: 0 auto 40rpx;
+    max-width: 800rpx;
+    margin: -20rpx auto 40rpx;
     
     .section-title {
       font-size: 32rpx;
       font-weight: 800;
       margin: 28rpx auto;
       margin-bottom: 20rpx;
-      margin-top: -15rpx;
-      color: black;
+      margin-top: -25rpx;
+      color: var(--text-color);
       padding: 10rpx 20rpx;
       border-radius: 12rpx;
       position: relative;
       overflow: hidden;
-      display: inline-block;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      min-width: 150rpx;
+      min-width: 300rpx;
+      width: 90%;
       padding-top: 15rpx;
       padding-bottom: 25rpx;
       text-align: center;
       background: transparent;
       box-shadow: none;
-      transform: translateX(-20rpx);
       opacity: 0.7;
+      margin-left: auto;
+      margin-right: auto;
       
       .title-content {
         position: relative;
         display: inline-block;
         padding: 0 30rpx;
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        transform: translateX(0);
         
         &::before,
         &::after {
@@ -1322,20 +1312,18 @@ const handleApiRefreshed = (data) => {
       }
       
       &.has-data {
-        display: block;
-        text-align: center;
-        width: calc(95% - 20rpx);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 95%;
         margin-left: auto;
         margin-right: auto;
         background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.9));
         box-shadow: 0 4rpx 12rpx rgba(99,102,241,0.08);
         backdrop-filter: blur(10px);
-        transform: translateX(0);
         opacity: 1;
         
         .title-content {
-          transform: translateX(0);
-          
           &::before,
           &::after {
             width: 8rpx;
@@ -1344,21 +1332,11 @@ const handleApiRefreshed = (data) => {
         }
       }
       
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 2rpx;
-       // background: linear-gradient(to bottom, #2196F3, #4CAF50);
-        transform: scaleX(0);
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        transform-origin: left;
-      }
-      
-      &.has-data::after {
-        transform: scaleX(1);
+      // 暗色模式适配
+      .dark-mode & {
+        &.has-data {
+          background: linear-gradient(135deg, rgba(44,44,46,0.9), rgba(44,44,46,0.9));
+        }
       }
     }
     
@@ -1915,5 +1893,4 @@ const handleApiRefreshed = (data) => {
 }
 
 // 账号相关图标样式 - 使用nth-child选择器保持原有的行颜色设计
-
 </style>
