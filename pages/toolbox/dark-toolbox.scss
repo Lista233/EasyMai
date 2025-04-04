@@ -1,0 +1,101 @@
+@import '../../uni.scss';
+.toolbox-container.dark-mode {
+  padding: 30rpx;
+  background-color: $dark-element-bg;
+  min-height: 100vh;
+
+  .header {
+    margin-bottom: 40rpx;
+    
+    .title {
+      font-size: 44rpx;
+      font-weight: 700;
+      color: $dark-text-primary;
+      display: block;
+      margin-bottom: 10rpx;
+    }
+    
+    .subtitle {
+      font-size: 28rpx;
+      color: $dark-text-secondary;
+    }
+  }
+
+  .tool-section {
+    margin-bottom: 50rpx;
+    background: $dark-card-bg;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.15);
+    
+    .section-header {
+      margin-bottom: 30rpx;
+      border-bottom: 2rpx solid $dark-card-border;
+      padding-bottom: 20rpx;
+      
+      .section-title {
+        font-size: 34rpx;
+        font-weight: 600;
+        color: $dark-text-primary;
+        display: block;
+        margin-bottom: 8rpx;
+      }
+      
+      .section-desc {
+        font-size: 24rpx;
+        color: $dark-text-hint;
+      }
+    }
+    
+    .tool-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20rpx;
+      
+      .tool-card {
+        flex: 1;
+        min-width: calc(33.333% - 14rpx);
+        background: $dark-element-active-bg;
+        border-radius: 16rpx;
+        padding: 24rpx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s ease;
+        
+        &:active {
+          transform: scale(0.97);
+          background: $dark-button-hover-bg;
+        }
+        
+        .tool-icon {
+          font-size: 48rpx;
+          margin-bottom: 16rpx;
+          color: $dark-primary-button-border;
+        }
+        
+        .tool-name {
+          font-size: 28rpx;
+          font-weight: 600;
+          color: $dark-text-primary;
+          margin-bottom: 8rpx;
+          text-align: center;
+        }
+        
+        .tool-desc {
+          font-size: 22rpx;
+          color: $dark-text-secondary;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  @media screen and (max-width: 768rpx) {
+    .tool-grid {
+      .tool-card {
+        min-width: calc(50% - 10rpx);
+      }
+    }
+  }
+} 

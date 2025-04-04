@@ -1,0 +1,365 @@
+/* 深色模式样式 - song-search页面 */
+@import '@/uni.scss';
+
+.container.dark-mode {
+  background: $dark-gradient-bg;
+  
+  .search-filter-section {
+    background-color: $dark-card-bg;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    
+    .search-box {
+      border-bottom: 2rpx solid rgba(255, 255, 255, 0.05);
+      
+      .search-input-wrapper {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 2rpx solid rgba(255, 255, 255, 0.05);
+        
+        &:focus-within {
+          background-color: rgba(0, 0, 0, 0.3);
+          box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.2);
+          border-color: rgba(99, 102, 241, 0.5);
+        }
+        
+        uni-icons {
+          color: $dark-text-secondary;
+        }
+        
+        input {
+          color: $dark-text-primary;
+          
+          &::placeholder {
+            color: $dark-text-hint;
+          }
+        }
+        
+        .view-toggle {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.3);
+          
+          &:active {
+            box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+          }
+        }
+      }
+    }
+    
+    .filter-section {
+      .filter-buttons {
+        .filter-btn {
+          background: $dark-primary-button-bg !important;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.25);
+          
+          &:active {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+          }
+          
+          .btn-content {
+            .btn-title {
+              color: rgba(255, 255, 255, 0.95);
+            }
+            
+            .filter-active {
+              color: rgba(255, 255, 255, 0.9);
+              background-color: rgba(255, 255, 255, 0.15);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .result-list {
+    .result-item {
+      background-color: $dark-card-bg;
+      box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.15);
+      
+      &:hover {
+        box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.2);
+      }
+      
+      .song-cover {
+        box-shadow: 0 6rpx 12rpx rgba(0, 0, 0, 0.25);
+      }
+      
+      .song-info {
+        .title-row {
+          .song-name {
+            color: $dark-text-primary;
+          }
+          
+          .song-id {
+            color: $dark-text-secondary;
+            background-color: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+          }
+        }
+        
+        .song-details {
+          .version {
+            background-color: rgba(24, 144, 255, 0.15);
+            color: #4dabf7;
+          }
+          
+          .genre {
+            background-color: rgba(82, 196, 26, 0.15);
+            color: #82c91e;
+          }
+          
+          .difficulty {
+            background-color: rgba(250, 140, 22, 0.15);
+            color: #fd7e14;
+          }
+        }
+        
+        .result-info {
+          color: $dark-text-hint;
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+  }
+  
+  .filter-popup {
+    background-color: $dark-element-bg;
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.25);
+    
+    .popup-header {
+      border-bottom: 2rpx solid rgba(255, 255, 255, 0.05);
+      background: linear-gradient(to bottom, #2a2a35, #252530);
+      
+      .title {
+        color: $dark-text-primary;
+        text-shadow: 0 1rpx 0 rgba(0, 0, 0, 0.5);
+      }
+      
+      .close-btn {
+        color: $dark-text-secondary;
+        
+        &:active {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+    
+    .popup-content {
+      .form-item {
+        &.ds-range {
+          input {
+            border: 2rpx solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: $dark-text-primary;
+          }
+          
+          .range-separator {
+            color: $dark-text-hint;
+          }
+        }
+      }
+      
+      .range-tips {
+        color: $dark-text-hint;
+      }
+      
+      .difficulty-select {
+        text {
+          color: $dark-text-secondary;
+        }
+        
+        .picker-value {
+          border: 2rpx solid rgba(255, 255, 255, 0.1);
+          background-color: rgba(0, 0, 0, 0.2);
+          box-shadow: inset 0 1rpx 3rpx rgba(0, 0, 0, 0.1);
+          color: $dark-text-primary;
+          
+          .picker-arrow {
+            color: $dark-text-hint;
+          }
+          
+          &:active {
+            border-color: #6366f1;
+            background-color: rgba(99, 102, 241, 0.1);
+            
+            .picker-arrow {
+              color: #6366f1;
+            }
+          }
+        }
+      }
+    }
+    
+    .version-list {
+      .version-scroll {
+        &::before {
+          background: linear-gradient(to bottom, rgba(37, 37, 48, 0.9), rgba(37, 37, 48, 0));
+        }
+        
+        &::after {
+          background: linear-gradient(to top, rgba(37, 37, 48, 0.9), rgba(37, 37, 48, 0));
+        }
+      }
+      
+      .version-item {
+        color: $dark-text-secondary;
+        border-bottom: 2rpx solid rgba(255, 255, 255, 0.05);
+        
+        &.active {
+          color: #818cf8;
+          background-color: rgba(99, 102, 241, 0.15);
+          box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.3);
+          
+          &::before {
+            background-color: #818cf8;
+          }
+        }
+        
+        &:active {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+    
+    .popup-footer {
+      border-top: 2rpx solid rgba(255, 255, 255, 0.05);
+      background: linear-gradient(to bottom, #252530, #2a2a35);
+      
+      button {
+        &.cancel-btn {
+          background-color: rgba(255, 255, 255, 0.05);
+          color: $dark-text-secondary;
+          box-shadow: inset 0 0 0 1rpx rgba(255, 255, 255, 0.1);
+          
+          &:active {
+            background-color: rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2rpx 5rpx rgba(0, 0, 0, 0.1);
+          }
+        }
+        
+        &.confirm-btn {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          color: #fff;
+          box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+          
+          &:active {
+            box-shadow: inset 0 2rpx 5rpx rgba(0, 0, 0, 0.3);
+          }
+        }
+      }
+    }
+  }
+  
+  .filter-button {
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+    
+    &:active {
+      box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+    }
+    
+    .filter-name {
+      color: $dark-text-hint;
+    }
+    
+    .filter-value {
+      color: $dark-text-primary;
+    }
+    
+    &.active {
+      background-color: rgba(99, 102, 241, 0.15);
+      border-color: #6366f1;
+      
+      .filter-name {
+        color: #818cf8;
+      }
+      
+      .filter-value {
+        color: #a5b4fc;
+      }
+    }
+  }
+  
+  .grid-view {
+    .grid-controls {
+      background-color: $dark-card-bg;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+      
+      .control-label {
+        color: $dark-text-primary;
+      }
+    }
+    
+    .grid-container {
+      .grid-items-wrapper {
+        .grid-item {
+          background-color: $dark-element-bg;
+          box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.15);
+        }
+      }
+    }
+  }
+  
+  .search-result-count {
+    color: $dark-text-secondary;
+    background-color: $dark-card-bg;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+    
+    .count-highlight {
+      color: #818cf8;
+    }
+    
+    .search-time {
+      color: $dark-text-hint;
+    }
+  }
+  
+  .pagination {
+    .pagination-container {
+      background-color: $dark-card-bg;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+      
+      .page-input-wrapper {
+        .page-label {
+          color: $dark-text-secondary;
+        }
+        
+        .page-input {
+          background-color: rgba(0, 0, 0, 0.2);
+          border: 2rpx solid rgba(255, 255, 255, 0.1);
+          color: $dark-text-primary;
+          
+          &:focus {
+            border-color: #6366f1;
+            background-color: rgba(0, 0, 0, 0.3);
+          }
+        }
+        
+        .page-separator {
+          color: $dark-text-secondary;
+        }
+        
+        .total-pages {
+          color: $dark-text-secondary;
+        }
+      }
+      
+      .page-buttons {
+        .page-btn {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+          box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.25);
+          
+          &:active {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+          }
+          
+          &:disabled {
+            opacity: 0.5;
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: none;
+          }
+        }
+      }
+    }
+  }
+} 

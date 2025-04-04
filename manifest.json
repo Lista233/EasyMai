@@ -86,7 +86,8 @@
                 }
             },
             "splashscreen" : {
-                "androidStyle" : "common"
+                "androidStyle" : "common",
+                "useOriginalMsgbox" : false
             }
         }
     },

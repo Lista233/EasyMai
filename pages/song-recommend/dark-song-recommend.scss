@@ -1,0 +1,187 @@
+/* 深色模式样式 - song-recommend页面 */
+@import '@/uni.scss';
+
+.container.dark-mode {
+  background: $dark-gradient-bg;
+  
+  .header {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.95), rgba(25, 25, 35, 0.95));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(50, 50, 60, 0.7);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    .header-title {
+      color: $dark-text-primary;
+      
+      &::after {
+        background: linear-gradient(to right, #818cf8, #6366f1);
+      }
+    }
+  }
+  
+  .input-section {
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    .section-title {
+      color: $dark-text-primary;
+    }
+    
+    .rating-input {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.2);
+      color: $dark-text-primary;
+      
+      &:hover {
+        border-color: #818cf8;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      
+      &::placeholder {
+        color: $dark-text-hint;
+      }
+    }
+    
+    .recommend-button {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      
+      &:active {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+    }
+    
+    .filter-options {
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      
+      .filter-title {
+        color: $dark-text-secondary;
+      }
+      
+      .picker-text {
+        background-color: rgba(0, 0, 0, 0.2);
+        color: $dark-text-primary;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        
+        &.disabled {
+          color: $dark-text-hint;
+          background-color: rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+  
+  .recommendation-section {
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    .section-title {
+      color: $dark-text-primary;
+    }
+    
+    .result-count {
+      color: $dark-text-hint;
+    }
+    
+    .tab-header {
+      background-color: rgba(0, 0, 0, 0.2);
+      
+      .tab-item {
+        color: $dark-text-secondary;
+        
+        &.active {
+          background-color: #4f46e5;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+    
+    .chart-list {
+      .chart-item {
+        background-color: rgba(40, 40, 50, 0.8);
+        border: 1px solid rgba(60, 60, 70, 0.5);
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+        
+        .chart-rank {
+          color: $dark-text-secondary;
+        }
+        
+        .chart-info {
+          .song-title {
+            color: $dark-text-primary;
+          }
+          
+          .chart-details {
+            .stat-item {
+              color: $dark-text-secondary;
+              
+              .stat-label {
+                color: $dark-text-hint;
+              }
+              
+              .stat-value {
+                color: $dark-text-primary;
+              }
+              
+              .player-achievement {
+                color: #a5b4fc;
+              }
+            }
+          }
+        }
+      }
+      
+      .no-results {
+        color: $dark-text-hint;
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      
+      .pagination {
+        .page-info {
+          color: $dark-text-secondary;
+          
+          .total-count {
+            color: $dark-text-hint;
+          }
+        }
+        
+        .page-controls {
+          .page-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+            
+            &:active {
+              background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+              box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+            }
+            
+            &:disabled {
+              opacity: 0.5;
+              background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .navigation-section {
+    .nav-button {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+      
+      &:active {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+} 

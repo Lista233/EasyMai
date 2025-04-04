@@ -1,5 +1,5 @@
 <template>
-  <view class="lottery-container">
+  <view class="lottery-container" :class="{ 'dark-mode': isDarkMode }">
     <view class="header">
       <text class="title">Mai什么</text>
       <p><text class="subtitle">一切都是命运石之门的选择~</text></p>
@@ -154,10 +154,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch,onBeforeMount,inject} from 'vue';
 import { getCoverUrl } from '../../util/coverManager.js';
 import SongService from '../../utils/SongService.js';
-
+import {updateNativeTabBar } from '@/utils/updateNativeTabBar.js'
+// 注入主题服务
+const applyTheme = inject('applyTheme');
+const isDarkMode = inject('isDarkMode');
+onBeforeMount(() => {
+  updateNativeTabBar(isDarkMode.value);
+  applyTheme();
+});
 // 状态变量
 const currentSongs = ref([]);
 const isRunning = ref(false);
@@ -387,6 +394,10 @@ const toggleLottery = () => {
     clearInterval(lotteryInterval.value);
     isRunning.value = false;
     
+
+  } else {
+    // 开始前更新筛选列表
+    updateFilteredSongs();
     // 保存最终结果到历史记录
     if (currentSongs.value.length > 0) {
       lotteryHistory.value.unshift([...currentSongs.value]);
@@ -402,10 +413,6 @@ const toggleLottery = () => {
       uni.setStorageSync('lotteryHistory', lotteryHistory.value);
       uni.setStorageSync('lotteryTimestamps', historyTimestamps.value);
     }
-  } else {
-    // 开始前更新筛选列表
-    updateFilteredSongs();
-    
     if (filteredSongs.value.length === 0) {
       uni.showToast({
         title: '没有符合条件的歌曲',
@@ -494,6 +501,7 @@ const getDifficultyName = (song) => {
 </script>
 
 <style lang="scss" scoped>
+@import './dark-song-lottery.scss';	
 .lottery-container {
   display: flex;
   flex-direction: column;
@@ -609,24 +617,28 @@ const getDifficultyName = (song) => {
       &.columns-1 {
         .cover-item {
           width: 50%;
+          height: 50%;;
           margin: 0 auto;
         }
       }
       
       &.columns-2 {
         .cover-item {
+          height:  calc((100% - 20rpx) / 2);;
           width: calc((100% - 20rpx) / 2);
         }
       }
       
       &.columns-3 {
         .cover-item {
+          height:  calc((100% - 40rpx) / 3);;
           width: calc((100% - 40rpx) / 3);
         }
       }
       
       &.columns-4 {
         .cover-item {
+          height:  calc((100% - 60rpx) / 4);;
           width: calc((100% - 60rpx) / 4);
         }
       }
@@ -809,108 +821,106 @@ const getDifficultyName = (song) => {
       }
     }
   }
-}
-
-/* 添加难度边框样式 */
-.song-cover, .history-cover-wrapper {
-  position: relative;
-  overflow: hidden;
-  border-width: 9rpx;
-  border-style: solid;
-  border-radius: 8rpx;
-  box-sizing: border-box;
-  
-  &.border-basic {
-    border-color: rgb(83, 206, 134);
+  .song-cover, .history-cover-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-width: 9rpx;
+    border-style: solid;
+    border-radius: 8rpx;
+    box-sizing: border-box;
+    
+    &.border-basic {
+      border-color: rgb(83, 206, 134);
+    }
+    
+    &.border-advanced {
+      border-color: rgb(227, 206, 42);
+    }
+    
+    &.border-expert {
+      border-color: rgba(225, 71, 87, 1);
+    }
+    
+    &.border-master {
+      border-color: rgba(156, 136, 255, 1);
+    }
+    
+    &.border-remaster {
+      border-color: rgb(253, 163, 249);
+    }
   }
   
-  &.border-advanced {
-    border-color: rgb(227, 206, 42);
+  /* 修改历史记录封面样式 */
+  .history-cover-wrapper {
+    width: 120rpx;
+    height: 120rpx;
+    margin-right: 10rpx;
+    margin-bottom: 10rpx;
+    display: inline-block;
   }
   
-  &.border-expert {
-    border-color: rgba(225, 71, 87, 1);
-  }
-  
-  &.border-master {
-    border-color: rgba(156, 136, 255, 1);
-  }
-  
-  &.border-remaster {
-    border-color: rgb(253, 163, 249);
-  }
-}
-
-/* 修改历史记录封面样式 */
-.history-cover-wrapper {
-  width: 120rpx;
-  height: 120rpx;
-  margin-right: 10rpx;
-  margin-bottom: 10rpx;
-  display: inline-block;
-}
-
-.history-cover {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* 修改封面图片样式 */
-.cover-item {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: 16rpx;
-  overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-  
-  .song-cover {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  
-  .song-cover-image {
+  .history-cover {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-}
-.history-cover-wrapper {
-  border-width: 7rpx;
-}
-/* 添加难度标签样式 */
-.difficulty-badge {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 4rpx 0;
-  font-size: 20rpx;
-  font-weight: 700;
-  text-align: center;
-  color: white;
-  background-color: rgba(0, 0, 0, 0.6);
   
-  &.basic {
-    background-color: rgb(83, 206, 134);
+  /* 修改封面图片样式 */
+  .cover-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 16rpx;
+    overflow: hidden;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+    
+    .song-cover {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    .song-cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
   }
-  
-  &.advanced {
-    background-color: rgb(227, 206, 42);
-    color: #333;
+  .history-cover-wrapper {
+    border-width: 7rpx;
   }
-  
-  &.expert {
-    background-color: rgba(225, 71, 87, 1);
-  }
-  
-  &.master {
-    background-color: rgba(156, 136, 255, 1);
-  }
-  
-  &.remaster {
-    background-color: rgb(236, 199, 254);
+  /* 添加难度标签样式 */
+  .difficulty-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4rpx 0;
+    font-size: 20rpx;
+    font-weight: 700;
+    text-align: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    
+    &.basic {
+      background-color: rgb(83, 206, 134);
+    }
+    
+    &.advanced {
+      background-color: rgb(227, 206, 42);
+      color: #333;
+    }
+    
+    &.expert {
+      background-color: rgba(225, 71, 87, 1);
+    }
+    
+    &.master {
+      background-color: rgba(156, 136, 255, 1);
+    }
+    
+    &.remaster {
+      background-color: rgb(236, 199, 254);
+    }
   }
 }
 </style> 

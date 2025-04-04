@@ -74,3 +74,45 @@ $uni-color-subtitle: #555555; // 二级标题颜色
 $uni-font-size-subtitle:26px;
 $uni-color-paragraph: #3F536E; // 文章段落颜色
 $uni-font-size-paragraph:15px;
+
+/* 深色模式背景色变量 */
+$dark-gradient-bg: linear-gradient(135deg, #121212 0%, #1e1e2d 100%);
+$dark-translucent-bg: rgba(30, 30, 40, 0.95);
+
+/* 深色模式卡片背景 */
+$dark-card-bg: rgba(30, 30, 40, 0.95);
+$dark-card-border: rgba(50, 50, 60, 0.7);
+
+/* 深色模式元素背景 */
+$dark-element-bg: #252530;
+$dark-element-active-bg: #2a2a35;
+
+/* 深色模式文本颜色 */
+$dark-text-primary: #f0f0f0;
+$dark-text-secondary: #c0c0c0;
+$dark-text-hint: #a0aec0;
+
+/* 深色模式按钮变量 */
+$dark-button-bg: rgba(30, 30, 40, 0.8);
+$dark-button-text: rgba(255, 255, 255, 0.85);
+$dark-button-border: rgba(60, 60, 70, 0.5);
+$dark-button-hover-bg: rgba(40, 40, 50, 0.9);
+$dark-button-hover-border: rgba(70, 70, 80, 0.6);
+
+$dark-button-disabled-bg: rgba(30, 30, 40, 0.5);
+$dark-button-disabled-text: rgba(255, 255, 255, 0.4);
+$dark-button-disabled-border: rgba(50, 50, 60, 0.3);
+
+/* 更深的紫色按钮 */
+$dark-primary-button-bg: linear-gradient(135deg, #5253c7 0%, #3f37b3 100%);
+$dark-primary-button-text: #ffffff;
+$dark-primary-button-border: rgba(82, 83, 199, 0.7);
+$dark-primary-button-hover-bg: linear-gradient(135deg, #4546b8 0%, #332da6 100%);
+$dark-primary-button-hover-border: rgba(69, 70, 184, 0.8);
+$dark-primary-button-active-bg: rgba(82, 83, 199, 0.2);
+
+$dark-secondary-button-bg: rgba(40, 40, 50, 0.8);
+$dark-secondary-button-text: rgba(255, 255, 255, 0.7);
+$dark-secondary-button-border: rgba(70, 70, 80, 0.5);
+$dark-secondary-button-hover-bg: rgba(50, 50, 60, 0.9);
+$dark-secondary-button-hover-border: rgba(80, 80, 90, 0.6);

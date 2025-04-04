@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import * as fileutil from './fileutil.js'
+//import * as fileutil from './fileutil.js'
 import { hasCover } from '../util/maiCoverData.js'
 // 创建单例来管理状态
 const state = {
@@ -98,14 +98,14 @@ export function isLoading(songId) {
 /**
  * 初始化封面列表
  */
-export async function initCoverList() {
-    try {
-        const files = await fileutil.getDirectoryFiles(config.localroute)
-        state.coverlist.value = Array.isArray(files) ? files : []
-    } catch (error) {
-        console.error('初始化封面列表失败:', error)
-        state.coverlist.value = []
-    }
-}
+// export async function initCoverList() {
+//     try {
+//         const files = await fileutil.getDirectoryFiles(config.localroute)
+//         state.coverlist.value = Array.isArray(files) ? files : []
+//     } catch (error) {
+//         console.error('初始化封面列表失败:', error)
+//         state.coverlist.value = []
+//     }
+// }
 
 export const coverState = state 

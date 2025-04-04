@@ -1,10 +1,10 @@
 <template>
-  <view class="container">
+  <view class="container" :class="{ 'dark-mode': isDarkMode }">
     <!-- 搜索和筛选模块 -->
     <view class="search-filter-section">
       <view class="search-box">
         <view class="search-input-wrapper">
-          <uni-icons type="search" size="20" color="#666"></uni-icons>
+          <uni-icons type="search" size="20" :color="isDarkMode ? '#c0c0c0' : '#666'"></uni-icons>
           <input 
             v-model="searchKeyword" 
             type="text" 
@@ -321,10 +321,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, inject } from 'vue'
 import SongSearcher from '@/utils/songSearcher.js'
 import SongService from '@/utils/songService.js'
-import {getCoverUrl,initCoverList} from '../../util/coverManager.js'
+import {getCoverUrl} from '../../util/coverManager.js'
+
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+
+const isDarkMode = inject('isDarkMode');
+
+const applyTheme = inject('applyTheme');
 
 // 添加防抖相关变量
 const searchTimeout = ref(null)
@@ -863,6 +869,8 @@ const formatAliases = (aliases) => {
 
 // 生命周期钩子
 onMounted(() => {
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value); // 这里的调用会根据平台条件编译
   initCoverList()
   initData()
 })
@@ -1192,6 +1200,11 @@ const handleGridPageInputConfirm = () => {
 </script>
 
 <style lang="scss" scoped>
+/* 导入深色模式样式 */
+@import '@/uni.scss';
+@import './dark-song-search.scss';
+
+/* 原有的样式保持不变 */
 .container {
   padding: 20rpx;
   background: linear-gradient(to bottom, #e0f7fa, #ffffff);

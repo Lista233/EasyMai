@@ -210,12 +210,5 @@ import { ref, onMounted, provide } from 'vue'
 </template>
 
 <style>
-@import './styles/theme.scss';
 
-/* 全局样式 */
-page {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  transition: background-color 0.3s, color 0.3s;
-}
 </style>

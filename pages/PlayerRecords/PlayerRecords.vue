@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="player-records" :class="{ 'dark-mode': isDarkMode }">
 		<!-- 加载状态 -->
 		<view class="loading-container" v-if="isLoading">
 			<view class="loading-spinner"></view>
@@ -561,10 +561,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, inject, watch } from 'vue'
 import SongService from '@/utils/songService.js'
 import playerRecordService from '@/utils/PlayerRecordService.js'
 import { getCoverUrl } from '../../util/coverManager.js'
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
+
+
+    
 
 // 响应式状态
 const songService = ref(null)
@@ -1055,7 +1063,8 @@ const isDataReady = ref(false)
 onMounted(async () => {
 	// 先设置加载状态，让页面框架先渲染出来
 	isLoading.value = true
-	
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value);
 	// 使用nextTick确保UI先渲染
 	await nextTick()
 	
@@ -1339,21 +1348,24 @@ const updateGridSize = (size) => {
 
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 // 先定义文本省略混入
+@import '@/pages/PlayerRecords/dark-PlayerRecords.scss';
+
+
 @mixin text-ellipsis {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.container {
+.player-records {
 	padding: 40rpx 20rpx 20rpx 10rpx;
 	background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
 	min-height: 100vh;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	box-sizing: border-box;
-}
+
 
 .header {
 	margin-bottom: 20rpx;
@@ -1397,8 +1409,8 @@ const updateGridSize = (size) => {
 	
 	.stats-row {
 		display: flex;
-		flex-wrap: wrap; // 添加换行支持
-		gap: 16rpx; // 增加间距
+		flex-wrap: wrap;
+		gap: 16rpx;
 		margin-top: 16rpx;
 		
 		&.fc-row {
@@ -1567,14 +1579,8 @@ const updateGridSize = (size) => {
 				min-width: 70rpx;
 			}
 			
-			/* 调整slider容器样式 */
-			.custom-slider {
+			slider {
 				flex: 1;
-				width: 80%;
-				justify-self: start;
-				margin: 0;
-				height: 60rpx; /* 减小高度 */
-				padding: 0; /* 移除内边距 */
 			}
 		}
 		
@@ -1606,83 +1612,42 @@ const updateGridSize = (size) => {
 .songs-container {
 	&.grid-view {
 		position: relative;
-		display: flex;  
-		flex-wrap: wrap;  
-		gap: 6rpx; // 保持水平间距
-		row-gap: 4rpx; // 特别设置垂直间距更小
-		padding: 8rpx; // 保持内边距
+		display: grid;
+		gap: 10rpx;
+		padding: 10rpx;
 		padding-bottom: 120rpx;
 		
-		&.grid-size-2 .song-item {
-			width: calc((100% - 6rpx) / 2);  
+		&.grid-size-2 {
+			grid-template-columns: repeat(2, 1fr);
 		}
 		
-		&.grid-size-3 .song-item {
-			width: calc((100% - 12rpx) / 3);  
+		&.grid-size-3 {
+			grid-template-columns: repeat(3, 1fr);
 		}
 		
-		&.grid-size-4 .song-item {
-			width: calc((100% - 18rpx) / 4);  
+		&.grid-size-4 {
+			grid-template-columns: repeat(4, 1fr);
 		}
 		
-		&.grid-size-5 .song-item {
-			width: calc((100% - 24rpx) / 5);  
+		&.grid-size-5 {
+			grid-template-columns: repeat(5, 1fr);
 		}
 		
 		.song-item {
 			position: relative;
-			border-radius: 10rpx;
+			border-radius: 8rpx;
 			overflow: hidden;
-			margin-bottom: 0; // 移除底部间距，因为我们现在使用row-gap
-			box-sizing: border-box;
-			border: 1px solid rgba(0,0,0,0.08);
-			box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.04);
-			
-			&::before {
-				content: "";
-				display: block;
-				padding-top: 100%;
-			}
+			aspect-ratio: 1;
 			
 			.cover-image {
-				position: absolute;
-				top: 0;
-				left: 0;
+				position: relative;
 				width: 100%;
 				height: 100%;
-				border-radius: 4px;
-				border: 3px solid transparent;
-				box-sizing: border-box;
-				
-				&.level-0 {
-					border-color: #1EA15D;
-				}
-				
-				&.level-1 {
-					border-color: #F6B40C;
-				}
-				
-				&.level-2 {
-					border-color: #E9485D;
-				}
-				
-				&.level-3 {
-					border-color: #9E45E2;
-				}
-				
-				&.level-4 {
-					border-color: rgba(190, 170, 245, 1);
-				}
 				
 				image {
-					position: absolute;
-					top: 0;
-					left: 0;
 					width: 100%;
 					height: 100%;
-					
 					object-fit: cover;
-					z-index: 1;
 				}
 				
 				// 灰色遮罩
@@ -1696,39 +1661,30 @@ const updateGridSize = (size) => {
 					z-index: 5;
 				}
 				
-				// 图标容器
+				// 新增图标容器
 				.icon-container {
 					position: absolute;
 					top: 0;
 					left: 0;
-					width: 100%;
-					height: 100%;
+					right: 0;
+					bottom: 0;
 					display: flex;
 					justify-content: center;
 					align-items: center;
 					z-index: 10;
-					
-					// 确保图标本身也居中
-					.icon-badge, .icon-rate {
-						align-self: center;
-						justify-self: center;
-						position: absolute;
-						top: 50%;
-						left: 50%;
-						transform: translate(-50%, -50%);
-					}
 				}
 				
 				// 基础图标样式
 				.icon-badge {
 					width: 100rpx;
 					height: 100rpx;
+					//margin-top: 60%; // 向下偏移到封面下半部分
 				}
 				
-				// Rate图标特定样式
+				// Rate图标特定样式 - 保持256:120的比例
 				.icon-rate {
 					width: 120rpx;
-					height: 56rpx;
+					height: 56rpx; // 按照256:120的比例计算高度
 				}
 			}
 		}
@@ -1862,7 +1818,7 @@ const updateGridSize = (size) => {
 				width: 140rpx;
 				height: 140rpx;
 				border-radius: 8rpx;
-			
+				object-fit: cover;
 				background-color: #f5f5f5;
 				border: 2px solid transparent;
 				box-sizing: border-box;
@@ -2315,9 +2271,9 @@ const updateGridSize = (size) => {
 /* 网格视图中的封面图片难度边框 */
 .grid-view .cover-image {
   position: relative;
- // overflow: hidden;
-  border-radius: 4px;
-  border: 3px solid;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 3px solid transparent;
   box-sizing: border-box;
 }
 
@@ -2418,17 +2374,5 @@ const updateGridSize = (size) => {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
 }
-
-/* 自定义slider样式 */
-.custom-slider {
-  width: 100%;
-  margin: 0;
-  height: 60rpx; /* 减小高度 */
-  
-  /* 移除深度选择器，避免重复样式 */
 }
-
-/* 使用全局样式，避免重复定义滑块 */
-/* 注意：这些样式可能需要放在App.vue或全局样式文件中 */
-
 </style>

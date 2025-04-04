@@ -1,5 +1,6 @@
 <template>
-	<view id="index">
+	<view id="index" :class="{'dark-mode': isDarkMode}">
+	
 		<view class="button-group">
 			<button class="nav-btn bind-btn" v-show="jwt_token" @click="handleRefresh">刷新B50(不会生图)</button>
 			<!-- <button class="save-btn" @click="saveAsImage()">保存为图片</button> -->
@@ -360,13 +361,17 @@
 	divingFish_records;
 	qq_channel_uid;
 	*/
-import * as fileutil from '../../util/fileutil.js'
-import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
+// import * as fileutil from '../../util/fileutil.js'
+import { computed, ref, onMounted, onUnmounted, nextTick, inject } from 'vue';
 import * as maiApi from "../../api/maiapi.js"
 import { b50adapter } from '../../util/b50adapter.js';
 import {onReady,onLoad,onInit} from '@dcloudio/uni-app'
-import {getCoverUrl,initCoverList}  from '../../util/coverManager.js'
+import {getCoverUrl}  from '../../util/coverManager.js'
 import RecordCard from '../../components/record-card/record-card.vue'
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
 
 // const ossroute='https://lista233.oss-cn-beijing.aliyuncs.com/maicover/'
 // const localroute= 'maicover';
@@ -428,7 +433,7 @@ onLoad(async () => {
 			b35rating.value = uni.getStorageSync('b35rating') || 0;
 			b15rating.value = uni.getStorageSync('b15rating') || 0;
 			
-			await initCoverList();
+			//await initCoverList();
 			console.log('nickname'+nickname.value)
 			
 			// 只在首次加载且用户已登录时执行
@@ -1107,11 +1112,19 @@ const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC'
 
 // 添加上传头像的方法
 
+// 在onMounted中添加深色模式处理
+onMounted(async () => {
+  // 应用深色模式到原生TabBar
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value);
+});
+
 
 </script>
 
 <style lang='scss'>
 @import "../../css/maib50.scss";
+@import "@/pages/maiupdate/dark-maib50.scss"; /* 导入深色模式样式 */
 
 /* 添加模态框样式 */
 .record-modal {
@@ -1170,104 +1183,49 @@ const formatFS = (fs) => fs ? fs.replace('p', '+').toUpperCase() .replace('SYNC'
   
 }
 
-/* 添加加载状态样式 */
-.loading-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	height: 60vh;
-	
-	.loading-spinner {
-		width: 80rpx;
-		height: 80rpx;
-		border: 6rpx solid rgba(99, 102, 241, 0.1);
-		border-top: 6rpx solid #6366f1;
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-		margin-bottom: 30rpx;
-	}
-	
-	.loading-text {
-		font-size: 30rpx;
-		color: #64748b;
-	}
-}
-
-@keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
-}
-
-.user-info {
-  .user-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* padding: 10rpx 10rpx 10rpx; */
+/* 深色模式下的模态框样式 */
+.modal-container.dark-mode,
+.record-modal-content.dark-mode {
+  background: $dark-card-bg !important;
+  border: 1px solid $dark-card-border !important;
+  color: $dark-text-primary !important;
+  
+  .modal-title {
+    color: $dark-text-primary !important;
+  }
+  
+  .form-item {
+    .form-label {
+      color: $dark-text-secondary !important;
+    }
     
-    .avatar-container {
-      margin-bottom: 8rpx;
-      display: flex;
-      justify-content: center;
-      width: 100%;
+    .form-input {
+      background: rgba(0, 0, 0, 0.2) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: $dark-text-primary !important;
       
-      .avatar {
-        width: 125rpx;
-        height: 125rpx;
-        border-radius: 6rpx;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        background-color: #f5f5f5;
-        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
-        
-        .avatar-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        
-        .avatar-placeholder {
-          font-size: 55rpx;
-          color: #a0a0a0;
-        }
+      &:focus {
+        border-color: #818cf8 !important;
+        background: rgba(0, 0, 0, 0.3) !important;
       }
-    }
-    
-    .username {
-      text-align: center;
-      font-size: 30rpx;
-      font-weight: 500;
-      color: #333;
-      margin-bottom: 4rpx;
-    }
-    
-    .user-details {
-      width: 90%;
-      margin-bottom: 5rpx;
       
-      .info-item {
-        display: flex;
-        margin-bottom: 6rpx;
-        
-        .label {
-          font-size: 24rpx;
-          color: #666;
-          
-        }
-        
-        .value {
-          font-size: 24rpx;
-          color: #333;
-          font-weight: 500;
-          flex: 1;
-        }
+      &::placeholder {
+        color: $dark-text-hint !important;
       }
     }
   }
   
- 
+  .modal-buttons {
+    .modal-btn {
+      &.cancel {
+        background: rgba(0, 0, 0, 0.3) !important;
+        color: $dark-text-primary !important;
+      }
+      
+      &.confirm {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+      }
+    }
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-	
+	  <view class="song-detail" :class="{ 'dark-mode': isDarkMode }">
   <view class="container" :class="difficulties[currentDiffIndex].class">
     <view class="song-card" :class="difficulties[currentDiffIndex].class">
       <view class="song-header">
@@ -299,11 +299,11 @@
       />
     </view>
   </uni-popup>
-
+</view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, inject, nextTick } from 'vue'
 import SongService from '@/utils/songService.js'
 import playerRecordService from '@/utils/playerRecordService.js'
 import * as maiApi from '../../api/maiapi.js'
@@ -312,6 +312,10 @@ import { getCoverUrl, isLoading } from '@/util/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
 import {openBiliSearch} from '@/utils/biliUtils.js'
 import MaimaiLossCalculator from '@/components/maimai-loss-calculator/index.vue'
+import {updateNativeTabBar } from '@/utils/updateNativeTabBar.js'
+// 注入主题服务
+const applyTheme = inject('applyTheme');
+const isDarkMode = inject('isDarkMode');
 
 // 加载状态控制
 const pageLoaded = ref(false)  // 页面基础结构是否加载完成
@@ -762,9 +766,13 @@ const initializeBasicData = async () => {
     }
   }, 50)
 }
-
+onMounted(()=>{
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value);
+})
 // 添加页面参数处理
 onLoad(async (options) => {
+ 
   song.value = options.songId
   console.log('传入歌曲ID:',song.value)
   // 如果有难度索引参数，更新当前选中的难度
@@ -801,10 +809,7 @@ watch(
   { immediate: false }
 )
 
-// 轻量化 onMounted
-onMounted(() => {
-  console.log('组件挂载')
-})
+
 
 // 添加复制标题功能
 const copyTitle = () => {
@@ -929,7 +934,7 @@ function navToBiliBili(keyword) {
   uni.hideLoading();
   // #endif
   
-  // #ifdef APP-PLUS
+  // #ifndef H5|| MP-WEIXIN
   // APP环境下，使用原有的openBiliSearch方法
   openBiliSearch(searchKeyword, {
     showError: true,
@@ -945,13 +950,14 @@ function navToBiliBili(keyword) {
 }
 
 // 保留原有的页面生命周期钩子，但仅在APP环境下使用
-// #ifdef APP-PLUS
+// #ifndef H5|| MP-WEIXIN
 onHide(() => {
   uni.$emit('page-hide');
 });
 
 onShow(() => {
   uni.$emit('page-show');
+  uni.hideLoading();
 });
 // #endif
 
@@ -1359,7 +1365,7 @@ const genreMapping = {
   'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
   '流行&动漫': ['流行&动漫', 'POPSアニメ'],
   '舞萌': ['舞萌', 'maimai'],
-  '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
+  '音击&中二': ['音击&中二节奏', 'オンゲキCHUNITHM'],
   '东方Project': ['东方Project', '東方Project'],
   '其他游戏': ['其他游戏', 'ゲームバラエティ'],
 }
@@ -1441,6 +1447,11 @@ const hasReMaster = computed(() => {
 </script>
 
 <style lang="scss">
+// 导入深色模式样式
+@import './dark-song-detail.scss';
+
+
+
 .container {
   padding: 30rpx;
   min-height: 100vh;
@@ -2316,50 +2327,46 @@ const hasReMaster = computed(() => {
 }
 
 .basic-info {
-  margin-top: 0rpx;
-  padding: 28rpx;
-  max-height: 150rpx;
+ // margin-top: 0rpx;
+ display: flex;
+ flex-direction: column;
+ align-items: flex-start;
+ justify-content: flex-start;
+  padding-top: 22rpx;
+  padding-bottom: 22rpx;
+  padding-left: 16rpx;
+  padding-right: 16rpx;
+
+  max-height: 170rpx;
   background: rgba(255, 255, 255, 0.9);
   border-radius: 12rpx;
+  min-width: 300rpx;
   max-width: 300rpx;
   .info-row {
     display: flex;
     align-items: flex-start;
     margin-bottom: 8rpx;
-    
+    max-width: 100%; // 限制最大宽度为父容器的100%
+    overflow: hidden; // 超出部分隐藏
+    line-height: 1.4;
+
     .label-wrapper {
       display: flex;
       align-items: center;
       min-width: 100rpx;
-      
+      flex-shrink: 0; // 防止标签被压缩
+  
       .label {
-        font-size: 26rpx;
-        white-space: nowrap;
+        font-size: 27rpx;
       }
     }
     
     .value {
-      flex: 1;
-      font-size: 26rpx;
-      padding-left: 8rpx;
-      word-break: break-all;
-      overflow-wrap: break-word;
-      
-      &.ellipsis {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 70%;
-      }
-      
-      &.artist-name {
-		
-        white-space: wrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 70%; /* 限制最大宽度 */
-        display: inline-block; /* 确保省略号生效 */
-      }
+      flex: 1; // 让值部分占据剩余空间
+      white-space: nowrap; // 不换行
+      overflow: hidden; // 超出部分隐藏
+      text-overflow: ellipsis; // 显示省略号
+      font-size: 27rpx;
     }
   }
 }

@@ -1,0 +1,406 @@
+@import '../../uni.scss';
+.lottery-container.dark-mode {
+  display: flex;
+  flex-direction: column;
+  padding: 30rpx;
+  background-color: $dark-element-bg !important;
+  min-height: 100vh;
+  gap: 30rpx;
+  
+  .header {
+    text-align: center;
+    margin-bottom: 20rpx;
+    
+    .title {
+      font-size: 48rpx;
+      font-weight: 700;
+      color: $dark-text-primary;
+      margin-bottom: 10rpx;
+    }
+    
+    .subtitle {
+      font-size: 28rpx;
+      color: $dark-text-secondary;
+    }
+  }
+  
+  .filter-section {
+    background-color: $dark-card-bg;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    
+    .filter-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: $dark-text-primary;
+      margin-bottom: 20rpx;
+    }
+    
+    .filter-group {
+      margin-bottom: 20rpx;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .filter-label {
+        font-size: 28rpx;
+        color: $dark-text-secondary;
+        margin-bottom: 10rpx;
+      }
+      
+      .range-filter {
+        display: flex;
+        align-items: center;
+        
+        .range-input {
+          flex: 1;
+          height: 80rpx;
+          background-color: $dark-element-bg;
+          border-radius: 10rpx;
+          padding: 0 20rpx;
+          font-size: 28rpx;
+          color: $dark-text-primary;
+        }
+        
+        .range-separator {
+          margin: 0 20rpx;
+          color: $dark-text-secondary;
+        }
+      }
+      
+      .version-picker, .genre-picker {
+        height: 80rpx;
+        background-color: $dark-element-bg;
+        border-radius: 10rpx;
+        padding: 0 20rpx;
+        display: flex;
+        align-items: center;
+        
+        .picker-text {
+          font-size: 28rpx;
+          color: $dark-text-primary;
+        }
+      }
+    }
+  }
+  
+  .lottery-content {
+    background-color: $dark-card-bg;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    
+    .cover-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20rpx;
+      margin-bottom: 30rpx;
+      
+      &.columns-1 {
+        .cover-item {
+          width: 50%;
+          height: 50%;
+          margin: 0 auto;
+        }
+      }
+      
+      &.columns-2 {
+        .cover-item {
+          height: calc((100% - 20rpx) / 2);
+          width: calc((100% - 20rpx) / 2);
+        }
+      }
+      
+      &.columns-3 {
+        .cover-item {
+          height: calc((100% - 40rpx) / 3);
+          width: calc((100% - 40rpx) / 3);
+        }
+      }
+      
+      &.columns-4 {
+        .cover-item {
+          height: calc((100% - 60rpx) / 4);
+          width: calc((100% - 60rpx) / 4);
+        }
+      }
+      
+      .cover-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 16rpx;
+        overflow: hidden;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+        
+        &.empty {
+          background-color: $dark-element-bg;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          
+          .empty-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            
+            .placeholder-text {
+              font-size: 80rpx;
+              font-weight: 700;
+              color: $dark-text-hint;
+            }
+          }
+        }
+        
+        .song-cover {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .song-info {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+          padding: 20rpx;
+          
+          .song-title {
+            color: $dark-text-primary;
+            font-size: 24rpx;
+            font-weight: 600;
+            margin-bottom: 6rpx;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .song-id {
+            color: $dark-text-secondary;
+            font-size: 20rpx;
+          }
+        }
+      }
+    }
+    
+    .control-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30rpx;
+      
+      .count-selector {
+        display: flex;
+        align-items: center;
+        
+        .count-label {
+          color: $dark-text-secondary;
+          font-size: 28rpx;
+        }
+        
+        .count-buttons {
+          display: flex;
+          margin: 0 20rpx;
+          
+          .count-button {
+            width: 70rpx;
+            height: 70rpx;
+            border-radius: 50%;
+            background-color: $dark-element-bg;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10rpx;
+            color: $dark-text-secondary;
+            font-size: 32rpx;
+            font-weight: 600;
+            
+            &.active {
+              background: $dark-primary-button-bg;
+              color: $dark-primary-button-text;
+            }
+          }
+        }
+      }
+      
+      .lottery-button {
+        background: $dark-primary-button-bg;
+        color: $dark-primary-button-text;
+        font-size: 36rpx;
+        font-weight: 700;
+        padding: 24rpx 100rpx;
+        border-radius: 50rpx;
+        box-shadow: 0 10rpx 20rpx rgba(99, 102, 241, 0.2);
+        transition: all 0.3s ease;
+        
+        &:active {
+          transform: scale(0.95);
+          box-shadow: 0 5rpx 10rpx rgba(99, 102, 241, 0.2);
+        }
+        
+        &.running {
+          background: #f44336;
+          box-shadow: 0 10rpx 20rpx rgba(244, 67, 54, 0.2);
+        }
+      }
+    }
+  }
+  
+  .lottery-history {
+    flex: 1;
+    background-color: $dark-card-bg;
+    border-radius: 20rpx;
+    padding: 30rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    
+    .history-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: $dark-text-primary;
+      margin-bottom: 20rpx;
+    }
+    
+    .history-scroll {
+      max-height: 400rpx;
+      
+      .history-list {
+        .history-item {
+          margin-bottom: 30rpx;
+          border-bottom: 2rpx solid $dark-card-border;
+          padding-bottom: 20rpx;
+          
+          &:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+          }
+          
+          .history-date {
+            font-size: 24rpx;
+            color: $dark-text-secondary;
+            margin-bottom: 16rpx;
+          }
+          
+          .history-songs {
+            display: flex;
+            flex-wrap: wrap;
+            
+            .history-cover-wrapper {
+              width: 120rpx;
+              height: 120rpx;
+              margin-right: 10rpx;
+              margin-bottom: 10rpx;
+            }
+            
+            .history-cover {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .song-cover, .history-cover-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-width: 9rpx;
+    border-style: solid;
+    border-radius: 8rpx;
+    box-sizing: border-box;
+    
+    &.border-basic {
+      border-color: rgb(83, 206, 134);
+    }
+    
+    &.border-advanced {
+      border-color: rgb(227, 206, 42);
+    }
+    
+    &.border-expert {
+      border-color: rgba(225, 71, 87, 1);
+    }
+    
+    &.border-master {
+      border-color: rgba(156, 136, 255, 1);
+    }
+    
+    &.border-remaster {
+      border-color: rgb(253, 163, 249);
+    }
+  }
+  
+  .history-cover-wrapper {
+    width: 120rpx;
+    height: 120rpx;
+    margin-right: 10rpx;
+    margin-bottom: 10rpx;
+    display: inline-block;
+    border-width: 7rpx;
+  }
+  
+  .history-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .cover-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 16rpx;
+    overflow: hidden;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+    
+    .song-cover {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    .song-cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  .difficulty-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4rpx 0;
+    font-size: 20rpx;
+    font-weight: 700;
+    text-align: center;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.7);
+    
+    &.basic {
+      background-color: rgb(83, 206, 134);
+    }
+    
+    &.advanced {
+      background-color: rgb(227, 206, 42);
+      color: #333;
+    }
+    
+    &.expert {
+      background-color: rgba(225, 71, 87, 1);
+    }
+    
+    &.master {
+      background-color: rgba(156, 136, 255, 1);
+    }
+    
+    &.remaster {
+      background-color: rgb(236, 199, 254);
+    }
+  }
+} 

@@ -1,5 +1,5 @@
 <template>
-  <view class="container">
+  <view class="container" :class="{'dark-mode': isDarkMode}">
     <view class="header">
       <text class="title">我的收藏</text>
       <view class="header-actions">
@@ -202,10 +202,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue';
 import SongService from '@/utils/songService.js';
 import { getCoverUrl } from '@/util/coverManager.js';
 import {onShow} from '@dcloudio/uni-app';
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js';
+
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
+
 // 状态变量
 const loading = ref(true);
 const favoriteFolders = ref([]);
@@ -850,9 +856,23 @@ const getCharter = (song) => {
   const chart = song.charts[song.selectedDifficulty];
   return chart?.charter || '';
 };
+
+// 在onMounted中添加深色模式处理
+onMounted(() => {
+  // 现有的初始化代码...
+  
+  // 应用深色模式到原生TabBar
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value);
+  
+  // 其他现有的onMounted代码...
+});
 </script>
 
 <style lang="scss">
+/* 导入深色模式样式 */
+@import '@/pages/favorites/dark-favorites.scss';
+
 .container {
   padding: 30rpx;
   background-color: #f8fafc;

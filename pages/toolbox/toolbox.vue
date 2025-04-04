@@ -1,5 +1,5 @@
 <template>
-  <view class="toolbox-container">
+  <view class="toolbox-container" :class="{ 'dark-mode': isDarkMode }">
     <view class="header">
       <text class="title">工具箱</text>
       <text class="subtitle">实用工具与小功能集合</text>
@@ -108,8 +108,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-
+import { ref, onMounted,inject,onBeforeMount} from 'vue';
+import { updateNativeTabBar } from '@/utils/updateNativeTabBar.js';
+// 注入主题服务
+const applyTheme = inject('applyTheme');
+const isDarkMode = inject('isDarkMode');
+onBeforeMount(() => {
+  updateNativeTabBar(isDarkMode.value);
+  applyTheme();
+});
 // 导航函数
 const navigateTo = (url) => {
   uni.navigateTo({
@@ -139,6 +146,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@import './dark-toolbox.scss';
 .toolbox-container {
   padding: 30rpx;
   background-color: #f5f7fa;

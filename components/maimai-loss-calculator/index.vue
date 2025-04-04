@@ -430,13 +430,13 @@ const calculate = () => {
     if (breakBonusWeight > 0) {
       const singleBreakWeight = 5; // 单个BREAK音符的权重
       // 将计算结果除以10000以调整量级
-      singleNoteBonusLoss.value.perfectHigh = (breakBonusScores.criticalPerfect - breakBonusScores.perfectHigh) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.perfectLow = (breakBonusScores.criticalPerfect - breakBonusScores.perfectLow) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.greatHigh = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.greatMid = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.greatLow = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.good = (breakBonusScores.criticalPerfect - breakBonusScores.good) / breakBonusWeight * 100 * singleBreakWeight / 10000;
-      singleNoteBonusLoss.value.miss = (breakBonusScores.criticalPerfect - breakBonusScores.miss) / breakBonusWeight * 100 * singleBreakWeight / 10000;
+      singleNoteBonusLoss.value.perfectHigh = (breakBonusScores.criticalPerfect - breakBonusScores.perfectHigh) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.perfectLow = (breakBonusScores.criticalPerfect - breakBonusScores.perfectLow) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.greatHigh = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.greatMid = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.greatLow = (breakBonusScores.criticalPerfect - breakBonusScores.great) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.good = (breakBonusScores.criticalPerfect - breakBonusScores.good) / breakBonusWeight * 100 * singleBreakWeight / 100;
+      singleNoteBonusLoss.value.miss = (breakBonusScores.criticalPerfect - breakBonusScores.miss) / breakBonusWeight * 100 * singleBreakWeight / 100;
     } else {
       // 如果没有BREAK音符，则奖励分损失为0
       Object.keys(singleNoteBonusLoss.value).forEach(key => {

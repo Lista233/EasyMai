@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" :class="{ 'dark-mode': isDarkMode }">
 		<!-- 头部信息 -->
 		<view class="header">
 			<view class="header-title">推分乐曲推荐</view>
@@ -14,7 +14,6 @@
 					type="number" 
 					v-model="userRating" 
 					placeholder="请输入您的目标 Rating"
-	
 					@confirm="generateRecommendations"
 				/>
 				<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
@@ -144,11 +143,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, inject } from 'vue';
 import { getComprehensiveRecommendations } from '@/utils/recommendationUtils';
 import SongService from '@/utils/SongService';
 import {getCoverUrl} from '@/util/coverManager.js'
 import playerRecordService from '@/utils/PlayerRecordService';
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+
+const applyTheme = inject('applyTheme');
+
+
 
 // 状态变量
 const songService = ref(null);
@@ -432,6 +439,8 @@ const initServices = async () => {
 
 // 页面加载时初始化数据
 onMounted(() => {
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value); // 这里的调用会根据平台条件编译
 	console.log('页面加载，初始化服务');
 	initServices();
 });
@@ -460,7 +469,11 @@ const handleNextPage = () => {
 };
 </script>
 
-<style>
+<style lang="scss">
+/* 导入深色模式样式 */
+@import '@/uni.scss';
+@import './dark-song-recommend.scss';
+
 .container {
 	padding: 40rpx 20rpx 20rpx 10rpx;
 	background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);

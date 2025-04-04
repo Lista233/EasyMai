@@ -1,0 +1,452 @@
+/* 深色模式样式 - 歌曲详情页 */
+@import '@/uni.scss';
+
+.song-detail.dark-mode {
+  .container {
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2) !important;
+    
+    &.basic {
+      background: linear-gradient(180deg, rgba(25, 25, 27, 0.9) 0%, #1c1c1e 100%) !important;
+    }
+    &.advanced {
+      background: linear-gradient(180deg, rgba(25, 25, 27, 0.9) 0%, #1c1c1e 100%) !important;
+    }
+    &.expert {
+      background: linear-gradient(180deg, rgba(25, 25, 27, 0.9) 0%, #1c1c1e 100%) !important;
+    }
+    &.master {
+      background: linear-gradient(180deg, rgba(25, 25, 27, 0.9) 0%, #1c1c1e 100%) !important;
+    }
+    &.remaster {
+      background: linear-gradient(180deg, rgba(25, 25, 27, 0.9) 0%, #1c1c1e 100%) !important;
+    }
+  }
+  
+  // 骨架屏深色模式
+  .skeleton {
+    background: linear-gradient(90deg, #2a2a30 25%, #333340 50%, #2a2a30 75%) !important;
+  }
+  
+  .skeleton-text {
+    background: linear-gradient(90deg, #2a2a30 25%, #333340 50%, #2a2a30 75%) !important;
+  }
+  
+  .skeleton-tab {
+    background: linear-gradient(90deg, #2a2a30 25%, #333340 50%, #2a2a30 75%) !important;
+  }
+  
+  .skeleton-card {
+    background: linear-gradient(90deg, rgba(42, 42, 48, 0.5) 25%, rgba(51, 51, 64, 0.5) 50%, rgba(42, 42, 48, 0.5) 75%) !important;
+  }
+  
+  .song-card {
+    background: $dark-card-bg !important;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2) !important;
+    
+    // 不同难度的边框和背景色
+    &.basic {
+      border-color: #2ed573 !important;
+      background: #121214 !important;
+      .title-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f) !important; }
+      .cover-container { border-color: #2ed573 !important; }
+      .label-decoration { background: linear-gradient(90deg, #2ed573, #7bed9f) !important; }
+    }
+    &.advanced {
+      border-color: #ff9f1a !important;
+      background: #121214 !important;
+      .title-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57) !important; }
+      .cover-container { border-color: #ff9f1a !important; }
+      .label-decoration { background: linear-gradient(90deg, #ff9f1a, #feca57) !important; }
+    }
+    &.expert {
+      border-color: #ff4757 !important;
+      background: #121214 !important;
+      .title-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81) !important; }
+      .cover-container { border-color: #ff4757 !important; }
+      .label-decoration { background: linear-gradient(90deg, #ff4757, #ff6b81) !important; }
+    }
+    &.master {
+      border-color: #9c88ff !important;
+      background: #121214 !important;
+      .title-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd) !important; }
+      .cover-container { border-color: #9c88ff !important; }
+      .label-decoration { background: linear-gradient(90deg, #9c88ff, #c4b5fd) !important; }
+    }
+    &.remaster {
+      border-color: #e0a3ff !important;
+      background: #121214 !important;
+      .title-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff) !important; }
+      .cover-container { border-color: #e0a3ff !important; }
+      .label-decoration { background: linear-gradient(90deg, #e0a3ff, #f0d0ff) !important; }
+    }
+    
+    .song-id {
+      color: $dark-text-secondary !important;
+    }
+  }
+  
+  .difficulty-switcher {
+    .difficulty-tab {
+      background: $dark-element-bg !important;
+      border: 2rpx solid $dark-card-border !important;
+      color: $dark-text-secondary !important;
+      box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15) !important;
+      
+      &:not(.active) {
+        &:hover {
+          background: $dark-element-active-bg !important;
+        }
+      }
+      
+      &.active {
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2) !important;
+        
+        &.basic, &.advanced, &.expert, &.master, &.remaster {
+          color: white !important;
+        }
+      }
+    }
+  }
+  
+  .song-header {
+    .cover-container {
+      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.25) !important;
+      
+      .song-cover {
+        background-color: #2a2a30 !important;
+      }
+      
+      .loading-overlay {
+        background: rgba(0, 0, 0, 0.7) !important;
+        
+        text {
+          color: $dark-text-primary !important;
+        }
+      }
+    }
+    
+    .song-info {
+      .title-row {
+        .song-title {
+          color: $dark-text-primary !important;
+        }
+        
+        .song-id {
+          color: $dark-text-secondary !important;
+        }
+      }
+    }
+  }
+  
+  .basic-info {
+    background: $dark-element-bg !important;
+    
+    .info-row {
+      .label-wrapper {
+        .label {
+          color: $dark-text-secondary !important;
+        }
+      }
+      
+      .value {
+        color: $dark-text-primary !important;
+      }
+    }
+  }
+  
+  .difficulty-details {
+    &.basic, &.advanced, &.expert, &.master, &.remaster {
+      background: rgba(30, 30, 35, 0.7) !important;
+    }
+    
+    .info-row, .chart-info {
+      .info-pair {
+        .label {
+          &:before {
+            opacity: 0.9 !important;
+          }
+        }
+      }
+    }
+    
+    .notes-grid {
+      .note-item {
+        background: $dark-element-bg !important;
+        backdrop-filter: blur(4px) !important;
+      }
+    }
+  }
+  
+  .player-record {
+    background: $dark-element-bg !important;
+    
+    .record-header {
+      .section-title {
+        color: $dark-text-primary !important;
+      }
+      
+      .favorite-btn {
+        .iconfont {
+          background-color: $dark-button-bg !important;
+          border: 1px solid $dark-card-border !important;
+          box-shadow: 0 0 5rpx rgba(0, 0, 0, 0.2) !important;
+          
+          &.is-favorite {
+            color: #ffcc00 !important;
+          }
+        }
+      }
+    }
+    
+    .record-content {
+      .record-details {
+        .detail-item {
+          .label {
+            color: $dark-text-secondary !important;
+          }
+          
+          .value {
+            color: $dark-text-primary !important;
+          }
+        }
+      }
+    }
+  }
+  
+  .combo-sync-container {
+    .separator {
+      color: $dark-text-secondary !important;
+    }
+  }
+  
+  .action-buttons {
+    .action-button {
+      background: $dark-button-bg !important;
+      color: $dark-button-text !important;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15) !important;
+      border: 1px solid $dark-button-border !important;
+      
+      &:active {
+        background: $dark-button-hover-bg !important;
+      }
+      
+      &.bilibili {
+        background: linear-gradient(135deg, rgba(251, 114, 153, 0.15), rgba(255, 140, 170, 0.15)) !important;
+        color: #fb7299 !important;
+        border: 1rpx solid rgba(251, 114, 153, 0.3) !important;
+        
+        &:active {
+          background: linear-gradient(135deg, rgba(251, 114, 153, 0.25), rgba(255, 140, 170, 0.25)) !important;
+        }
+      }
+      
+      &.alias {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(129, 140, 248, 0.15)) !important;
+        color: #818cf8 !important;
+        border: 1rpx solid rgba(99, 102, 241, 0.3) !important;
+        
+        &:active {
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(129, 140, 248, 0.25)) !important;
+        }
+      }
+    }
+  }
+  
+  .favorite-popup, .alias-popup, .loss-calculator-popup {
+    background-color: $dark-card-bg !important;
+    
+    .popup-header {
+      border-bottom: 2rpx solid $dark-card-border !important;
+      background-color: $dark-element-bg !important;
+      
+      .title {
+        color: $dark-text-primary !important;
+      }
+      
+      .close-btn {
+        color: $dark-text-secondary !important;
+      }
+    }
+    
+    .popup-title {
+      color: $dark-text-primary !important;
+    }
+  }
+  
+  .favorite-popup {
+    .folder-list {
+      .folder-item {
+        border-bottom: 1rpx solid $dark-card-border !important;
+        color: $dark-text-primary !important;
+        
+        &.folder-selected {
+          background-color: rgba(124, 77, 255, 0.2) !important;
+        }
+        
+        .folder-info {
+          .folder-count {
+            color: $dark-text-secondary !important;
+          }
+        }
+      }
+      
+      .new-folder {
+        color: #818cf8 !important;
+        border: 1rpx dashed #818cf8 !important;
+        background-color: rgba(124, 77, 255, 0.1) !important;
+        
+        &:active {
+          background-color: rgba(124, 77, 255, 0.2) !important;
+        }
+      }
+      
+      .no-folder {
+        color: $dark-text-secondary !important;
+      }
+    }
+    
+    .new-folder-input {
+      border-top: 1rpx solid $dark-card-border !important;
+      
+      input {
+        border: 1rpx solid $dark-card-border !important;
+        background: $dark-element-bg !important;
+        color: $dark-text-primary !important;
+      }
+      
+      .create-btn {
+        background-color: #6366f1 !important;
+        color: white !important;
+      }
+    }
+  }
+  .record-tools-container {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+    
+    .player-record {
+      flex: 1;
+      margin-top: 30rpx;
+      background: $dark-card-bg !important;
+      border-radius: 12rpx;
+      padding: 20rpx;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15) !important;
+      backdrop-filter: blur(10px);
+      border: 1rpx solid $dark-card-border !important;
+      
+      .record-header {
+        .record-title {
+          color: $dark-text-primary !important;
+        }
+        
+        .record-date {
+          color: $dark-text-secondary !important;
+        }
+      }
+      
+      .record-content {
+        .score-section {
+          .score {
+            color: $dark-text-primary !important;
+          }
+          
+          .score-percent {
+            color: $dark-text-secondary !important;
+          }
+        }
+        
+        .rating-section {
+          .rating {
+            color: $dark-text-primary !important;
+          }
+          
+          .rating-change {
+            &.positive {
+              color: #4cd964 !important;
+            }
+            
+            &.negative {
+              color: #ff4757 !important;
+            }
+          }
+        }
+      }
+    }
+    
+    .tools-section {
+      margin-top: 30rpx;
+      max-width: 180rpx;
+      flex-shrink: 0;
+      background: transparent !important;
+      
+      .tools-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10rpx;
+        padding: 10rpx;
+        border-radius: 12rpx;
+        background: transparent !important;
+        backdrop-filter: blur(10px);
+        
+        .tool-btn {
+          min-height: 80rpx;
+          min-width: 120rpx;
+          width: 100%;
+          line-height: 36rpx;
+          text-align: center;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          gap: 6rpx;
+          font-size: 28rpx;
+          border-radius: 16rpx;
+          font-weight: bold;
+          padding-top: 40rpx;
+          padding-bottom: 40rpx;       
+          padding-left: 12rpx;
+          padding-right: 12rpx;
+          box-shadow: 4rpx 4rpx 12rpx rgba(0, 0, 0, 0.2) !important;
+          box-sizing: border-box;
+          
+          &:active {
+            transform: translateY(2rpx);
+            box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.1) !important;
+          }
+          
+          &.basic { 
+            color: white !important;
+            border: 2rpx solid #0a8c3c !important;
+            background: linear-gradient(135deg, #0a8c3c, #25a050) !important;
+          }
+          &.advanced { 
+            color: white !important;
+            border: 2rpx solid #b35900 !important;
+            background: linear-gradient(135deg, #b35900, #cc7a22) !important;
+          }
+          &.expert { 
+            color: white !important;
+            border: 2rpx solid #b01c2e !important;
+            background: linear-gradient(135deg, #b01c2e, #c02c3c) !important;
+          }
+          &.master { 
+            color: white !important;
+            border: 2rpx solid #5040c0 !important;
+            background: linear-gradient(135deg, #5040c0, #6050d0) !important;
+          }
+          &.remaster { 
+            color: white !important;
+            border: 2rpx solid #9c4dcc !important;
+            background: linear-gradient(135deg, #9c4dcc, #b06cd8) !important;
+          }
+          
+          .iconfont {
+            margin-right: 4rpx;
+          }
+        }
+      }
+    }
+  }
+} 

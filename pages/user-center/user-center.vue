@@ -169,7 +169,7 @@
           <text class="avatar-selector-title">选择头像</text>
           <text class="close-btn" @click="closeAvatarSelector">×</text>
         </view>
-        <scroll-view scroll-y class="avatar-grid">
+        <scroll-view scroll-y class="avatar-scroll">
           <view class="avatar-list">
             <view 
               v-for="(icon, index) in avatarList" 
@@ -208,11 +208,17 @@ import {addAPICount,getVersion} from '@/api/myapi.js';
 // 确保导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
 import { remoteRoute, version } from '@/static/apiconfig.js'
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 
-// 注入全局深色模式状态和切换方法
 const isDarkMode = inject('isDarkMode');
 const toggleDarkMode = inject('toggleDarkMode');
 const applyTheme = inject('applyTheme');
+
+watch(isDarkMode, () => {
+  uni.setStorageSync('theme_mode', isDarkMode.value ? 'dark' : 'light');
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value); // 这里的调用会根据平台条件编译
+});
 
 let b35=ref('')
 let b15=ref('')
@@ -231,14 +237,12 @@ let records=ref('')
 let avatar=ref('../../static/maiicon/UI_Icon_409503.jpg')
 let QrCode=ref('');
 let uid=ref(-1);
-
 let mainame=ref('')
-   // #ifdef APP-PLUS
-plus.android.importClass("android.view.Window");
-const main = plus.android.runtimeMainActivity();
-const window = main.getWindow();
-const Color = plus.android.importClass("android.graphics.Color");   
-  // #endif
+
+
+
+
+
 
 // 计算属性：根据rating值返回对应的样式类名
 const ratingClass = computed(() => {
@@ -402,7 +406,7 @@ onShow(() => {
   
   // 应用当前主题到导航栏
   applyTheme();
-  updateNativeTabBar();
+  updateNativeTabBar(isDarkMode.value);
   // 更新tabbar样式
   //updateTabBarStyle();
   //getNativeTabBar();
@@ -1083,35 +1087,16 @@ const updateTabBarStyle = () => {
   }
 };
 
-// 添加更新原生TabBar样式的函数
-const updateNativeTabBar = () => {
-  // #ifdef APP-PLUS
-  if(uni.getSystemInfoSync().platform === 'android') {
-    try {
-      if(isDarkMode.value) {
-        // 深色模式
-        window.setNavigationBarColor(Color.parseColor('#1c1c1e'));
-      } else {
-        // 浅色模式
-        window.setNavigationBarColor(Color.parseColor('#ffffff'));
-      }
-      
-      console.log('TabBar样式已更新');
-    } catch(e) {
-      console.error('更新原生TabBar样式失败:', e);
-    }
-  }
-  // #endif
-};
 
-watch(isDarkMode, () => {
-  uni.setStorageSync('theme_mode', isDarkMode.value ? 'dark' : 'light');
-  applyTheme();
-  updateNativeTabBar(); // 这里的调用会根据平台条件编译
-});
+
+
 </script>
 
 <style lang="scss" scoped>
+/* 首先导入uni.scss以获取变量 */
+@import '@/uni.scss';
+
+/* 然后导入深色模式样式 */
 @import './dark-user-center.scss';
 .user-center {
   position: relative;
@@ -1732,35 +1717,40 @@ watch(isDarkMode, () => {
     }
   }
   
-  .avatar-grid {
-    max-height: 60vh;
-    padding: 20rpx;
+  .avatar-scroll {
+    max-height: 70vh;
+  }
+
+  .avatar-list {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10rpx;
+    padding-bottom: 160rpx; /* 增加底部内边距确保最后一行可见 */
+  }
+
+  .avatar-item {
+    width: 25%; /* 一行四个 */
+    padding: 6rpx;
     box-sizing: border-box;
-    
-    .avatar-list {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20rpx;
-      padding-bottom: 40rpx;
-      
-      .avatar-item {
-        aspect-ratio: 1;
-        border-radius: 16rpx;
-        overflow: hidden;
-        box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
-        
-        &:active {
-          transform: scale(0.95);
-        }
-        
-        .avatar-option {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0rpx; /* 减少行间距 */
+  }
+
+  .avatar-option {
+    width: 180rpx;
+    height: 180rpx;
+    border-radius: 5%;
+    border: 2rpx solid #e3dddd;
+    box-shadow: 0 4rpx 10rpx rgba(31, 31, 31, 0.249); /* 增强阴影效果 */
+   
+  }
+
+  .avatar-option:active {
+    border-color: #6366f1;
+    transform: scale(0.95);
+    box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.1); /* 点击时阴影变小 */
   }
 }
 
