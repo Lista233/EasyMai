@@ -1,6 +1,6 @@
 <!-- pages/login/index.vue -->
 <template>
-  <view class="login-page">
+  <view class="login-page" :class="{ 'dark-mode': isDarkMode }">
     <view class="flex-container">
       <view class="login-container">
         <view class="login-header">
@@ -186,12 +186,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, inject,onBeforeMount } from 'vue';
 import * as maiApi from "../../api/maiapi.js";
-import * as h5Api from "@/api/h5api.js"
-// 如果没有在pages.json中配置easycom规则，需要手动导入
-// import uniIcons from '@/uni_modules/uni-icons/components/uni-icons/uni-icons.vue';
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
+onBeforeMount(()=>{
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value)
+})
 // 模式控制
 const isRegisterMode = ref(false);
 
@@ -536,6 +541,7 @@ const openAgreement = () => {
 </script>
 
 <style lang="scss" scoped>
+@import './dark-login.scss';
 .login-page {
   position: relative;
   min-height: 100vh;

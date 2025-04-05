@@ -611,93 +611,129 @@ const getDifficultyName = (song) => {
     .cover-grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 20rpx;
-      margin-bottom: 30rpx;
+      justify-content: center;
+      gap: 10rpx;
+      width: 100%;
       
       &.columns-1 {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
         .cover-item {
           width: 50%;
-          height: 50%;;
+          position: relative;
           margin: 0 auto;
+          padding-top: 50%; // 直接在元素上使用padding-top而不是伪元素
         }
       }
       
       &.columns-2 {
+        gap: 10rpx;
         .cover-item {
-          height:  calc((100% - 20rpx) / 2);;
-          width: calc((100% - 20rpx) / 2);
+          width: calc(50% - 5rpx);
+          padding-top: calc(50% - 5rpx); // 直接使用padding-top
         }
       }
       
       &.columns-3 {
+        gap: 8rpx;
         .cover-item {
-          height:  calc((100% - 40rpx) / 3);;
-          width: calc((100% - 40rpx) / 3);
+          width: calc((100% - 16rpx) / 3);
+          padding-top: calc((100% - 16rpx) / 3); // 直接使用padding-top
         }
       }
-      
+  
       &.columns-4 {
+        gap: 8rpx;
         .cover-item {
-          height:  calc((100% - 60rpx) / 4);;
-          width: calc((100% - 60rpx) / 4);
+		
+          width: calc((100% - 24rpx) / 4);
+          padding-top: calc((100% - 24rpx) / 4); // 直接使用padding-top
         }
       }
       
       .cover-item {
         position: relative;
-        aspect-ratio: 1;
-        border-radius: 16rpx;
+        border-radius: 8rpx;
         overflow: hidden;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3rpx 8rpx rgba(0, 0, 0, 0.1);
         
-        &.empty {
-          background-color: #e8eaf6;
+        .song-cover {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
           
-          .empty-placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+          .song-cover-image {
             width: 100%;
             height: 100%;
-            
-            .placeholder-text {
-              font-size: 80rpx;
-              font-weight: 700;
-              color: #c5cae9;
-            }
+            object-fit: cover;
           }
-        }
-        
-        .song-cover {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
         }
         
         .song-info {
           position: absolute;
           bottom: 0;
           left: 0;
-          right: 0;
-          background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
-          padding: 20rpx;
+          width: 100%;
+          padding: 8rpx 12rpx;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 2;
           
           .song-title {
-            color: #ffffff;
-            font-size: 24rpx;
-            font-weight: 600;
-            margin-bottom: 6rpx;
+            color: #fff;
+            font-size: 18rpx;
+            font-weight: 400;
+            line-height: 1.3;
+            max-height: 32rpx;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 2rpx;
+          }
+          
+          .song-id {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14rpx;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
+        }
+        
+        &:hover .song-info {
+          white-space: normal;
+          max-height: none;
+          overflow: visible;
+          z-index: 5;
+          background: rgba(0, 0, 0, 0.85);
+          position: relative;
+        }
+        
+        &.empty {
+          background-color: #e8eaf6;
           
-          .song-id {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 20rpx;
+          .empty-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            .placeholder-text {
+              font-size: 80rpx;
+              font-weight: 700;
+              color: #c5cae9;
+            }
           }
         }
       }
@@ -824,10 +860,12 @@ const getDifficultyName = (song) => {
   .song-cover, .history-cover-wrapper {
     position: relative;
     overflow: hidden;
-    border-width: 9rpx;
+    border-width: 5rpx;
     border-style: solid;
-    border-radius: 8rpx;
+    border-radius: 4rpx;
     box-sizing: border-box;
+    width: 100%;
+    height: 100%;
     
     &.border-basic {
       border-color: rgb(83, 206, 134);
@@ -868,21 +906,24 @@ const getDifficultyName = (song) => {
   /* 修改封面图片样式 */
   .cover-item {
     position: relative;
-    aspect-ratio: 1;
     border-radius: 16rpx;
     overflow: hidden;
     box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+    display: flex;
     
     .song-cover {
       width: 100%;
       height: 100%;
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .song-cover-image {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      display: block;
     }
   }
   .history-cover-wrapper {

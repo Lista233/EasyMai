@@ -267,12 +267,18 @@
         color: $dark-text-secondary !important;
       }
     }
-    
+
     .popup-title {
       color: $dark-text-primary !important;
     }
   }
-  
+  .alias-popup{
+  	.alias-list{
+  		.alias-item {
+  		   color: $dark-text-secondary !important;
+  		}
+  	}
+  }
   .favorite-popup {
     .folder-list {
       .folder-item {

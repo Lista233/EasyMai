@@ -869,7 +869,7 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 /* 导入深色模式样式 */
 @import '@/pages/favorites/dark-favorites.scss';
 
@@ -877,9 +877,7 @@ onMounted(() => {
   padding: 30rpx;
   background-color: #f8fafc;
   min-height: 100vh;
-}
-
-.header {
+  .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1550,4 +1548,7 @@ onMounted(() => {
     }
   }
 }
+}
+
+
 </style> 

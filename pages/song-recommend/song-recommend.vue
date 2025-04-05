@@ -7,17 +7,68 @@
 		
 		<!-- 输入部分 -->
 		<view class="input-section">
-			<view class="section-title">输入您的目标 Rating</view>
-			<view class="rating-input-container">
-				<input 
-					class="rating-input" 
-					type="number" 
-					v-model="userRating" 
-					placeholder="请输入您的目标 Rating"
-					@confirm="generateRecommendations"
-				/>
-				<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
+			<!-- 选择推荐模式 -->
+			<view class="recommend-mode">
+				<view class="mode-selector">
+					<view 
+						class="mode-item" 
+						:class="{ active: recommendMode === 'rating' }" 
+						@click="setRecommendMode('rating')"
+					>
+						基于Rating推荐
+					</view>
+					<view 
+						class="mode-item" 
+						:class="{ active: recommendMode === 'dsRange' }" 
+						@click="setRecommendMode('dsRange')"
+					>
+						自定义定数范围
+					</view>
+				</view>
 			</view>
+			
+			<!-- 基于Rating的输入 -->
+			<view class="rating-input-container" v-if="recommendMode === 'rating'">
+				<view class="input-row">
+					<view class="input-label">您的目标 Rating</view>
+					<input 
+						class="rating-input" 
+						type="number" 
+						v-model="userRating" 
+						placeholder="请输入您的目标 Rating"
+						@confirm="generateRecommendations"
+					/>
+				</view>
+			</view>
+			
+			<!-- 基于定数范围的输入 -->
+			<view class="dsrange-input-container" v-if="recommendMode === 'dsRange'">
+				<!-- <view class="section-title text-center">自定义定数范围</view> -->
+				<view class="dsrange-inputs">
+					<view class="ds-input-group">
+						<label class="ds-label">最小定数</label>
+						<input 
+							class="ds-input" 
+							type="number" 
+							v-model="customDsRange.min" 
+							placeholder="最小值"
+						/>
+					</view>
+					<view class="ds-separator">-</view>
+					<view class="ds-input-group">
+						<label class="ds-label">最大定数</label>
+						<input 
+							class="ds-input" 
+							type="number" 
+							v-model="customDsRange.max" 
+							placeholder="最大值"
+						/>
+					</view>
+				</view>
+			</view>
+			
+			<!-- 公共按钮部分 -->
+			<button class="recommend-button" @click="generateRecommendations">生成推荐</button>
 			
 			<!-- 添加筛选选项 -->
 			<view class="filter-options">
@@ -144,7 +195,8 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, inject } from 'vue';
-import { getComprehensiveRecommendations } from '@/utils/recommendationUtils';
+import { getComprehensiveRecommendations, getComprehensiveRecommendationsByDsRange } from '@/utils/recommendationUtils';
+import { getRecommendedDsByRating } from '@/utils/ratingUtils';
 import SongService from '@/utils/SongService';
 import {getCoverUrl} from '@/util/coverManager.js'
 import playerRecordService from '@/utils/PlayerRecordService';
@@ -155,8 +207,6 @@ const isDarkMode = inject('isDarkMode');
 
 const applyTheme = inject('applyTheme');
 
-
-
 // 状态变量
 const songService = ref(null);
 const isPlayerDataInitialized = ref(false);
@@ -165,6 +215,10 @@ const isPlayerDataInitialized = ref(false);
 const userRating = ref('');
 const recommendations = ref(null);
 const activeTab = ref('fit');
+
+// 添加推荐模式和自定义定数范围
+const recommendMode = ref('rating'); // 'rating' 或 'dsRange'
+const customDsRange = ref({ min: 13.3, max: 13.9 }); // 默认定数范围
 
 // 筛选相关变量
 const completionThresholds = ['不筛选', '99.0', '99.5', '100.0', '100.5']; // 修改"0"为"不筛选"
@@ -236,21 +290,47 @@ const onThresholdChange = (e) => {
 	console.log('达成率阈值更改为:', completionThresholds[completionThresholdIndex.value]);
 };
 
-// 生成推荐
+// 设置推荐模式
+const setRecommendMode = (mode) => {
+	recommendMode.value = mode;
+};
+
+// 生成推荐，根据不同的推荐模式调用不同的方法
 const generateRecommendations = async () => {
-	if (!userRating.value) {
+	// 验证输入
+	if (recommendMode.value === 'rating' && !userRating.value) {
 		uni.showToast({
 			title: '请输入 Rating',
 			icon: 'none'
 		});
 		return;
 	}
+	
+	if (recommendMode.value === 'dsRange') {
+		// 验证定数范围
+		if (!customDsRange.value.min || !customDsRange.value.max) {
+			uni.showToast({
+				title: '请输入完整的定数范围',
+				icon: 'none'
+			});
+			return;
+		}
+		
+		// 确保最小值小于最大值
+		if (parseFloat(customDsRange.value.min) > parseFloat(customDsRange.value.max)) {
+			uni.showToast({
+				title: '最小定数不能大于最大定数',
+				icon: 'none'
+			});
+			return;
+		}
+	}
 
 	try {
 		// 显示加载框
 		uni.showLoading({
 			title: '生成推荐中...',
-			mask: true // 添加遮罩防止重复点击
+			mask: true
 		});
 
 		// 获取谱面统计数据
@@ -278,13 +358,27 @@ const generateRecommendations = async () => {
 			songService.value = new SongService(musicData);
 		}
 
-		// 获取推荐结果
-		recommendations.value = getComprehensiveRecommendations(
-			parseFloat(userRating.value),
-			songService.value,
-			chartStats,
-			200
-		);
+		// 根据不同的推荐模式获取推荐结果
+		if (recommendMode.value === 'rating') {
+			// 基于 Rating 的推荐
+			recommendations.value = getComprehensiveRecommendations(
+				parseFloat(userRating.value),
+				songService.value,
+				chartStats,
+				200
+			);
+		} else {
+			// 基于自定义定数范围的推荐
+			recommendations.value = getComprehensiveRecommendationsByDsRange(
+				{
+					min: parseFloat(customDsRange.value.min),
+					max: parseFloat(customDsRange.value.max)
+				},
+				songService.value,
+				chartStats,
+				200
+			);
+		}
 		
 		// 过滤掉ID大于5位数的歌曲
 		if (recommendations.value) {
@@ -389,7 +483,7 @@ const navigateToChartStats = () => {
 	});
 };
 
-// 初始化 SongService 和 PlayerRecordService
+// 修改初始化服务函数
 const initServices = async () => {
 	try {
 		// 初始化 SongService
@@ -423,8 +517,19 @@ const initServices = async () => {
 				// 尝试获取玩家的 Rating 作为默认值
 				const playerInfo = playerRecordService.getPlayerInfo();
 				if (playerInfo && playerInfo.rating) {
-					userRating.value = (playerInfo.rating);
+					// 设置默认Rating值
+					userRating.value = playerInfo.rating;
 					console.log('设置默认 Rating:', userRating.value);
+					
+					// 根据Rating设置默认定数范围
+					const recommendedDs = getRecommendedDsByRating(parseFloat(userRating.value));
+					if (recommendedDs && recommendedDs.range) {
+						customDsRange.value = {
+							min: recommendedDs.range.min,
+							max: recommendedDs.range.max
+						};
+						console.log('设置默认定数范围:', customDsRange.value);
+					}
 				}
 			} catch (e) {
 				console.error('初始化 PlayerRecordService 失败:', e);
@@ -467,6 +572,24 @@ const handleNextPage = () => {
 	}
 	currentPage.value++;
 };
+
+// 监听userRating变化，自动更新定数范围
+watch(userRating, (newRating) => {
+	if (newRating) {
+		try {
+			const recommendedDs = getRecommendedDsByRating(parseFloat(newRating));
+			if (recommendedDs && recommendedDs.range) {
+				customDsRange.value = {
+					min: recommendedDs.range.min,
+					max: recommendedDs.range.max
+				};
+				console.log('根据Rating更新定数范围:', customDsRange.value);
+			}
+		} catch (error) {
+			console.error('更新定数范围失败:', error);
+		}
+	}
+});
 </script>
 
 <style lang="scss">
@@ -526,14 +649,26 @@ const handleNextPage = () => {
 .section-title {
 	font-size: 32rpx;
 	font-weight: bold;
-	margin-bottom: 20rpx;
 	color: #1e293b;
+	margin-bottom: 20rpx;
+	text-align: center;
+	width: 100%;
 }
 
-.rating-input-container {
+.input-row {
 	display: flex;
-	gap: 20rpx;
+	align-items: center;
+	width: 100%;
 	margin-bottom: 20rpx;
+}
+
+.input-label {
+	flex: 0 0 auto;
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #1e293b;
+	margin-right: 20rpx;
+	min-width: 180rpx;
 }
 
 .rating-input {
@@ -545,19 +680,23 @@ const handleNextPage = () => {
 	font-size: 32rpx;
 	font-weight: 500;
 	color: #1e293b;
-	transition: border-color 0.1s;
 	background-color: #f8fafc;
 }
 
-.rating-input:hover {
-	border-color: #6366f1;
-	background: white;
-	
+.ds-input {
+	height: 88rpx;
+	border: 2px solid #e2e8f0;
+	border-radius: 16rpx;
+	padding: 0 24rpx;
+	font-size: 32rpx;
+	font-weight: 500;
+	color: #1e293b;
+	background-color: #f8fafc;
+	box-sizing: border-box;
 }
 
-/* 美化按钮样式 */
 .recommend-button {
-	flex-basis: 180rpx;
+	width: 100%;
 	background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
 	color: white;
 	border: none;
@@ -567,17 +706,9 @@ const handleNextPage = () => {
 	font-size: 28rpx;
 	font-weight: 500;
 	box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-	transition: all 0.3s ease;
-	text-align: center;
-	padding: 0;
 }
 
-.recommend-button:active {
-	transform: translateY(2rpx);
-	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
-}
-
-/* 优化筛选选项部分 */
+/* 美化筛选选项部分 */
 .filter-options {
 	margin-top: 30rpx;
 	padding: 24rpx;
@@ -904,5 +1035,103 @@ const handleNextPage = () => {
 	transition: all 0.2s ease;
 }
 
+/* 添加推荐模式选择样式 */
+.recommend-mode {
+	margin-bottom: 20rpx;
+}
+
+.mode-selector {
+	display: flex;
+	background-color: #f1f5f9;
+	border-radius: 12rpx;
+	overflow: hidden;
+	padding: 4rpx;
+}
+
+.mode-item {
+	flex: 1;
+	text-align: center;
+	padding: 16rpx 0;
+	font-size: 28rpx;
+	color: #64748b;
+	transition: all 0.3s ease;
+	border-radius: 8rpx;
+}
+
+.mode-item.active {
+	background-color: #6366f1;
+	color: white;
+	font-weight: 500;
+	box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+/* 定数范围输入样式 */
+.dsrange-input-container {
+	margin-bottom: 20rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.dsrange-inputs {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
+	margin-bottom: 20rpx;
+}
+
+.ds-input-group {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.ds-label {
+	font-size: 26rpx;
+	color: #64748b;
+	margin-bottom: 8rpx;
+}
+
+.ds-input {
+	height: 88rpx;
+	border: 2px solid #e2e8f0;
+	border-radius: 16rpx;
+	padding: 0 24rpx;
+	font-size: 38rpx;
+	font-weight: 500;
+	color: #1e293b;
+	background-color: #f8fafc;
+	box-sizing: border-box;
+}
+
+.ds-input:hover {
+	border-color: #6366f1;
+	background: white;
+}
+
+.ds-separator {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #64748b;
+	margin: 0 8rpx;
+	display: flex;
+	align-items: center;
+	align-self: flex-end;
+	height: 88rpx;
+	margin-top: 34rpx;
+}
+
+/* 如果需要调整按钮位置，可以添加以下样式 */
+.recommend-button {
+	margin-bottom: 20rpx;
+	width: 100%;
+}
+
+/* 标题居中样式 */
+.text-center {
+  text-align: center;
+  display: block;
+}
 
 </style>

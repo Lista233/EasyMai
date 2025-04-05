@@ -1,5 +1,5 @@
 <template>
-  <view class="modal-container" v-if="visible">
+  <view class="modal-container" :class="{ 'dark-mode': darkMode }" v-if="visible">
     <view class="modal-overlay" @click="handleCancel"></view>
     <view class="modal-content qr-modal">
       <view class="modal-title">绑定二维码获取UID</view>
@@ -31,7 +31,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
+import './dark-mode.scss';
+
 const qrCodeInput = ref('');
 // 定义props
 const props = defineProps({
@@ -44,8 +46,8 @@ const props = defineProps({
 // 定义emit事件
 const emit = defineEmits(['cancel', 'confirm', 'update:visible']);
 
-// // 内部状态
-
+// 注入darkMode状态
+const darkMode = inject('darkMode', ref(false));
 
 // 显示帮助信息
 function showHelp(type) {
@@ -64,9 +66,6 @@ function showHelp(type) {
     duration: 3000
   });
 }
-
-
-
 
 // 取消操作
 function handleCancel() {

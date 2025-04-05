@@ -228,7 +228,7 @@
       </view>
       <view class="alias-list">
         <view v-if="songAliases.length > 0">
-          <view v-for="(alias, index) in songAliases" :key="index" class="alias-item">
+          <view v-for="(alias, index) in songAliases" :key="index" class="alias-item" @click="copyAlias(alias)">
             {{ alias }}
           </view>
         </view>
@@ -808,7 +808,20 @@ watch(
   },
   { immediate: false }
 )
-
+const copyAlias = (alias) => {
+  if (alias) {
+    uni.setClipboardData({
+      data: alias,
+      success: () => {
+        uni.showToast({
+          title: '歌名已复制到剪贴板',
+          icon: 'none',
+          position: 'bottom'
+        })
+      }
+    })
+  }
+}
 
 
 // 添加复制标题功能
@@ -1722,7 +1735,7 @@ const hasReMaster = computed(() => {
   border-radius: 20rpx;
   overflow: hidden;
   will-change: transform; /* 提示浏览器这个元素会有变换 */
-  transform: translateZ(0); /* 启用GPU加速 */
+ 
   
   .popup-header {
     display: flex;
@@ -1751,7 +1764,7 @@ const hasReMaster = computed(() => {
     padding: 20rpx 30rpx;
     
     .alias-item {
-      padding: 16rpx 0;
+      padding: 24rpx 4rpx;
       border-bottom: 1rpx solid #f0f0f0;
       font-size: 28rpx;
       color: #333;

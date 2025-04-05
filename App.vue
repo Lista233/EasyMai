@@ -145,34 +145,66 @@ import { ref, onMounted, provide } from 'vue'
 	}
 	provide('toggleDarkMode', toggleDarkMode);
 
-	// 应用主题到页面
-	function applyTheme() {
-		if (isDarkMode.value) {
-			// 设置顶部状态栏颜色为深色
-			uni.setNavigationBarColor({
-				frontColor: '#ffffff',
-				backgroundColor: '#1c1c1e',
-				animation: {
-					duration: 300,
-					timingFunc: 'easeIn'
-				}
-			});
-			
-			// 设置底部导航栏为深色模式
-	
-		} else {
-			// 设置顶部状态栏颜色为浅色
-			uni.setNavigationBarColor({
-				frontColor: '#000000',
-				backgroundColor: '#f8f8f8',
-				animation: {
-					duration: 300,
-					timingFunc: 'easeIn'
-				}
-			});
-			
+	// 应用主题到页面，添加延时执行
+	function applyTheme(retryCount = 0) {
+		const maxRetries = 3; // 最大重试次数
 		
-		}
+		// 延时执行，给系统一些准备时间
+		setTimeout(() => {
+			// 设置颜色配置
+			const config = {
+				frontColor: isDarkMode.value ? '#ffffff' : '#000000',
+				backgroundColor: isDarkMode.value ? '#1c1c1e' : '#f8f8f8',
+				animation: {
+					duration: 200,
+					timingFunc: 'easeIn'
+				}
+			};
+			
+			// 使用标准API设置导航栏颜色
+			uni.setNavigationBarColor({
+				...config,
+				success: () => {
+					console.log('导航栏颜色设置成功');
+				},
+				fail: (err) => {
+					console.error('导航栏颜色设置失败:', err);
+					
+					// 如果失败且未超过最大重试次数，则延迟后重试
+					if (retryCount < maxRetries) {
+						console.log(`尝试重新设置导航栏颜色 (${retryCount + 1}/${maxRetries})`);
+						// 递增延迟时间，避免过快重试
+						const delay = 300 + (retryCount * 150);
+						setTimeout(() => {
+							applyTheme(retryCount + 1);
+						}, delay);
+					}
+				}
+			});
+			
+			// 设置TabBar颜色 (如果有)
+			try {
+				// #ifdef APP-PLUS || MP
+				if (isDarkMode.value) {
+					uni.setTabBarStyle({
+						color: '#8E8E93',
+						selectedColor: '#818cf8',
+						backgroundColor: '#1c1c1e',
+						borderStyle: 'black'
+					});
+				} else {
+					uni.setTabBarStyle({
+						color: '#8E8E93',
+						selectedColor: '#6366f1',
+						backgroundColor: '#ffffff',
+						borderStyle: 'white'
+					});
+				}
+				// #endif
+			} catch (e) {
+				console.error('设置TabBar样式异常:', e);
+			}
+		}, 150); // 初始延时150ms
 	}
 	provide('applyTheme', applyTheme);
 

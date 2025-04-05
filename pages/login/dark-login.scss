@@ -1,0 +1,203 @@
+@import "@/uni.scss";
+
+.login-page.dark-mode {
+  background: $dark-gradient-bg !important;
+  
+  .login-container {
+    background: $dark-card-bg !important;
+    box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.2) !important;
+    
+    .login-header {
+      .app-name {
+        color: $dark-text-primary !important;
+      }
+      
+      .app-slogan {
+        color: $dark-text-secondary !important;
+      }
+      
+      .auth-tabs {
+        background-color: $dark-element-bg !important;
+        
+        .tab-item {
+          color: $dark-text-secondary !important;
+          
+          &.active {
+            background-color: $dark-element-active-bg !important;
+            color: #8c84ff !important;
+            box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2) !important;
+          }
+        }
+      }
+    }
+    
+    .login-form, .register-form {
+      .input-group {
+        .input-label {
+          color: $dark-text-secondary !important;
+          
+          &::before {
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%) !important;
+          }
+        }
+        
+        input {
+          background: $dark-element-bg !important;
+          border: 3rpx solid $dark-card-border !important;
+          color: $dark-text-primary !important;
+          
+          &:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 4rpx rgba(99, 102, 241, 0.15) !important;
+            background-color: $dark-element-active-bg !important;
+          }
+          
+          &:hover {
+            border-color: #6366f1 !important;
+            background-color: $dark-element-active-bg !important;
+          }
+          
+          &:disabled {
+            background-color: rgba(30, 30, 40, 0.5) !important;
+            color: $dark-text-hint !important;
+          }
+        }
+        
+        &:focus-within .input-label {
+          color: #8c84ff !important;
+        }
+        
+        .password-input-container {
+          .toggle-password {
+            color: $dark-text-secondary !important;
+            
+            &:active {
+              color: #8c84ff !important;
+            }
+          }
+        }
+      }
+      
+      .remember-forgot {
+        .remember-me {
+          color: $dark-text-secondary !important;
+        }
+        
+        .forgot-password {
+          color: #8c84ff !important;
+          
+          &::after {
+            background-color: #8c84ff !important;
+          }
+        }
+      }
+      
+      .login-button, .register-button {
+        background: $dark-primary-button-bg !important;
+        box-shadow: 0 4rpx 12rpx rgba(82, 83, 199, 0.3) !important;
+        
+        &:active:not(.loading) {
+          box-shadow: 0 2rpx 8rpx rgba(82, 83, 199, 0.2) !important;
+          background: $dark-primary-button-hover-bg !important;
+        }
+        
+        &.loading {
+          background: $dark-primary-button-bg !important;
+          opacity: 0.8 !important;
+        }
+      }
+    }
+    
+    .mode-switch {
+      color: $dark-text-secondary !important;
+      
+      .link {
+        color: #8c84ff !important;
+        
+        &::after {
+          background-color: #8c84ff !important;
+        }
+      }
+    }
+  }
+  
+  .wave-container {
+    .wave1 {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path fill='%236366f1' opacity='0.15' d='M0,36 C100,60 280,0 400,30 C520,60 600,10 720,30 C840,50 960,10 1080,20 C1200,30 1320,60 1400,30 L1400,120 L0,120 Z'/></svg>") !important;
+    }
+    
+    .wave2 {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path fill='%238b5cf6' opacity='0.15' d='M0,20 C150,40 250,10 450,40 C650,70 700,20 900,40 C1050,55 1150,20 1200,30 L1200,120 L0,120 Z'/></svg>") !important;
+    }
+    
+    .wave3 {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path fill='%234f46e5' opacity='0.15' d='M0,60 C200,30 400,70 600,40 C800,10 1000,50 1200,30 L1200,120 L0,120 Z'/></svg>") !important;
+    }
+    
+    .wave4 {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'><path fill='%23a78bfa' opacity='0.15' d='M0,40 C100,20 300,60 500,20 C700,50 900,10 1000,30 C1100,50 1175,20 1200,25 L1200,120 L0,120 Z'/></svg>") !important;
+    }
+  }
+  
+  // 忘记密码弹窗深色模式
+  .recovery-popup {
+    background-color: $dark-card-bg !important;
+    box-shadow: 0 10rpx 25rpx rgba(0, 0, 0, 0.3) !important;
+    
+    .recovery-title {
+      color: $dark-text-primary !important;
+    }
+    
+    .recovery-desc {
+      color: $dark-text-secondary !important;
+    }
+    
+    .input-group {
+      .input-label {
+        color: $dark-text-secondary !important;
+      }
+      
+      .form-input {
+        background: $dark-element-bg !important;
+        border: 2rpx solid $dark-card-border !important;
+        color: $dark-text-primary !important;
+      }
+    }
+    
+    .popup-buttons {
+      .popup-btn {
+        &.cancel {
+          background-color: $dark-secondary-button-bg !important;
+          color: $dark-secondary-button-text !important;
+          
+          &:active {
+            background-color: $dark-secondary-button-hover-bg !important;
+          }
+        }
+        
+        &.confirm {
+          background: $dark-primary-button-bg !important;
+          
+          &:active {
+            background: $dark-primary-button-hover-bg !important;
+          }
+        }
+      }
+    }
+  }
+
+  // 用户协议勾选深色模式样式
+  .agreement-check {
+    .agreement-label {
+      color: $dark-text-secondary !important;
+    }
+    
+    .agreement-link {
+      color: #8c84ff !important;
+      
+      &::after {
+        background-color: #8c84ff !important;
+      }
+    }
+  }
+} 

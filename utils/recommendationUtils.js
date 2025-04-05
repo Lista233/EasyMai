@@ -279,10 +279,11 @@ export function recommendSongsByDsDifference(rating, songService, chartStats, li
  * @returns {Object} - 包含三种推荐方式的结果
  */
 export function getComprehensiveRecommendations(rating, songService, chartStats, limit = 200) {
+  const recommendedDs=getRecommendedDsByRating(rating)
   return {
-    averageDs: getRecommendedDsByRating(rating).averageDs,
-    range: getRecommendedDsByRating(rating).range,
-    officialRecommendations: recommendSongsByOfficialDs(rating, songService, chartStats, limit),
+    averageDs: recommendedDs.averageDs,
+    range: recommendedDs.range,
+    //officialRecommendations: recommendSongsByOfficialDs(rating, songService, chartStats, limit),
     fitRecommendations: recommendSongsByFitDs(rating, songService, chartStats, limit),
     diffRecommendations: recommendSongsByDsDifference(rating, songService, chartStats, limit)
   };
@@ -416,4 +417,202 @@ function getDsDifferenceRecommendations(targetDs, songService, chartStats, limit
   
   // 返回前 limit 条记录
   return recommendations.slice(0, limit);
+}
+
+/**
+ * 根据拟合定数推荐歌曲（直接使用定数范围）
+ * @param {Object} dsRange - 定数范围 {min, max}
+ * @param {Object} songService - SongService 实例
+ * @param {Object} chartStats - 谱面统计数据
+ * @param {number} limit - 返回结果数量限制
+ * @returns {Array} - 推荐歌曲列表
+ */
+export function recommendSongsByFitDsRange(dsRange, songService, chartStats, limit = 200) {
+  if (!dsRange || !songService || !chartStats) {
+    return [];
+  }
+  
+  const { min, max } = dsRange;
+  
+  // 获取所有谱面
+  const allCharts = sortChartStatsByPlayCount(chartStats);
+  
+  const difficulties = songService.getDifficultiesByDsRange({ min, max });
+  console.log("符合定数范围的难度数量", difficulties.length);
+  
+  // 收集所有符合条件的谱面
+  console.log('所有统计数据',allCharts)
+  let recommendedCharts=[];
+  difficulties.forEach(difficulty => {
+    // 在统计数据中查找对应的记录
+    allCharts.forEach(stat => {
+      if (stat.songId==difficulty.songId&&stat.difficulty==difficulty.difficulty) {
+        recommendedCharts.push({...stat,
+                                'ds':difficulty.ds})
+        return;
+      }
+    });
+  })
+  
+  // 计算综合得分并排序
+  const sortedCharts = recommendedCharts
+    .map(chart => {
+      // 标准化各个指标的值到0-1范围
+      const avgScore = chart.avg ? Math.min((parseFloat(chart.avg)-95), 5) : 0;  // 平均达成率转换为0-1
+      // 删除定数权值
+      const cntScore = Math.min(chart.cnt / 10000, 1);  // 游玩次数，最高10000次记为1
+      
+      // 新的加权计算公式：平均达成率是主要因素，游玩次数作为调节因子
+      // 平均达成率高且游玩次数高 = 最高分
+      // 平均达成率高但游玩次数低 = 中高分
+      // 平均达成率低且游玩次数高 = 中低分
+      // 平均达成率低且游玩次数低 = 最低分
+      const totalScore = avgScore * (0.7 + 0.3 * cntScore);
+      
+      return {
+        ...chart,
+        score: totalScore
+      };
+    })
+    .sort((a, b) => b.score - a.score); // 按总分降序排序
+  
+  // 添加歌曲信息并限制数量
+  return sortedCharts.slice(0, limit).map(chart => {
+    const song = songService.getSongById(chart.songId);
+    let title = `歌曲 ${chart.songId}`;
+    let level = '?';
+    let ds = '?';
+    let totalNotes = 0;
+    
+    if (song) {
+      title = song.title || title;
+      ds = chart.ds || ds;
+    }
+    
+    return {
+      ...chart,
+      title,
+      ds,
+      level,
+      totalNotes,
+      fit_diff: chart.fit_diff ? parseFloat(chart.fit_diff).toFixed(2) : '?',
+      avg: chart.avg ? parseFloat(chart.avg).toFixed(2) : '?',
+      score: parseFloat(chart.score).toFixed(3) // 保留得分用于调试
+    };
+  });
+}
+
+/**
+ * 根据官方定数和拟合定数的差值推荐歌曲（直接使用定数范围）
+ * @param {Object} dsRange - 定数范围 {min, max}
+ * @param {Object} songService - SongService 实例
+ * @param {Object} chartStats - 谱面统计数据
+ * @param {number} limit - 返回结果数量限制
+ * @returns {Array} - 推荐歌曲列表
+ */
+export function recommendSongsByDsDifferenceRange(dsRange, songService, chartStats, limit = 200) {
+  if (!dsRange || !songService || !chartStats) {
+    console.log("缺少必要参数", { dsRange, hasSongService: !!songService, hasChartStats: !!chartStats });
+    return [];
+  }
+  
+  const { min, max } = dsRange;
+  console.log("定数范围", { min, max });
+  
+  // 将 chartStats 转换为数组形式
+  const chartStatsArray = Array.isArray(chartStats) ? chartStats : Object.values(chartStats);
+  console.log("谱面统计数据数量", chartStatsArray.length);
+  
+  // 直接使用新方法获取符合定数范围的所有难度
+  const difficulties = songService.getDifficultiesByDsRange({ min, max });
+  console.log("符合定数范围的难度数量", difficulties.length);
+  
+  // 收集所有符合条件的谱面
+  const candidateCharts = [];
+  
+  // 遍历所有符合定数范围的难度
+  difficulties.forEach(difficulty => {
+    // 在统计数据中查找对应的记录
+    const chartStat = chartStatsArray.find(stat => {
+      if (stat[difficulty.songId] && stat[difficulty.songId][difficulty.difficulty]) {
+        return true;
+      }
+      return false;
+    });
+    
+    // 如果找到了统计数据
+    if (chartStat && chartStat[difficulty.songId] && chartStat[difficulty.songId][difficulty.difficulty]) {
+      const statData = chartStat[difficulty.songId][difficulty.difficulty];
+      
+      // 如果有拟合定数
+      if (statData.fit_diff) {
+        const officialDs = parseFloat(difficulty.ds);
+        const fitDs = parseFloat(statData.fit_diff);
+        
+        // 计算定数差值（只考虑官方定数高于拟合定数的情况）
+        const dsDifference = officialDs - fitDs;
+        
+        if (dsDifference > 0) {
+          candidateCharts.push({
+            ...statData,
+            songId: difficulty.songId,
+            difficulty: difficulty.difficulty,  // 确保包含难度索引
+            title: difficulty.title,
+            ds: officialDs,
+            level: difficulty.level,
+            fit_diff: fitDs,
+            dsDifference: dsDifference,
+            genre: difficulty.basic_info?.genre || '',
+            from: difficulty.basic_info?.from || ''
+          });
+        }
+      }
+    }
+  });
+  
+  console.log("符合条件的谱面数量", candidateCharts.length);
+  
+  // 按定数差值从大到小排序
+  const sortedCharts = candidateCharts.sort((a, b) => b.dsDifference - a.dsDifference);
+  
+  // 添加额外信息并限制数量
+  return sortedCharts.slice(0, limit).map(chart => {
+    // 将难度确保为数字
+    const difficultyNum = typeof chart.difficulty === 'string' ? 
+      parseInt(chart.difficulty, 10) : 
+      Number(chart.difficulty);
+      
+    return {
+      ...chart,
+      difficulty: isNaN(difficultyNum) ? 0 : difficultyNum, // 确保难度索引是有效数字
+      avg: chart.avg ? parseFloat(chart.avg).toFixed(2) : '?',
+      fit_diff: parseFloat(chart.fit_diff).toFixed(2),
+      dsDifference: parseFloat(chart.dsDifference).toFixed(2)
+    };
+  });
+}
+
+/**
+ * 获取基于定数范围的综合推荐（包含两种推荐方式）
+ * @param {Object} dsRange - 定数范围 {min, max}
+ * @param {Object} songService - SongService 实例
+ * @param {Object} chartStats - 谱面统计数据
+ * @param {number} limit - 返回结果数量限制
+ * @returns {Object} - 包含两种推荐方式的结果
+ */
+export function getComprehensiveRecommendationsByDsRange(dsRange, songService, chartStats, limit = 200) {
+  if (!dsRange || !dsRange.min || !dsRange.max) {
+    console.log("缺少有效的定数范围", dsRange);
+    return {
+      range: { min: 0, max: 0 },
+      fitRecommendations: [],
+      diffRecommendations: []
+    };
+  }
+  
+  return {
+    range: dsRange,
+    fitRecommendations: recommendSongsByFitDsRange(dsRange, songService, chartStats, limit),
+    diffRecommendations: recommendSongsByDsDifferenceRange(dsRange, songService, chartStats, limit)
+  };
 } 

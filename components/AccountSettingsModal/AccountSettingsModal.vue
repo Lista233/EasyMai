@@ -1,5 +1,5 @@
 <template>
-  <view class="modal-container" v-if="visible">
+  <view class="modal-container" :class="{ 'dark-mode': isDarkMode }" v-if="visible">
     <view class="modal-overlay" @click="handleCancel"></view>
     <view class="modal-content">
       <view class="modal-title">修改设置</view>
@@ -68,8 +68,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue';
+import { ref, reactive, watch, inject, onBeforeMount } from 'vue';
 
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
+
+onBeforeMount(()=>{
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value);
+})
 // 定义props
 const props = defineProps({
   visible: {
@@ -97,6 +107,9 @@ const settingsForm = reactive({
   bind_qq: '',
   qq_channel_uid: ''
 });
+
+// 注入darkMode状态
+const darkMode = inject('darkMode', ref(false));
 
 // 监听props变化，更新表单数据
 watch(() => props.userData, (newValue) => {
@@ -152,6 +165,7 @@ function handleConfirm() {
 </script>
 
 <style lang="scss" scoped>
+@import './dark-mode.scss';
 .modal-container {
   position: fixed;
   top: 0;

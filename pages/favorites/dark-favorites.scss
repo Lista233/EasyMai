@@ -17,7 +17,57 @@
       color: #ffffff;
     }
   }
-  
+  .folder-tabs {
+    margin-bottom: 30rpx;
+    max-height: 100rpx;
+    
+    .folder-scroll {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .folder-tabs-inner {
+      display: flex;
+      flex-direction: row;
+      padding: 10rpx;
+      white-space: nowrap;
+      height: 80rpx;
+      min-width: 100%;
+    }
+    
+    .folder-tab {
+      display: inline-flex;
+      align-items: center;
+      height: 80rpx;
+      padding: 0 30rpx;
+      margin-right: 20rpx;
+      background-color: $dark-card-bg !important;
+      border-radius: 30rpx;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      
+      &.active {
+        background-color: rgba(99, 102, 241, 0.8) !important;
+        
+        .folder-name, .folder-count {
+          color: $dark-text-primary !important;
+        }
+      }
+      
+      .folder-name {
+        font-size: 28rpx;
+        font-weight: 600;
+        color: $dark-text-primary !important;
+      }
+      
+      .folder-count {
+        font-size: 24rpx;
+        color: $dark-text-secondary !important;
+        margin-left: 8rpx;
+      }
+    }
+  }
   /* 随机选歌弹窗样式 */
   .random-song-popup {
     background-color: $dark-card-bg;

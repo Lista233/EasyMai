@@ -1,0 +1,102 @@
+@import "@/uni.scss";
+
+.modal-container.dark-mode {
+  .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+  }
+  
+  .modal-content {
+    background: $dark-card-bg !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
+    
+    .modal-title {
+      color: $dark-text-primary !important;
+    }
+    
+    &.qr-modal {
+      .qr-form {
+        .form-item {
+          .label-with-help {
+            .help-icon {
+              color: $dark-text-secondary !important;
+              
+              &:active {
+                color: #8c84ff !important;
+                background: rgba(99, 102, 241, 0.2) !important;
+              }
+            }
+            
+            .form-label {
+              color: $dark-text-secondary !important;
+            }
+          }
+          
+          .form-textarea {
+            border: 2rpx solid $dark-card-border !important;
+            background: $dark-element-bg !important;
+            color: $dark-text-primary !important;
+            
+            &:focus {
+              border-color: #6366f1 !important;
+              box-shadow: 0 0 0 4rpx rgba(129, 140, 248, 0.15) !important;
+              background: $dark-element-active-bg !important;
+            }
+            
+            &:hover {
+              border-color: #6366f1 !important;
+              background: $dark-element-active-bg !important;
+            }
+            
+            &::placeholder {
+              color: $dark-text-hint !important;
+            }
+          }
+          
+          .import-btn {
+            border: 2rpx dashed $dark-card-border !important;
+            background: $dark-element-bg !important;
+            
+            .btn-icon {
+              color: $dark-text-secondary !important;
+            }
+            
+            .btn-text {
+              color: $dark-text-secondary !important;
+            }
+            
+            &:active {
+              background: $dark-element-active-bg !important;
+              border-color: #6366f1 !important;
+              
+              .btn-icon, .btn-text {
+                color: #8c84ff !important;
+              }
+            }
+          }
+        }
+      }
+      
+      .modal-buttons {
+        .modal-btn {
+          &.cancel {
+            background: $dark-secondary-button-bg !important;
+            color: $dark-secondary-button-text !important;
+            
+            &:active {
+              background: $dark-secondary-button-hover-bg !important;
+            }
+          }
+          
+          &.confirm {
+            background: $dark-primary-button-bg !important;
+            color: $dark-primary-button-text !important;
+            
+            &:active {
+              background: $dark-primary-button-hover-bg !important;
+            }
+          }
+        }
+      }
+    }
+  }
+} 

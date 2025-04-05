@@ -4,11 +4,8 @@
     <view class="user-info-container">
       <!-- 添加黑夜模式切换按钮 -->
       <view class="theme-toggle" @click="toggleDarkMode">
-        <view class="theme-icon" :class="isDarkMode ? 'moon-icon' : 'sun-icon'">
-          <view class="icon-image" :style="{
-            '-webkit-mask-image': `url('/static/icons/${isDarkMode ? 'moon' : 'sun'}.png')`, 
-            'mask-image': `url('/static/icons/${isDarkMode ? 'moon' : 'sun'}.png')`
-          }"></view>
+        <view class="theme-icon">
+          <image class="icon-image" :src="`/static/icons/${isDarkMode ? 'moon' : 'sun'}.png`"></image>
         </view>
       </view>
       
@@ -198,8 +195,8 @@
 import { ref, computed, onMounted, nextTick, watch, inject } from 'vue';
 import * as maiApi from '../../api/maiapi.js';
 import { onLoad, onShow } from '@dcloudio/uni-app'
-import QrCodeModal from '@/components/QrCodeModal.vue';
-import AccountSettingsModal from '@/components/AccountSettingsModal.vue';
+import QrCodeModal from '@/components/QrCodeModal/QrCodeModal.vue';
+import AccountSettingsModal from '@/components/AccountSettingsModal/AccountSettingsModal.vue';
 import RatingDisplay from '@/components/RatingDisplay.vue';
 import UpdateChecker from '@/components/UpdateChecker.vue'; // 导入更新检查器组件
 import {b50adapter} from '@/util/b50adapter.js'
@@ -1138,23 +1135,10 @@ const updateTabBarStyle = () => {
         justify-content: center;
         
         .icon-image {
-          width: 40rpx;
-          height: 40rpx;
-          -webkit-mask-size: contain;
-          mask-size: contain;
-          -webkit-mask-repeat: no-repeat;
-          mask-repeat: no-repeat;
-          -webkit-mask-position: center;
-          mask-position: center;
+          width: 80%;
+          height: 80%;
+		  transform: scale(1.5);
         }
-      }
-      
-      .sun-icon .icon-image {
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-      }
-      
-      .moon-icon .icon-image {
-        background: linear-gradient(135deg, #6366f1, #4f46e5);
       }
     }
     
@@ -1271,7 +1255,7 @@ const updateTabBarStyle = () => {
         position: relative;
         display: inline-block;
         padding: 0 30rpx;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        // transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         
         &::before,
         &::after {
@@ -1283,7 +1267,7 @@ const updateTabBarStyle = () => {
           background: linear-gradient(to bottom, #2196F3, #4CAF50);
           border-radius: 4rpx;
           transform: translateY(-50%);
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          // transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
           opacity: 0;
         }
         

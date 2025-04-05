@@ -1,7 +1,7 @@
 @import '../../uni.scss';
 .toolbox-container.dark-mode {
   padding: 30rpx;
-  background-color: $dark-element-bg;
+  background: $dark-gradient-bg;
   min-height: 100vh;
 
   .header {

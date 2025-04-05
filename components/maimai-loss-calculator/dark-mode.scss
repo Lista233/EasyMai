@@ -1,0 +1,134 @@
+@import "@/uni.scss";
+  .loss-calculator-container.dark-mode{
+    background-color: $dark-card-bg !important;
+    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.3) !important;
+	.title {
+	  color: $dark-text-primary !important;
+	}
+	
+	.data-source-info {
+	  color: #8c84ff !important;
+	  background-color: rgba(79, 70, 229, 0.2) !important;
+	}
+	
+	.note-count-info {
+	  .note-count-text {
+	    color: $dark-text-primary !important;
+	  }
+	  
+	  .note-count-value {
+	    color: #8c84ff !important;
+	  }
+	}
+	
+	.note-type-tab {
+	  background-color: rgba(79, 70, 229, 0.2) !important;
+	  color: #8c84ff !important;
+	  
+	  &.active {
+	    background-color: #4f46e5 !important;
+	    color: $dark-text-primary !important;
+	    box-shadow: 0 2rpx 8rpx rgba(79, 70, 229, 0.5) !important;
+	  }
+	}
+	
+	.calculate-btn {
+	  background-color: $dark-primary-button-bg !important;
+	  color: $dark-primary-button-text !important;
+	}
+	
+	.section-title {
+	  color: $dark-text-primary !important;
+	  border-left: 8rpx solid #4f46e5 !important;
+	}
+	
+	.result-table {
+	  border: 1rpx solid $dark-card-border !important;
+	}
+	
+	.table-header {
+	  background-color: rgba(79, 70, 229, 0.2) !important;
+	  border-bottom: 1rpx solid $dark-card-border !important;
+	}
+	
+	.header-cell {
+	  color: #8c84ff !important;
+	}
+	
+	.table-section {
+	  border-bottom: 1rpx solid $dark-card-border !important;
+	}
+	
+	.table-section .section-title {
+	  color: $dark-text-secondary !important;
+	}
+	
+	.table-row {
+	  border-bottom: 1rpx solid $dark-card-border !important;
+	}
+	
+	.cell {
+	  color: $dark-text-primary !important;
+	}
+	
+	.weight-percentage {
+	  background-color: rgba(79, 70, 229, 0.2) !important;
+	  
+	  .label {
+	    color: $dark-text-secondary !important;
+	  }
+	  
+	  .value {
+	    color: #8c84ff !important;
+	  }
+	}
+	
+	.tolerance-info {
+	  background-color: $dark-element-bg !important;
+	}
+	
+	.tolerance-title {
+	  color: $dark-text-primary !important;
+	}
+	
+	.tolerance-row {
+	  background-color: $dark-card-bg !important;
+	  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2) !important;
+	}
+	
+	.tolerance-label {
+	  color: #8c84ff !important;
+	  border-bottom: 1rpx solid $dark-card-border !important;
+	}
+	
+	.tolerance-type {
+	  color: $dark-text-secondary !important;
+	}
+	
+	.tolerance-count {
+	  color: #8c84ff !important;
+	}
+	
+	.total-weight, .break-bonus-weight {
+	  background-color: rgba(79, 70, 229, 0.2) !important;
+	  
+	  .label {
+	    color: $dark-text-secondary !important;
+	  }
+	  
+	  .value {
+	    color: #8c84ff !important;
+	  }
+	}
+	
+	.break-bonus-weight {
+	  background-color: rgba(156, 39, 176, 0.2) !important;
+	  
+	  .value {
+	    color: #ce93d8 !important;
+	  }
+	}
+	
+  }
+
+  

@@ -871,7 +871,6 @@ const formatAliases = (aliases) => {
 onMounted(() => {
   applyTheme();
   updateNativeTabBar(isDarkMode.value); // 这里的调用会根据平台条件编译
-  initCoverList()
   initData()
 })
 
@@ -1860,15 +1859,17 @@ const handleGridPageInputConfirm = () => {
     .grid-items-wrapper {
       display: flex;
       flex-wrap: wrap;
-      gap: 12rpx; // 减小网格项之间的间距
-      margin-bottom: 16rpx; // 减小与分页的间距
+      gap: 4rpx; // 从8rpx减小到4rpx，减少网格项之间的间距
+      margin-bottom: 12rpx; // 从16rpx减小到12rpx，减少与分页的间距
+      justify-content: flex-start;
+      align-items: center;
       
       .grid-item {
-        width: calc((100% - (var(--grid-columns) - 1) * 12rpx) / var(--grid-columns)); // 调整宽度计算以匹配新的间距
+        width: calc((100% - (var(--grid-columns) - 1) * 4rpx) / var(--grid-columns)); // 调整宽度计算以匹配新的间距(4rpx)
         background-color: #fff;
         border-radius: 6rpx;
         overflow: hidden;
-        box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.06); // 减小阴影，让图片更突出
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05); // 减小阴影效果，让图片间距看起来更小
         position: relative;
         
         &::before {

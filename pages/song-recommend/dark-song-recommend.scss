@@ -184,4 +184,77 @@
       }
     }
   }
+  
+  /* 添加推荐模式选择器的夜间模式样式 */
+  .recommend-mode {
+    .mode-selector {
+      background-color: rgba(0, 0, 0, 0.2);
+      
+      .mode-item {
+        color: $dark-text-secondary;
+        
+        &.active {
+          background-color: #4f46e5;
+          color: white;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+      }
+    }
+  }
+  
+  /* 添加Rating输入行的夜间模式样式 */
+  .input-row {
+    .input-label {
+      color: $dark-text-primary;
+    }
+    
+    .rating-input {
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background-color: rgba(0, 0, 0, 0.2);
+      color: $dark-text-primary;
+      
+      &:hover {
+        border-color: #818cf8;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      
+      &::placeholder {
+        color: $dark-text-hint;
+      }
+    }
+  }
+  
+  /* 添加定数范围输入的夜间模式样式 */
+  .dsrange-input-container {
+    .section-title {
+      color: $dark-text-primary;
+    }
+    
+    .dsrange-inputs {
+      .ds-input-group {
+        .ds-label {
+          color: $dark-text-secondary;
+        }
+        
+        .ds-input {
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          background-color: rgba(0, 0, 0, 0.2);
+          color: $dark-text-primary;
+          
+          &:hover {
+            border-color: #818cf8;
+            background: rgba(0, 0, 0, 0.3);
+          }
+          
+          &::placeholder {
+            color: $dark-text-hint;
+          }
+        }
+      }
+      
+      .ds-separator {
+        color: $dark-text-secondary;
+      }
+    }
+  }
 } 

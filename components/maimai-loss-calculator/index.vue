@@ -1,5 +1,5 @@
 <template>
-  <view class="loss-calculator-container">
+  <view class="loss-calculator-container" :class="{ 'dark-mode': isDarkMode }">
     <!-- <view class="title">容错计算</view> -->
     
     <!-- <view v-if="props.useExternalData" class="data-source-info">
@@ -154,7 +154,16 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, defineProps, computed } from 'vue';
+import { ref, watch, onMounted, defineProps, computed,onBeforeMount,inject} from 'vue';
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode');
+const applyTheme = inject('applyTheme');
+onBeforeMount(()=>{
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value);
+})
 
 // 定义接收的属性
 const props = defineProps({
@@ -476,6 +485,7 @@ watch(() => props.useExternalData, (newValue) => {
 </script>
 
 <style lang="scss" scoped>
+@import './dark-mode.scss';
 .loss-calculator-container {
   padding: 30rpx;
   background-color: #fff;

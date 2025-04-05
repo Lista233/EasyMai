@@ -6,7 +6,64 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     box-sizing: border-box;
     color: $dark-text-primary;
-    
+    .avatar-selector {
+      background: #252530;
+      border-radius: 24rpx 24rpx 0 0;
+      padding-bottom: env(safe-area-inset-bottom, 40rpx);
+      max-height: 70vh;
+      box-sizing: border-box;
+      
+      .avatar-selector-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30rpx;
+        border-bottom: 2rpx solid #343444;
+        
+        .avatar-selector-title {
+          font-size: 32rpx;
+          font-weight: bold;
+          color: #ffffff;
+        }
+        
+        .close-btn {
+          font-size: 40rpx;
+          color: #a0aec0;
+          padding: 0 20rpx;
+        }
+      }
+      
+      .avatar-grid {
+        max-height: 60vh;
+        padding: 20rpx;
+        box-sizing: border-box;
+        
+        .avatar-list {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 20rpx;
+          padding-bottom: 40rpx;
+          
+          .avatar-item {
+            aspect-ratio: 1;
+            border-radius: 16rpx;
+            overflow: hidden;
+            box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            
+            &:active {
+              transform: scale(0.95);
+            }
+            
+            .avatar-option {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+        }
+      }
+    }
     .user-info-container {
       max-width: 750rpx;
       margin: 0 auto 40rpx;
@@ -156,7 +213,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        //transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         min-width: 300rpx;
         width: 90%;
         padding-top: 15rpx;
@@ -172,7 +229,7 @@
           position: relative;
           display: inline-block;
           padding: 0 30rpx;
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    
           
           &::before,
           &::after {
@@ -184,7 +241,7 @@
             background: linear-gradient(to bottom, #1a78c2, #2a8c3a);
             border-radius: 4rpx;
             transform: translateY(-50%);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            //transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
           }
           
@@ -583,64 +640,7 @@
     color: #63a7ff !important;
   }
   
-  .avatar-selector {
-    background: #252530;
-    border-radius: 24rpx 24rpx 0 0;
-    padding-bottom: env(safe-area-inset-bottom, 40rpx);
-    max-height: 70vh;
-    box-sizing: border-box;
-    
-    .avatar-selector-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 30rpx;
-      border-bottom: 2rpx solid #343444;
-      
-      .avatar-selector-title {
-        font-size: 32rpx;
-        font-weight: bold;
-        color: #ffffff;
-      }
-      
-      .close-btn {
-        font-size: 40rpx;
-        color: #a0aec0;
-        padding: 0 20rpx;
-      }
-    }
-    
-    .avatar-grid {
-      max-height: 60vh;
-      padding: 20rpx;
-      box-sizing: border-box;
-      
-      .avatar-list {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20rpx;
-        padding-bottom: 40rpx;
-        
-        .avatar-item {
-          aspect-ratio: 1;
-          border-radius: 16rpx;
-          overflow: hidden;
-          box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.3);
-          transition: all 0.3s ease;
-          
-          &:active {
-            transform: scale(0.95);
-          }
-          
-          .avatar-option {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-        }
-      }
-    }
-  }
+  
   
   // 添加图标图片样式
   .function-icon {
@@ -656,101 +656,101 @@
     }
   }
   
-  // 功能中心图标样式
-  .function-item {
-    &.song-search .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+   // 功能中心图标样式
+  // .function-item {
+  //   &.song-search .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+  //     }
+  //   }
     
-    &.my-scores .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.my-scores .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+  //     }
+  //   }
     
-    &.song-recommend .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.song-recommend .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #952353 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #952353 100%);
+  //     }
+  //   }
     
-    &.data-analysis .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.data-analysis .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #952353 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #952353 100%);
+  //     }
+  //   }
     
-    &.chart-stats .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.chart-stats .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
   
-      .icon-image {
-        background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
+  //     }
+  //   }
     
-    &.toolbox .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.toolbox .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #644c99 0%, #3b1980 100%);
+  //     }
+  //   }
     
-    &.qr-code .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.qr-code .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+  //     }
+  //   }
     
-    &.account-settings .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.account-settings .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
      
-      .icon-image {
-        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+  //     }
+  //   }
     
-    &.favorite .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.favorite .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #6191c3 0%, #2b3aa8 100%);
+  //     }
+  //   }
     
-    &.update-scores .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.update-scores .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+  //     }
+  //   }
     
-    &.refresh-api .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.refresh-api .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
-      }
-    }
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+  //     }
+  //   }
     
-    &.check-update .function-icon {
-      background: rgba(40, 40, 50, 0.9);
+  //   &.check-update .function-icon {
+  //     background: rgba(40, 40, 50, 0.9);
       
-      .icon-image {
-        background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
-      }
-    }
-  } 
+  //     .icon-image {
+  //       background: linear-gradient(135deg, #934670 0%, #8a1d5c 100%);
+  //     }
+  //   }
+  // } 
