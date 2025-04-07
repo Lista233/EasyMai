@@ -350,7 +350,39 @@
           color: $dark-text-secondary !important;
         }
       }
-      
+      .record-content {
+        .achievement-section {
+       
+          
+          .achievement-value {
+			    color: $dark-text-primary;
+				&.sssp, &.sss {
+				  background: linear-gradient(45deg, 
+				    #ff4757,
+				    #ff7f50,
+				    #ffa502,
+				    #70a1ff,
+				    #7f50ff,
+				    #ff6b81
+				  );
+				  background-clip: text;
+				  -webkit-background-clip: text;
+				  color: transparent;
+				}
+				
+				&.ssp, &.ss, &.sp, &.s {
+				  background: linear-gradient(45deg, 
+				    #ffd700,
+				    #ffa500,
+				    #ffd700
+				  );
+				  background-clip: text;
+				  -webkit-background-clip: text;
+				  color: transparent;
+				}
+		  }
+		  }
+		  }
       .record-content {
         .score-section {
           .score {

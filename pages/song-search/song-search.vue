@@ -812,6 +812,7 @@ const onSearch = async () => {
     if (keyword && !isBpmSearch && !isIdSearch && aliasInfo?.alias) {
       matchedAliases = aliasInfo.alias.filter(alias => 
         alias.toLowerCase().includes(keyword.toLowerCase())
+		&&alias.toLowerCase()!== song.basic_info.title.toLowerCase()
       )
     }
     
@@ -1505,12 +1506,12 @@ const handleGridPageInputConfirm = () => {
       }
       
       .result-info {
-        font-size: 24rpx;
+        font-size: 22rpx;
         color: #888;
         background-color: rgba(0, 0, 0, 0.03);
         padding: 6rpx 14rpx;
         border-radius: 8rpx;
-        max-height: 80rpx;
+        //max-height: 100rpx;
         overflow: hidden;
         min-height: 20rpx;
         .match-info {
