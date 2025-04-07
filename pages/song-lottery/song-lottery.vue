@@ -632,6 +632,7 @@ const getDifficultyName = (song) => {
       &.columns-2 {
         gap: 10rpx;
         .cover-item {
+			
           width: calc(50% - 5rpx);
           padding-top: calc(50% - 5rpx); // 直接使用padding-top
         }

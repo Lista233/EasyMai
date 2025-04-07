@@ -1143,7 +1143,7 @@ onMounted(async () => {
 .record-modal-content {
   background: white;
   border-radius: 12rpx;
-  padding: 20rpx;
+  padding: 60rpx;
   width: 90%;
   max-width: 600rpx;
   /* animation: slideUp 0.2s ease-out; */

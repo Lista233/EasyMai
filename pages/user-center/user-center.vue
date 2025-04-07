@@ -1,5 +1,5 @@
 <template>
-  <view class="user-center" :class="{'dark-mode': isDarkMode}">
+<view class="user-center" :class="{'dark-mode': isDarkMode}">
     <!-- 顶部用户信息区域 -->
     <view class="user-info-container">
       <!-- 添加黑夜模式切换按钮 -->
@@ -1102,7 +1102,69 @@ const updateTabBarStyle = () => {
   padding: 40rpx 20rpx 60rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   box-sizing: border-box;
+  .avatar-selector {
+    background: white;
+    border-radius: 24rpx 24rpx 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 40rpx);
+    max-height: 70vh;
+    box-sizing: border-box;
+    
+    .avatar-selector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx;
+      border-bottom: 2rpx solid #f1f5f9;
+      
+      .avatar-selector-title {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #1e293b;
+      }
+      
+      .close-btn {
+        font-size: 40rpx;
+        color: #64748b;
+        padding: 0 20rpx;
+      }
+    }
+    
+    .avatar-scroll {
+      max-height: 70vh;
+    }
   
+    .avatar-list {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10rpx;
+      padding-bottom: 160rpx; /* 增加底部内边距确保最后一行可见 */
+    }
+  
+    .avatar-item {
+      width: 25%; /* 一行四个 */
+      padding: 6rpx;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 0rpx; /* 减少行间距 */
+    }
+  
+    .avatar-option {
+      width: 180rpx;
+      height: 180rpx;
+      border-radius: 5%;
+      border: 2rpx solid #e3dddd;
+      box-shadow: 0 4rpx 10rpx rgba(31, 31, 31, 0.249); /* 增强阴影效果 */
+     
+    }
+  
+    .avatar-option:active {
+      border-color: #6366f1;
+      transform: scale(0.95);
+      box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.1); /* 点击时阴影变小 */
+    }
+  }
   .user-info-container {
     max-width: 750rpx;
     margin: 0 auto 40rpx;
@@ -1674,69 +1736,7 @@ const updateTabBarStyle = () => {
   cursor: pointer;
 }
 
-.avatar-selector {
-  background: white;
-  border-radius: 24rpx 24rpx 0 0;
-  padding-bottom: env(safe-area-inset-bottom, 40rpx);
-  max-height: 70vh;
-  box-sizing: border-box;
-  
-  .avatar-selector-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 30rpx;
-    border-bottom: 2rpx solid #f1f5f9;
-    
-    .avatar-selector-title {
-      font-size: 32rpx;
-      font-weight: bold;
-      color: #1e293b;
-    }
-    
-    .close-btn {
-      font-size: 40rpx;
-      color: #64748b;
-      padding: 0 20rpx;
-    }
-  }
-  
-  .avatar-scroll {
-    max-height: 70vh;
-  }
 
-  .avatar-list {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 10rpx;
-    padding-bottom: 160rpx; /* 增加底部内边距确保最后一行可见 */
-  }
-
-  .avatar-item {
-    width: 25%; /* 一行四个 */
-    padding: 6rpx;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 0rpx; /* 减少行间距 */
-  }
-
-  .avatar-option {
-    width: 180rpx;
-    height: 180rpx;
-    border-radius: 5%;
-    border: 2rpx solid #e3dddd;
-    box-shadow: 0 4rpx 10rpx rgba(31, 31, 31, 0.249); /* 增强阴影效果 */
-   
-  }
-
-  .avatar-option:active {
-    border-color: #6366f1;
-    transform: scale(0.95);
-    box-shadow: 0 2rpx 5rpx rgba(0, 0, 0, 0.1); /* 点击时阴影变小 */
-  }
-}
 
 // 添加图标图片样式
 .function-icon {

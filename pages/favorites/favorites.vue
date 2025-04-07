@@ -303,6 +303,7 @@ const initData = async () => {
     
     // 如果有收藏夹，默认选择第一个
     if (favoriteFolders.value && favoriteFolders.value.length > 0) {
+	
       selectFolder(favoriteFolders.value[0].id);
     }
   } catch (error) {
@@ -405,9 +406,15 @@ const loadFavoriteSongs = () => {
 };
 
 // 使用正确的页面生命周期函数
-onShow(() => {
-  console.log('页面加载');
-  initData();
+onMounted(()=>{
+	applyTheme();
+	updateNativeTabBar(isDarkMode.value);
+	initData();
+})
+onShow(async() => {
+   console.log('页面加载');
+   await loadFavoriteFolders();
+   loadFavoriteSongs(); 
 });
 
 // 使用 uni-app 的页面显示生命周期
@@ -857,16 +864,8 @@ const getCharter = (song) => {
   return chart?.charter || '';
 };
 
-// 在onMounted中添加深色模式处理
-onMounted(() => {
-  // 现有的初始化代码...
-  
-  // 应用深色模式到原生TabBar
-  applyTheme();
-  updateNativeTabBar(isDarkMode.value);
-  
-  // 其他现有的onMounted代码...
-});
+
+
 </script>
 
 <style lang="scss" scoped>

@@ -15,6 +15,17 @@ class SongService {
    * @param {string} id - 歌曲ID
    * @returns {Object|null} - 返回歌曲信息或null
    */
+  getSongByIdOrName(id) {
+    if (!id) return null
+    
+  const searchTerm = id.toString().toLowerCase();
+  
+   const song = this.songList.filter(song => 
+    song.id === searchTerm || 
+    song.basic_info?.title?.toLowerCase().includes(searchTerm)
+  );
+    return song || null
+  }
   getSongById(id) {
     if (!id) return null
     
@@ -840,7 +851,7 @@ class SongService {
   }
 
   /**
-   * 根据关键词搜索歌曲（名称、谱师、艺术家）并返回匹配的难度
+   * 根据关键词搜索歌曲（名称、谱师、艺术家、ID、BPM）并返回匹配的难度
    * @param {string} keyword - 搜索关键词
    * @param {Object} options - 搜索选项
    * @param {boolean} options.exact - 是否精确匹配，默认为false
@@ -868,14 +879,22 @@ class SongService {
       let matchType = '';
       let matchedDifficulties = [];
       
-      // 1. 检查歌曲名称
-      const songTitle = song.title?.toLowerCase() || '';
-      if (exact ? songTitle === keywordLower : songTitle.includes(keywordLower)) {
+      // 1. 检查歌曲ID
+      if (songId === keywordLower) {
         matched = true;
-        matchType = 'title';
+        matchType = 'id';
       }
       
-      // 2. 检查艺术家
+      // 2. 检查歌曲名称
+      if (!matched) {
+        const songTitle = song.basic_info?.title?.toLowerCase() || '';
+        if (exact ? songTitle === keywordLower : songTitle.includes(keywordLower)) {
+          matched = true;
+          matchType = 'title';
+        }
+      }
+      
+      // 3. 检查艺术家
       if (!matched && song.basic_info?.artist) {
         const artist = song.basic_info.artist.toLowerCase();
         if (exact ? artist === keywordLower : artist.includes(keywordLower)) {
@@ -884,7 +903,16 @@ class SongService {
         }
       }
       
-      // 3. 检查谱师（需要遍历所有难度）
+      // 4. 检查BPM
+      if (!matched && song.basic_info?.bpm) {
+        const bpm = String(song.basic_info.bpm);
+        if (exact ? bpm === keywordLower : bpm.includes(keywordLower)) {
+          matched = true;
+          matchType = 'bpm';
+        }
+      }
+      
+      // 5. 检查谱师（需要遍历所有难度）
       if (!matched && song.charts) {
         for (let i = 0; i < song.charts.length; i++) {
           if (song.charts[i]?.charter) {

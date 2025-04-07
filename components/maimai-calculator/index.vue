@@ -1,5 +1,5 @@
 <template>
-  <view class="calculator-container">
+  <view class="calculator-container" :class="{ 'dark-mode': isDarkMode }">
     <view class="title">maimai达成率计算器</view>
     
     <!-- 全局自动计算开关 -->
@@ -366,8 +366,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-
+import { ref, watch,inject } from 'vue';
+const isDarkMode = inject('isDarkMode', ref(false)); // 提供默认值防止注入失败
 // 音符类型及其权重
 const noteTypes = ref([
 { name: 'TAP', weight: 1, total: 0, criticalPerfect: 0, perfect: 0, great: 0, good: 0, miss: 0, autoCalculate: true },

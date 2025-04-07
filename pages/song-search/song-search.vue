@@ -84,6 +84,9 @@
             <view v-if="result.matchedId" class="match-info">
               乐曲ID: {{result.matchedId}}
             </view>
+			<view v-if="result.matchedTitle" class="match-info">
+			  乐曲名: {{result.matchedTitle}}
+			</view>
             <view v-else-if="result.matchedBpm" class="match-info">
               乐曲BPM: {{result.matchedBpm}}
             </view>
@@ -588,52 +591,65 @@ const onSearch = async () => {
     return
   }
   
-  let matchedIds = new Set()
-  const idMatchMap = new Map()
+  // 使用 Set 来存储匹配的 ID
+  const matchedIds = new Set()
   
   // 解析关键词，检查是否为BPM搜索格式
   const keyword = searchKeyword.value.trim()
   let bpmRange = null
-  let songIdSearch = false
+  let isBpmSearch = false
+  let isIdSearch = false
   
-  // 扩展大于号和小于号的匹配模式
-  if (/^[>＞≥≧⩾][\s]*\d+(\.\d+)?$/.test(keyword)) {
-    const minBpm = parseFloat(keyword.replace(/[>＞≥≧⩾\s]/g, ''))
-    bpmRange = { min: minBpm, max: Infinity }
-  } 
-  // 检查小于号格式
-  else if (/^[<＜≤≦⩽][\s]*\d+(\.\d+)?$/.test(keyword)) {
-    const maxBpm = parseFloat(keyword.replace(/[<＜≤≦⩽\s]/g, ''))
-    bpmRange = { min: 0, max: maxBpm }
-  } 
-  // 检查 "数字~数字" 格式 (BPM范围)
-  else if (/^\d+(\.\d+)?\s*~\s*\d+(\.\d+)?$/.test(keyword)) {
-    const [min, max] = keyword.split('~').map(part => parseFloat(part.trim()))
-    bpmRange = { min, max }
-  } 
-  // 检查纯数字格式 (可能是歌曲ID或精确BPM)
-  else if (/^\d+(\.\d+)?$/.test(keyword)) {
-    // 如果是整数且长度小于等于5，可能是歌曲ID
-    if (Number.isInteger(parseFloat(keyword)) && keyword.length <= 5) {
-      songIdSearch = true
-      // 尝试按ID搜索
-      const song = songService.value.getSongById(keyword)
-      if (song) {
-        matchedIds.add(song.id)
-        // 标记为ID匹配
-        idMatchMap.set(song.id, true)
-      }
+  // 先检查是否为ID搜索（纯数字且长度小于等于5）
+  if (/^\d+$/.test(keyword) && keyword.length <= 5) {
+    isIdSearch = true
+    // 使用 getSongByIdOrName 方法进行搜索
+    const songs = songService.value.getSongByIdOrName(keyword)
+    if (songs && Array.isArray(songs)) {
+      songs.forEach(song => {
+        if (song) {
+          matchedIds.add(song.id)
+          // 标记匹配类型
+          if (song.id === keyword) {
+            song.matchType = 'id'
+          } else if (song.basic_info?.title?.toLowerCase().includes(keyword.toLowerCase())) {
+            song.matchType = 'title'
+          }
+        }
+      })
     }
-    
-    // 无论是否找到ID，都尝试按BPM搜索
-    const exactBpm = parseFloat(keyword)
-    bpmRange = { min: exactBpm, max: exactBpm }
+  }
+  
+  // 如果不是ID搜索，或者ID搜索没有结果，检查是否为BPM搜索格式
+  if (!isIdSearch || matchedIds.size === 0) {
+    // 扩展大于号和小于号的匹配模式
+    if (/^[>＞≥≧⩾][\s]*\d+(\.\d+)?$/.test(keyword)) {
+      const minBpm = parseFloat(keyword.replace(/[>＞≥≧⩾\s]/g, ''))
+      bpmRange = { min: minBpm, max: Infinity }
+      isBpmSearch = true
+    } 
+    // 检查小于号格式
+    else if (/^[<＜≤≦⩽][\s]*\d+(\.\d+)?$/.test(keyword)) {
+      const maxBpm = parseFloat(keyword.replace(/[<＜≤≦⩽\s]/g, ''))
+      bpmRange = { min: 0, max: maxBpm }
+      isBpmSearch = true
+    } 
+    // 检查 "数字~数字" 格式 (BPM范围)
+    else if (/^\d+(\.\d+)?\s*~\s*\d+(\.\d+)?$/.test(keyword)) {
+      const [min, max] = keyword.split('~').map(part => parseFloat(part.trim()))
+      bpmRange = { min, max }
+      isBpmSearch = true
+    }
+      // 检查纯数字格式，可能是精确BPM匹配（但不是ID）
+      else if (/^\d+(\.\d+)?$/.test(keyword) && !isIdSearch) {
+      const exactBpm = parseFloat(keyword)
+      bpmRange = { min: exactBpm, max: exactBpm }
+      isBpmSearch = true
+      }
   }
   
   // 如果是BPM搜索，使用优化的搜索方法
-  if (bpmRange) {
-    // 修改这里，传递正确的difficulty参数
-    // 如果选择了"任意难度"，则传递null或undefined，而不是默认的3
+  if (isBpmSearch) {
     const difficulty = selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined;
     
     const bpmResults = songService.value.searchSongsOptimized({
@@ -651,26 +667,26 @@ const onSearch = async () => {
       includeEqual: true
     })
     
-    // 添加BPM搜索结果
     bpmResults.forEach(song => {
       matchedIds.add(song.id)
+      song.matchType = 'bpm'
     })
-  }
-  
-  // 如果不是纯数字搜索或者没有找到匹配的ID，则进行关键词搜索
-  if (!songIdSearch && !bpmRange && keyword) {
+  } 
+  // 如果不是ID搜索也不是BPM搜索，则进行普通关键词搜索
+  else if (!isIdSearch) {
     // 使用优化的关键词搜索
     const keywordResults = songService.value.searchByKeyword(keyword, {
       exact: false,
-      defaultDifficulty: 3
+      defaultDifficulty: selectedDifficulty.value.value >= 0 
+        ? selectedDifficulty.value.value 
+        : 3
     })
     
-    // 添加关键词搜索结果
     keywordResults.forEach(song => {
       matchedIds.add(song.id)
     })
     
-    // 使用别名搜索器 - 修复这部分
+    // 使用别名搜索器
     const aliasResults = searcher.value.search({
       keyword: keyword,
       exactMatch: false
@@ -686,11 +702,21 @@ const onSearch = async () => {
   let results = []
   
   if (matchedIds.size > 0) {
-    // 将匹配的ID转换为歌曲对象
-    const matchedSongs = Array.from(matchedIds).map(id => {
-      const song = songService.value.getSongById(id)
-      return song
-    }).filter(Boolean) // 过滤掉undefined
+    // 将匹配的ID转换为歌曲对象，并保留原始的matchType
+    const matchedSongs = Array.from(matchedIds)
+      .map(id => {
+        const song = songService.value.getSongById(id)
+        // 如果是ID搜索，检查是否为ID匹配或标题匹配
+        if (isIdSearch && song) {
+          if (song.id === keyword) {
+            song.matchType = 'id'
+          } else if (song.basic_info?.title?.toLowerCase().includes(keyword.toLowerCase())) {
+            song.matchType = 'title'
+          }
+        }
+        return song
+      })
+      .filter(Boolean)
     
     // 应用版本、定数和类别筛选
     results = matchedSongs.filter(song => {
@@ -704,18 +730,8 @@ const onSearch = async () => {
       }
       
       // 类别筛选
-      const genreMapping = {
-      'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
-      '流行&动漫': ['流行&动漫', 'POPSアニメ'],
-      '舞萌': ['舞萌', 'maimai'],
-      '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
-      '东方Project': ['东方Project', '東方Project'],
-      '其他游戏': ['其他游戏', 'ゲームバラエティ'],
-    }
-    
       if (selectedGenre.value) {
         const songGenre = song.basic_info?.genre || ''
-        // 使用 genreMapping 检查匹配
         const matchFound = Object.entries(genreMapping).some(([zhName, jpNames]) => {
           if (zhName === selectedGenre.value) {
             return jpNames.includes(songGenre)
@@ -731,18 +747,14 @@ const onSearch = async () => {
       if (dsFilter.value.min || dsFilter.value.max) {
         const difficultyIndex = selectedDifficulty.value.value
         
-        // 如果选择了特定难度
         if (difficultyIndex >= 0) {
-          // 修复：检查歌曲是否有选定的难度
-          // 对于Re:Master难度(索引4)，需要特别检查歌曲是否有这个难度
           if (difficultyIndex === 4 && (!song.ds || song.ds.length <= 4 || song.level[4] === "-")) {
-            return false; // 歌曲没有Re:Master难度，直接排除
+            return false
           }
           
           const ds = song.ds[difficultyIndex]
-          // 如果ds不存在，说明没有这个难度
           if (ds === undefined) {
-            return false;
+            return false
           }
           
           if (dsFilter.value.min && ds < Number(dsFilter.value.min)) {
@@ -752,7 +764,6 @@ const onSearch = async () => {
             return false
           }
         } else {
-          // 检查任意难度是否满足条件
           let matchAnyDifficulty = false
           for (let i = 0; i < song.ds.length; i++) {
             const ds = song.ds[i]
@@ -771,9 +782,7 @@ const onSearch = async () => {
       return true
     })
   } else if (!keyword) {
-    // 如果没有关键词，只有筛选条件，则直接使用筛选条件搜索
-    // 修改这里，传递正确的difficulty参数
-    const difficulty = selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined;
+    const difficulty = selectedDifficulty.value.value >= 0 ? selectedDifficulty.value.value : undefined
     
     results = songService.value.searchSongsOptimized({
       version: reverseVersionMap[selectedVersion.value] || selectedVersion.value || undefined,
@@ -792,56 +801,54 @@ const onSearch = async () => {
   
   // 格式化结果
   const formattedResults = results.map(song => {
-    // 获取别名信息
     const aliasInfo = searcher.value.getAliasInfo(song.id)
-    
-    // 获取匹配的别名
     let matchedAliases = []
-    if (keyword && aliasInfo?.alias) {
-      // 过滤出包含关键词的别名
+    if (keyword && !isBpmSearch && !isIdSearch && aliasInfo?.alias) {
       matchedAliases = aliasInfo.alias.filter(alias => 
         alias.toLowerCase().includes(keyword.toLowerCase())
       )
     }
     
-    // 获取匹配的难度索引
     let matchedDifficulty = song.matchedDifficulty !== undefined ? song.matchedDifficulty : 3
-    
-    // 如果选择了特定难度，优先使用选择的难度
     if (selectedDifficulty.value.value >= 0) {
       matchedDifficulty = selectedDifficulty.value.value
     }
     
-    // 添加匹配信息
-    let matchedBpm = null
-    let matchedId = null
-    
-    // 检查是否为ID匹配
-    if (idMatchMap.has(song.id)) {
-      matchedId = song.id
-    } 
-    // 检查是否为BPM匹配
-    else if (bpmRange && song.basic_info?.bpm) {
-      matchedBpm = parseFloat(song.basic_info.bpm)
-      // 确保BPM匹配时默认返回难度索引为3
-      if (!selectedDifficulty.value.value >= 0) {
-        matchedDifficulty = 3
-      }
-    }
-    
-    return {
+    // 根据不同的匹配类型设置匹配信息
+    const result = {
       songId: song.id,
       name: song.title,
       basic_info: song.basic_info,
       level: song.level,
       ds: song.ds,
       matchedAliases,
-      matchedCharter: song.matchType === 'charter' ? song.charts[matchedDifficulty]?.charter : undefined,
-      matchedArtist: song.matchType === 'artist' ? song.basic_info?.artist : undefined,
       matchedDifficulty,
-      matchedBpm,
-      matchedId
+      matchedCharter: null,
+      matchedArtist: null,
+      matchedTitle: null,
+      matchedBpm: null,
+      matchedId: null
     }
+
+    // 根据matchType设置对应的匹配信息
+    if (song.matchType === 'id') {
+      result.matchedId = song.id
+    } else if (song.matchType === 'title') {
+      result.matchedTitle = song.basic_info.title
+    } else if (isBpmSearch) {
+      result.matchedBpm = parseFloat(song.basic_info?.bpm)
+    } else {
+      switch (song.matchType) {
+        case 'charter':
+          result.matchedCharter = song.charts[matchedDifficulty]?.charter
+          break
+        case 'artist':
+          result.matchedArtist = song.basic_info?.artist
+          break
+      }
+    }
+    
+    return result
   })
   
   searchResults.value = formattedResults

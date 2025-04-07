@@ -1,5 +1,5 @@
 <template>
-	<view class="record-card" @click.stop>
+	<view class="record-card" :class="{ 'dark-mode': isDarkMode }" @click.stop >
 		<text class="song-id" selectable>ID:{{record.song_id}}</text>
 		<!-- 封面图片部分 -->
 		<view class="song-cover-container">
@@ -13,7 +13,7 @@
 					]" 
 					:src="getCoverUrl(record.song_id)" 
 					mode="aspectFill"
-					@click.stop="navigateToSongDetail(record.song_id)"
+					@click.stop="navigateToSongDetail(record.song_id,record.level_index)"
 				></image>
 				<view class="ds-tag" :class="[
 					'level-' + record.level_index,
@@ -60,8 +60,8 @@
 
 <script setup>
 	import {getCoverUrl} from '../../util/coverManager.js'
-	import {defineProps, reactive, computed} from 'vue'
-
+	import {defineProps, reactive, computed,inject,ref} from 'vue'
+    const isDarkMode = inject('isDarkMode');
 	const props = defineProps(['record', 'index'])
 	const record = reactive({
 		achievements: 0,
@@ -81,11 +81,11 @@
 	})
 
 	// 添加跳转到歌曲详情页的方法
-	const navigateToSongDetail = (songId) => {
+	const navigateToSongDetail = (songId,difficulty) => {
 		if (!songId) return;
 		
 		uni.navigateTo({
-			url: `/pages/song-detail/song-detail?songId=${songId}`,
+			url: `/pages/song-detail/song-detail?songId=${songId}&difficulty=${difficulty}`,
 			animationType: 'pop-in',
 			animationDuration: 200
 		});
@@ -211,6 +211,7 @@
 </script>
 
 <style lang="scss">
+@import './dark-record-card.scss';
 .record-card {
 	position: relative;
 	width: 100%;

@@ -1,0 +1,249 @@
+@import '../../uni.scss';
+.record-card.dark-mode {
+
+  background:$dark-card-bg;
+	
+	.song-id {
+
+
+		color: $dark-text-secondary;
+	
+	}
+
+	.song-cover-container {
+	
+		
+		.index-number {
+	
+			color: $dark-text-secondary;
+	
+		}
+
+		.song-cover {
+			
+
+			.cover-image {
+	
+				
+			
+				
+		
+			}
+
+			.ds-tag {
+				
+				&.level-0 {
+					background: rgba(46, 204, 113, 1);
+					box-shadow: 0 2rpx 8rpx rgba(46, 204, 113, 0.5);
+				}
+				
+				&.level-1 {
+					background: rgba(241, 196, 15, 1);
+					box-shadow: 0 2rpx 8rpx rgba(241, 196, 15, 0.5);
+				}
+				
+				&.level-2 {
+					background: rgba(231, 76, 60, 1);
+					box-shadow: 0 2rpx 8rpx rgba(231, 76, 60, 0.5);
+				}
+				
+				&.level-3 {
+					background: rgba(155, 89, 182, 1);
+					box-shadow: 0 2rpx 8rpx rgba(155, 89, 182, 0.5);
+				}
+				
+				&.level-4 {
+					background: rgba(190, 170, 245, 1);
+					box-shadow: 0 2rpx 8rpx rgba(190, 170, 245, 0.5);
+				}
+			}
+		}
+	}
+
+	.song-info {
+
+		.title-row {
+			display: flex;
+			align-items: flex-start;
+			gap: 16rpx;
+			width: 100%;
+			
+			.title-container {
+		
+				color: white;
+				.song-title {	
+					color:$dark-text-primary;
+				}
+			}
+		}
+
+		.song-stats {
+			display: flex;
+			flex-direction: column;
+			gap: 8rpx;
+			width: 100%;
+			
+			.stat-item {
+				font-size: 28rpx;
+				padding: 4rpx 12rpx;
+				border-radius: 6rpx;
+				background: #f8fafc;
+				text-align: center;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				box-sizing: border-box;
+				width: 100%;
+				
+				&.achievements {
+					color: #ff9500;
+					font-weight: 600;
+					background-color: rgba(255, 149, 0, 0.1);
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
+					box-shadow: 0 1px 2px rgba(255, 149, 0, 0.15);
+				}
+				
+				&.ra {
+					color: #6366f1;
+					font-weight: 600;
+					background-color: rgba(99, 102, 241, 0.1);
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
+					box-shadow: 0 1px 2px rgba(99, 102, 241, 0.15);
+				}
+			}
+
+			.fc-fs-container {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				grid-gap: 8rpx;
+				width: 100%;
+				
+				.fc-fs {
+					width: 100%;
+					text-align: center;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					box-sizing: border-box;
+					padding: 4rpx 10rpx;
+					border-radius: 6rpx;
+					font-weight: 500;
+					
+					&.fc-fc {
+						color: #10b981;
+						background-color: rgba(16, 185, 129, 0.1);
+					}
+					
+					&.fc-fcp {
+						color: #10b981;
+						background-color: rgba(16, 185, 129, 0.1);
+					}
+					
+					&.fc-ap {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fc-app {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fs-sc, &.fs-fs {
+						color: #3b82f6;
+						background-color: rgba(59, 130, 246, 0.1);
+					}
+					
+					&.fs-fsp {
+						color: #3b82f6;
+						background-color: rgba(59, 130, 246, 0.1);
+					}
+					
+					&.fs-fsd {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					&.fs-fsdp {
+						color: #f59e0b;
+						background-color: rgba(245, 158, 11, 0.1);
+					}
+					
+					// 添加无数据时的样式类
+					&.fc-none {
+						color: #94a3b8;
+						background-color: rgba(148, 163, 184, 0.1);
+					}
+					
+					&.fs-none {
+						color: #94a3b8;
+						background-color: rgba(148, 163, 184, 0.1);
+					}
+				}
+			}
+		}
+	}
+
+	.rate-badge {
+		position: absolute;
+		bottom: 24rpx;
+		right: 24rpx;
+		font-size: 32rpx;
+		font-weight: 600;
+		padding: 6rpx 16rpx;
+		border-radius: 8rpx;
+		color: #666;
+		background: rgba(0, 0, 0, 0.05);
+		text-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+		
+		&.rainbow {
+			/* SSS 淡彩色 */
+			background: linear-gradient(45deg, 
+				rgba(255, 69, 58, 0.85) 0%,
+				rgba(255, 149, 0, 0.85) 20%,
+				rgba(255, 204, 0, 0.85) 40%,
+				rgba(52, 199, 89, 0.85) 60%,
+				rgba(88, 86, 214, 0.85) 80%,
+				rgba(255, 45, 85, 0.85) 100%
+			);
+			background-clip: text;
+			-webkit-background-clip: text;
+			color: transparent;
+			font-weight: 700;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		}
+		
+		&.rainbowp {
+			/* SSS+ 深彩色 */
+			background: linear-gradient(45deg, 
+				#ff2d55 0%,
+				#ff9500 20%,
+				#ffcc00 40%,
+				#34aadc 60%,
+				#5856d6 80%,
+				#ff2d55 100%
+			);
+			background-clip: text;
+			-webkit-background-clip: text;
+			color: transparent;
+			font-weight: 800;
+			text-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
+		}
+		
+		&.gold {
+			background: linear-gradient(45deg, 
+				#ffd700,
+				#ffa500,
+				#ffd700
+			);
+			background-clip: text;
+			-webkit-background-clip: text;
+			color: transparent;
+			font-weight: 800;
+			text-shadow: 0 2px 3px rgba(245, 158, 11, 0.3);
+		}
+	}
+}
+		
