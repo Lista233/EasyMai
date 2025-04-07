@@ -18,14 +18,45 @@ class SongService {
   getSongByIdOrName(id) {
     if (!id) return null
     
-  const searchTerm = id.toString().toLowerCase();
-  
-   const song = this.songList.filter(song => 
-    song.id === searchTerm || 
-    song.basic_info?.title?.toLowerCase().includes(searchTerm)
-  );
-    return song || null
+    const searchTerm = id.toString().toLowerCase();
+    
+    const songs = this.songList.filter(song => 
+      song.id === searchTerm || 
+      song.basic_info?.title?.toLowerCase().includes(searchTerm)
+    );
+    return songs || null
   }
+
+  /**
+   * 通过ID、歌名或BPM获取歌曲信息
+   * @param {string} keyword - 搜索关键词
+   * @returns {Array|null} - 返回匹配的歌曲数组或null
+   */
+  getSongByIdOrNameOrBpm(keyword) {
+    if (!keyword) return null
+    
+    const searchTerm = keyword.toString().toLowerCase();
+    
+    // 同时搜索ID、标题和BPM
+    const songs = this.songList.filter(song => {
+      const isIdMatch = song.id === searchTerm;
+      const isTitleMatch = song.basic_info?.title?.toLowerCase().includes(searchTerm);
+      const isBpmMatch = song.basic_info?.bpm == keyword;
+      
+      if (isIdMatch) {
+        song.matchType = 'id';
+      } else if (isTitleMatch) {
+        song.matchType = 'title';
+      } else if (isBpmMatch) {
+        song.matchType = 'bpm';
+      }
+      
+      return isIdMatch || isTitleMatch || isBpmMatch;
+    });
+    
+    return songs || null;
+  }
+
   getSongById(id) {
     if (!id) return null
     

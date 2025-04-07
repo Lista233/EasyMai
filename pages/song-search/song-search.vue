@@ -460,7 +460,14 @@ const currentGridPage = ref(1)
 
 // 添加网格列数控制
 const gridColumns = ref(4) // 默认每行4个
-
+ const genreMapping = {
+      'niconico & VOCALOID': ['niconico & VOCALOID', 'niconicoボーカロイド'],
+      '流行&动漫': ['流行&动漫', 'POPSアニメ'],
+      '舞萌': ['舞萌', 'maimai'],
+      '音击&中二节奏': ['音击&中二节奏', 'オンゲキCHUNITHM'],
+      '东方Project': ['东方Project', '東方Project'],
+      '其他游戏': ['其他游戏', 'ゲームバラエティ'],
+    }
 // 将网格组大小与列数关联
 const itemsPerGroup = computed(() => gridColumns.value * 3) // 每组是3行
 
@@ -602,26 +609,29 @@ const onSearch = async () => {
   
   // 先检查是否为ID搜索（纯数字且长度小于等于5）
   if (/^\d+$/.test(keyword) && keyword.length <= 5) {
-    isIdSearch = true
-    // 使用 getSongByIdOrName 方法进行搜索
-    const songs = songService.value.getSongByIdOrName(keyword)
+    // 使用统一搜索方法
+    const songs = songService.value.getSongByIdOrNameOrBpm(keyword)
     if (songs && Array.isArray(songs)) {
-      songs.forEach(song => {
+      // 按照匹配类型进行排序
+      const sortedSongs = [
+        // 先添加ID匹配的结果
+        ...songs.filter(song => song.matchType === 'id'),
+        // 再添加标题匹配的结果
+        ...songs.filter(song => song.matchType === 'title'),
+        // 最后添加BPM匹配的结果
+        ...songs.filter(song => song.matchType === 'bpm')
+      ];
+
+      // 添加到匹配结果集
+      sortedSongs.forEach(song => {
         if (song) {
           matchedIds.add(song.id)
-          // 标记匹配类型
-          if (song.id === keyword) {
-            song.matchType = 'id'
-          } else if (song.basic_info?.title?.toLowerCase().includes(keyword.toLowerCase())) {
-            song.matchType = 'title'
-          }
         }
       })
     }
-  }
-  
+  } 
   // 如果不是ID搜索，或者ID搜索没有结果，检查是否为BPM搜索格式
-  if (!isIdSearch || matchedIds.size === 0) {
+ else if (!isIdSearch || matchedIds.size === 0) {
     // 扩展大于号和小于号的匹配模式
     if (/^[>＞≥≧⩾][\s]*\d+(\.\d+)?$/.test(keyword)) {
       const minBpm = parseFloat(keyword.replace(/[>＞≥≧⩾\s]/g, ''))
@@ -640,12 +650,6 @@ const onSearch = async () => {
       bpmRange = { min, max }
       isBpmSearch = true
     }
-      // 检查纯数字格式，可能是精确BPM匹配（但不是ID）
-      else if (/^\d+(\.\d+)?$/.test(keyword) && !isIdSearch) {
-      const exactBpm = parseFloat(keyword)
-      bpmRange = { min: exactBpm, max: exactBpm }
-      isBpmSearch = true
-      }
   }
   
   // 如果是BPM搜索，使用优化的搜索方法
@@ -668,8 +672,10 @@ const onSearch = async () => {
     })
     
     bpmResults.forEach(song => {
-      matchedIds.add(song.id)
-      song.matchType = 'bpm'
+      if (!matchedIds.has(song.id)) {
+        song.matchType = 'bpm'
+        matchedIds.add(song.id)
+      }
     })
   } 
   // 如果不是ID搜索也不是BPM搜索，则进行普通关键词搜索
@@ -723,8 +729,8 @@ const onSearch = async () => {
       // 版本筛选
       if (selectedVersion.value) {
         const songVersion = song.basic_info?.from || ''
-        const displayVersion = versionMap[songVersion] || songVersion
-        if (displayVersion !== selectedVersion.value) {
+       
+        if (songVersion !== reverseVersionMap[selectedVersion.value]) {
           return false
         }
       }
@@ -835,8 +841,8 @@ const onSearch = async () => {
       result.matchedId = song.id
     } else if (song.matchType === 'title') {
       result.matchedTitle = song.basic_info.title
-    } else if (isBpmSearch) {
-      result.matchedBpm = parseFloat(song.basic_info?.bpm)
+    } else if (isBpmSearch || song.matchType === 'bpm') {
+      result.matchedBpm = song.basic_info?.bpm
     } else {
       switch (song.matchType) {
         case 'charter':
@@ -849,6 +855,28 @@ const onSearch = async () => {
     }
     
     return result
+  }).sort((a, b) => {
+    // 定义匹配类型的优先级
+    const priority = {
+      'id': 0,
+      'title': 1,
+      'bpm': 4,
+      'charter': 3,
+      'artist': 2,
+    };
+
+    // 获取匹配类型的优先级
+    const getPriority = (result) => {
+      if (result.matchedId) return priority['id'];
+      if (result.matchedTitle) return priority['title'];
+      if (result.matchedBpm) return priority['bpm'];
+      if (result.matchedCharter) return priority['charter'];
+      if (result.matchedArtist) return priority['artist'];
+      return 999; // 其他情况
+    };
+
+    // 按优先级排序
+    return getPriority(a) - getPriority(b);
   })
   
   searchResults.value = formattedResults
