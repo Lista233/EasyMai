@@ -1,139 +1,139 @@
 <template>
 <view class="user-center" :class="{'dark-mode': isDarkMode}">
     <!-- 顶部用户信息区域 -->
-    <view class="user-info-container">
-      <!-- 添加黑夜模式切换按钮 -->
-      <view class="theme-toggle" @click="toggleDarkMode">
-        <view class="theme-icon">
-          <image class="icon-image" :src="`/static/icons/${isDarkMode ? 'moon' : 'sun'}.png`"></image>
-        </view>
-      </view>
-      
-      <view class="user-card">
-        <view class="avatar-container" @click="showAvatarSelector">
-          <image class="avatar" :src="avatar || '/static/default-avatar.jpg'" mode="aspectFill"></image>
-        </view>
-        <view class="user-details">
-          <view class="username">{{ nickname || username || '请先登录' }}</view>
-          <!-- <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view> -->
-          <!-- <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view> -->
-        </view>
-        <view class="rating-wrapper">
-          <RatingDisplay 
-            :b35rating="b35rating" 
-            :b15rating="b15rating"
-            :isLoggedIn="isLoggedIn"
-            :isDarkMode="isDarkMode"
-            @click="updateRecord"
-          />
-        </view>
-      </view>
-    </view>
-    
-    <!-- 功能模块区域 - 仅在登录后显示 -->
-    <view class="modules-container" v-if="isLoggedIn">
-      <view class="section-title has-data">
-        <view class="title-content">功能中心</view>
-      </view>
-      
-      <view class="function-grid">
-        <!-- 乐曲搜索 -->
-        <view class="function-item song-search" @click="handleSongSearch">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/search.png'); mask-image: url('/static/icons/search.png');"></view>
-          </view>
-          <view class="function-name">乐曲搜索</view>
-          <view class="function-desc">查询舞萌曲库所有歌曲</view>
-        </view>
-        
-        <!-- 成绩查询 -->
-        <view class="function-item my-scores" @click="handlePlayerRecords">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/record.png'); mask-image: url('/static/icons/record.png');"></view>
-          </view>
-          <view class="function-name">成绩查询</view>
-          <view class="function-desc">查看你的游玩数据</view>
-        </view>
-        
-        <!-- 歌曲推荐 -->
-        <view class="function-item song-recommend" @click="navigateToRecommend">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/recommend.png'); mask-image: url('/static/icons/recommend.png');"></view>
-          </view>
-          <view class="function-name">歌曲推荐</view>
-          <view class="function-desc">基于你的水平推荐歌曲</view>
-        </view>
-        
-        <!-- 数据分析 -->
-        <view class="function-item data-analysis" @click="handleB50">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/b50.png'); mask-image: url('/static/icons/b50.png');"></view>
-          </view>
-          <view class="function-name">B50查询</view>
-          <view class="function-desc">来查查你的Best50</view>
-        </view>
-        
-        <!-- 热门乐曲排行 -->
-        <view class="function-item chart-stats" @click="navigateToChartStats">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/random.png'); mask-image: url('/static/icons/random.png');"></view>
-          </view>
-          <view class="function-name">Mai什么</view>
-          <view class="function-desc">抽取1~4首随机乐曲进行游玩</view>
-        </view>
-        
-        <!-- 工具箱 -->
-        <view class="function-item toolbox" @click="navigateToToolbox">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/tools.png'); mask-image: url('/static/icons/tools.png');"></view>
-          </view>
-          <view class="function-name">工具箱</view>
-          <view class="function-desc">实用工具与小功能</view>
-        </view>
-        
-      </view>
-      
-      <view class="section-title has-data">
-        <view class="title-content">用户相关</view>
-      </view>
-      
-      <view class="function-grid account-grid">
-        <!-- 绑定二维码 -->
-        <view class="function-item favorite" @click="navigateToFavorite">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/favorites.png'); mask-image: url('/static/icons/favorites.png');"></view>
-          </view>
-          <view class="function-name">我的收藏</view>
-          <view class="function-desc">查看我收藏的乐曲</view>
-        </view>
-        
-        <!-- 账号设置 -->
-        <view class="function-item account-settings" @click="handleAccountSettings">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/settings.png'); mask-image: url('/static/icons/settings.png');"></view>
-          </view>
-          <view class="function-name">账号设置</view>
-          <view class="function-desc">管理个人账号</view>
-        </view>
-        
-        <view class="function-item refresh-api" @click="handleRefreshAPI">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/refresh.png'); mask-image: url('/static/icons/refresh.png');"></view>
-          </view>
-          <view class="function-name">刷新API</view>
-          <view class="function-desc">重新获取乐曲数据(故障时使用)</view>
-        </view>
-        
-        <!-- 添加检查更新按钮 -->
-        <view class="function-item check-update" @click="checkForUpdates">
-          <view class="function-icon">
-            <view class="icon-image" style="-webkit-mask-image: url('/static/icons/update.png'); mask-image: url('/static/icons/update.png');"></view>
-          </view>
-          <view class="function-name">检查更新</view>
-          <view class="function-desc">检查应用是否有新版本</view>
-        </view>
-      </view>
-    </view>
+   <view class="user-info-container">
+     <!-- 添加黑夜模式切换按钮 -->
+     <view class="theme-toggle" @click="toggleDarkMode">
+       <view class="theme-icon">
+         <image class="icon-image" :src="`/static/icons/${isDarkMode ? 'moon' : 'sun'}.png`"></image>
+       </view>
+     </view>
+     
+     <view class="user-card">
+       <view class="avatar-container" @click="showAvatarSelector">
+         <image class="avatar" :src="avatar || '/static/default-avatar.jpg'" mode="aspectFill"></image>
+       </view>
+       <view class="user-details">
+         <view class="username">{{ nickname || username || '请先登录' }}</view>
+         <!-- <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view> -->
+         <!-- <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view> -->
+       </view>
+       <view class="rating-wrapper">
+         <RatingDisplay 
+           :b35rating="b35rating" 
+           :b15rating="b15rating"
+           :isLoggedIn="isLoggedIn"
+           :isDarkMode="isDarkMode"
+           @click="updateRecord"
+         />
+       </view>
+     </view>
+   </view>
+   
+   <!-- 功能模块区域 - 仅在登录后显示 -->
+   <view class="modules-container" v-if="isLoggedIn">
+     <view class="section-title has-data">
+       <view class="title-content">功能中心</view>
+     </view>
+     
+     <view class="function-grid">
+       <!-- 乐曲搜索 -->
+       <view class="function-item song-search" @click="handleSongSearch">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/search.png"></image>
+         </view>
+         <view class="function-name">乐曲搜索</view>
+         <view class="function-desc">查询舞萌曲库所有歌曲</view>
+       </view>
+       
+       <!-- 成绩查询 -->
+       <view class="function-item my-scores" @click="handlePlayerRecords">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/record.png"></image>
+         </view>
+         <view class="function-name">成绩查询</view>
+         <view class="function-desc">查看你的游玩数据</view>
+       </view>
+       
+       <!-- 歌曲推荐 -->
+       <view class="function-item song-recommend" @click="navigateToRecommend">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/recommend.png"></image>
+         </view>
+         <view class="function-name">歌曲推荐</view>
+         <view class="function-desc">基于你的水平推荐歌曲</view>
+       </view>
+       
+       <!-- B50 -->
+       <view class="function-item data-analysis" @click="handleB50">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/b50.png"></image>
+         </view>
+         <view class="function-name">B50查询</view>
+         <view class="function-desc">来查查你的Best50</view>
+       </view>
+       
+       <!-- Mai什么 -->
+       <view class="function-item chart-stats" @click="navigateToChartStats">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/random.png"></image>
+         </view>
+         <view class="function-name">Mai什么</view>
+         <view class="function-desc">抽取1~4首随机乐曲进行游玩</view>
+       </view>
+       
+       <!-- 工具箱 -->
+       <view class="function-item toolbox" @click="navigateToToolbox">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/tools.png"></image>
+         </view>
+         <view class="function-name">工具箱</view>
+         <view class="function-desc">实用工具与小功能</view>
+       </view>
+       
+     </view>
+     
+     <view class="section-title has-data">
+       <view class="title-content">用户相关</view>
+     </view>
+     
+     <view class="function-grid account-grid">
+       <!-- 收藏乐曲 -->
+       <view class="function-item favorite" @click="navigateToFavorite">
+         <view class="function-icon">
+          <image class="icon-image" src="/static/icons/favorites.png"></image>
+         </view>
+         <view class="function-name">我的收藏</view>
+         <view class="function-desc">查看我收藏的乐曲</view>
+       </view>
+       
+       <!-- 账号设置 -->
+       <view class="function-item account-settings" @click="handleAccountSettings">
+         <view class="function-icon">
+             <image class="icon-image" src="/static/icons/settings.png"></image>
+         </view>
+         <view class="function-name">账号设置</view>
+         <view class="function-desc">管理个人账号</view>
+       </view>
+       
+       <view class="function-item refresh-api" @click="handleRefreshAPI">
+         <view class="function-icon">
+              <image class="icon-image" src="/static/icons/refresh.png"></image>
+         </view>
+         <view class="function-name">刷新API</view>
+         <view class="function-desc">重新获取乐曲数据(故障时使用)</view>
+       </view>
+       
+       <!-- 添加检查更新按钮 -->
+       <view class="function-item check-update" @click="checkForUpdates">
+         <view class="function-icon">
+           <image class="icon-image" src="/static/icons/update.png"></image>
+         </view>
+         <view class="function-name">检查更新</view>
+         <view class="function-desc">检查应用是否有新版本</view>
+       </view>
+     </view>
+   </view>
     
     <!-- 登录/登出按钮 -->
     <view class="login-button" @click="isLoggedIn ? handleLogout() : navigateToLogin()">
@@ -1533,7 +1533,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            color: #f765ae;
+         
             background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1544,7 +1544,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            background-color: #f765ae;
+        
            background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1555,7 +1555,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            background-color: #f765ae;
+ 
           background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1566,7 +1566,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            color: #8b5cf6;
+   
            background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1579,7 +1579,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            color: #6366f1;
+ 
           background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1590,7 +1590,7 @@ const updateTabBarStyle = () => {
           }
           
           .function-icon {
-            color: #ec4899;
+
             background: rgba(255, 255, 255, 0.85);
           }
         }
@@ -1601,7 +1601,7 @@ const updateTabBarStyle = () => {
 		  }
 		  
 		  .function-icon {
-		    color: #e864a6;
+
 		   background: rgba(255, 255, 255, 0.85);
 		  }
 		}
@@ -1612,7 +1612,7 @@ const updateTabBarStyle = () => {
 		    }
 		  
 		    .function-icon {
-		    color: #e864fc;
+
 		   background: rgba(255, 255, 255, 0.85);
         }
         }
@@ -1624,7 +1624,7 @@ const updateTabBarStyle = () => {
 		  }
 		  
 		  .function-icon {
-		    color: #6366f1;
+	
 		    background: rgba(255, 255, 255, 0.9);
 		  }
         }
@@ -1743,12 +1743,6 @@ const updateTabBarStyle = () => {
   .icon-image {
     width: 70rpx;
     height: 70rpx;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
   }
 }
 
@@ -1756,18 +1750,14 @@ const updateTabBarStyle = () => {
 .function-item {
   &.song-search .function-icon {
     background: rgba(255, 255, 255, 0.9);
-    
-    .icon-image {
-      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
-      opacity: 0.9;
-    }
+	 opacity: 0.9;
   }
   
   &.my-scores .function-icon {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
+
       opacity: 0.9;
     }
   }
@@ -1776,7 +1766,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #fda4cf 0%, #f472b6 100%);
+
       opacity: 0.9;
     }
   }
@@ -1786,8 +1776,7 @@ const updateTabBarStyle = () => {
     
     .icon-image {
       transform: scale(1.2); 
-      background: linear-gradient(135deg, #fda4cf 0%, #f472b6 100%);
-      opacity: 0.9;
+      opacity: 0.85;
     }
   }
   
@@ -1795,8 +1784,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
 
     .icon-image {
-      background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);
-      opacity: 0.9;
+    opacity: 0.9;
     }
   }
   
@@ -1804,8 +1792,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #c4b5fd 0%, #7c3aed 100%);
-      opacity: 0.95;
+    opacity: 0.9;
     }
   }
   
@@ -1813,8 +1800,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
-      opacity: 0.85;
+ opacity: 0.9;
     }
   }
   
@@ -1822,8 +1808,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
    
     .icon-image {
-      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
-      opacity: 0.85;
+ opacity: 0.9;
     }
   }
   
@@ -1831,8 +1816,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-      background: linear-gradient(135deg, #b0e2f9 0%, #3f50ef 100%);
-      opacity: 0.9;
+ opacity: 0.9;
     }
   }
   
@@ -1841,8 +1825,7 @@ const updateTabBarStyle = () => {
     
     .icon-image {
       transform: scale(1.1);
-        background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
-      opacity: 0.9;
+	   opacity: 0.9;
     }
   }
   
@@ -1850,8 +1833,7 @@ const updateTabBarStyle = () => {
     background: rgba(255, 255, 255, 0.9);
     
     .icon-image {
-         background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
-      opacity: 0.95;
+  opacity: 0.9;
     }
   }
   
@@ -1860,8 +1842,7 @@ const updateTabBarStyle = () => {
     
     .icon-image {
       transform: scale(1.2);
-      background: linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
-      opacity: 0.95;
+	    opacity: 0.9;
     }
   }
 }

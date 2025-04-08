@@ -16,13 +16,6 @@
             "autoclose" : true,
             "delay" : 0
         },
-        /* 添加混淆配置 */
-        "confusion" : {
-            "description" : "API配置文件混淆",
-            "resources" : {
-                "static/apiconfig.js" : {}
-            }
-        },
         /* 模块配置 */
         "modules" : {},
         /* 应用发布信息 */

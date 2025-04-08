@@ -186,8 +186,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, inject,onBeforeMount } from 'vue';
+import { ref, reactive, onMounted,inject,onBeforeMount} from 'vue';
 import * as maiApi from "../../api/maiapi.js";
+import * as h5Api from "@/api/h5api.js"
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 
 // 注入深色模式变量
@@ -322,20 +323,21 @@ const handleLogin = async () => {
     const res = await maiApi.divingFishLogin(loginForm.username, loginForm.password);
     console.log('登录响应:', res);
     
-    // #ifdef H5
-    // H5环境从响应数据中获取token
-    jwt_token.value = res.data.token;
-    // #endif
-    
-    // #ifndef H5
-    // 非H5环境从header中获取cookie
-    let headerCookie = res.header && res.header['set-cookie'];
-    if (headerCookie) {
-      jwt_token.value = headerCookie.split(';', 1)[0].split('=')[1];
-    } else {
-      throw new Error('无法获取登录令牌');
+    // 统一处理token获取
+    if (res.data && res.data.token) {
+      // 优先从响应数据中获取token
+      jwt_token.value = res.data.token;
+    } else if (res.header && res.header['set-cookie']) {
+      // 如果响应数据中没有token，尝试从cookie中获取
+      const cookies = Array.isArray(res.header['set-cookie']) 
+        ? res.header['set-cookie'] 
+        : [res.header['set-cookie']];
+      
+      const jwtCookie = cookies.find(cookie => cookie.includes('jwt_token='));
+      if (jwtCookie) {
+        jwt_token.value = jwtCookie.split(';')[0].split('=')[1];
+      }
     }
-    // #endif
     
     // 确保token不为空
     if (!jwt_token.value) {
