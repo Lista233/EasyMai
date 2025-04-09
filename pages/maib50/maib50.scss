@@ -1,21 +1,18 @@
 #index {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-content: center;
 	position: relative;
 	min-height: 100vh;
+
 	background: linear-gradient(135deg, #f0f4ff 0%, #e6e9ff 100%);
-	padding: 40rpx 20rpx 20rpx 10rpx;
+	
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	box-sizing: border-box;
-	
-	.content-container {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 20rpx;
-		display: flex;
-		flex-direction: column;
-		gap: 40rpx;
-		
-		animation: fadeInDown 1.4s;
-	}
+	width: 100%;
+	overflow-x: hidden;
+
 	
 	@keyframes fadeInDown {
 		from {
@@ -29,12 +26,13 @@
 	}
 	
 	.button-group {
-		max-width: 600px;
+		
 		margin: 0 auto;
 		display: flex;
 		gap: 16rpx;
 		margin-bottom: 12rpx;
-		padding: 0 10rpx;
+		padding: 0;
+		width: 98%;
 
 		.nav-btn {
 			flex: 1;
@@ -105,12 +103,23 @@
 	}
 	
 	.b50box {
-		max-width: 600px;
-		margin: 0px auto;
+		
+		width: calc(100% - 40rpx);
+		margin: 0 15rpx;
+		margin-left: 22rpx;
+		margin-right: 10rpx;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+
 		.section-title {
+			width: calc(90% - 20rpx);
+			text-align: center;
 			font-size: 36rpx;
 			font-weight: 800;
-			margin: 10rpx 10rpx;
+			margin: 5rpx 10rpx;
 			color: #333;
 			padding: 20rpx 20rpx;
 			border-radius: 12rpx;
@@ -124,7 +133,7 @@
 			box-shadow: none;
 			transform: translateX(-20rpx);
 			opacity: 0.7;
-			
+			justify-self: center;
 			.title-content {
 				position: relative;
 				display: inline-block;
@@ -164,7 +173,7 @@
 				backdrop-filter: blur(10px);
 				transform: translateX(0);
 				opacity: 1;
-				
+				justify-self: center;
 				.title-content {
 					transform: translateX(0);
 					
@@ -203,8 +212,8 @@
 		    backdrop-filter: blur(10px);
 		    border-radius: 20rpx;
 		    padding: 32rpx 40rpx;
-		    margin: 0rpx 10rpx 10rpx 10rpx;
-		    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+		    margin: 0 auto 0rpx auto;
+		    box-sizing: border-box;
 		    text-align: center;
 		    transition: all 0.3s ease;
 		    border: 1px solid rgba(255, 255, 255, 0.7);
@@ -349,24 +358,28 @@
 		    100% { background-position: 300% 50%; }
 		}
 		
+	
 		.b35box, .b15box {
+			width: 90%;
+			padding: 0;
+			margin: 0 auto;
 			display: flex;
 			flex-wrap: wrap;
-			gap: 8rpx;
-			padding: 0rpx 10rpx;
-			margin-bottom: 0rpx;
-			justify-content: center;
-			align-content: center;
+			gap: 2rpx;
+			row-gap: 4rpx;
+			justify-content:flex-start;
+			align-content:flex-start;
 			.song-card {
 				position: relative;
-				width: calc(50% - 8rpx);
+				width: calc(50% - 4rpx);
+				margin: 0;
 				background: white;
 				border-radius: 16rpx;
 				padding: 16rpx;
 				padding-bottom: 30rpx;
 				box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
 				display: flex;
-				gap: 16rpx;
+				gap: 12rpx;
 				box-sizing: border-box;
 				align-items: center;
 				
@@ -374,7 +387,7 @@
 					position: relative;
 					width: 120rpx;
 					height: 120rpx;
-					margin-left: 20rpx;
+					margin-left: 0rpx;
 					margin-top: -8rpx;
 					display: flex;
 					flex-direction: column;
@@ -422,130 +435,131 @@
 					flex: 1;
 					display: flex;
 					flex-direction: column;
-					gap: 6rpx;
+				
 					overflow: hidden;
 					min-width: 0;
-					margin-top: 10rpx;
+					margin-top: rpx;
 					
 					.song-title {
 						font-size: 26rpx;
 						font-weight: 500;
 						color: #333;
-						line-height: 1.3;
+						line-height: 1.2;
 						white-space: nowrap;
 						overflow: hidden;
 						text-overflow: ellipsis;
+						margin-bottom: 2rpx;
 					}
 					
 					.song-stats {
 						display: flex;
-						flex-wrap: wrap;
-						gap: 6rpx;
+						flex-direction: column;
+				
 						font-size: 22rpx;
-						padding-top: -8rpx;
-						width: 97%;
+						width: 100%;
 						
 						.stat-item {
-							background-color: #f5f5f5;
-							padding: 2rpx 8rpx;
-							border-radius: 4rpx;
-							color: #666;
-							display: inline-block;
-							
 							&.achievements {
 								color: #ff9500;
 								font-weight: 600;
 								background-color: rgba(255, 149, 0, 0.1);
-								padding: 4rpx 10rpx;
+								
 								border-radius: 6rpx;
 								box-shadow: 0 1px 2px rgba(255, 149, 0, 0.15);
 								width: 100%;
+							
 								text-align: center;
 								white-space: nowrap;
 								overflow: hidden;
 								text-overflow: ellipsis;
+								margin-bottom: 4rpx;
 							}
 							
 							&.ra {
 								color: #6366f1;
 								font-weight: 600;
 								background-color: rgba(99, 102, 241, 0.1);
-								padding: 4rpx 10rpx;
+							
 								border-radius: 6rpx;
 								box-shadow: 0 1px 2px rgba(99, 102, 241, 0.15);
 								width: 100%;
+							
 								text-align: center;
 								white-space: nowrap;
 								overflow: hidden;
 								text-overflow: ellipsis;
+								margin-bottom: 4rpx;
+							}
+						}
+						
+						.fc-fs-row {
+							display: flex;
+							width: 100%;
+							gap: 6rpx;
+							
+							justify-content: space-between;
+							
+							.fc-container {
+								display: flex;
+								justify-content: center;
+								width: 48%;  // 默认宽度
+								
+								// 当fc-container是唯一子元素时(没有fs-container)
+								&:only-child {
+									width: 100%;  // 占满整行
+								}
 							}
 							
-							&.fc-fs {
-								color: #2ecc71;
+							.fs-container {
+								display: flex;
+								justify-content: center;
+								width: 48%;  // 默认宽度
+								
+								// 当fs-container是唯一子元素时(没有fc-container)
+								&:only-child {
+									width: 100%;  // 占满整行
+								}
 							}
-						}
-						
-						/* FC 和 FS 样式 */
-						.fc-fc, .fc-fcp {
-							color: #10b981 !important;
-							background-color: rgba(16, 185, 129, 0.1) !important;
-							padding: 2rpx 8rpx;
-							border-radius: 4rpx;
-							width: calc(40% - 10rpx);
-							text-align: center;
-							white-space: nowrap;
-							overflow: hidden;
-							text-overflow: ellipsis;
-							box-sizing: border-box;
-						}
-						
-						.fc-ap, .fc-app {
-							color: #f59e0b !important;
-							background-color: rgba(245, 158, 11, 0.1) !important;
-							padding: 2rpx 8rpx;
-							border-radius: 4rpx;
-							width: calc(40% - 10rpx);
-							text-align: center;
-							white-space: nowrap;
-							overflow: hidden;
-							text-overflow: ellipsis;
-							box-sizing: border-box;
-						}
-						
-						.fs-sc, .fs-fs, .fs-fsp {
-							color: #3b82f6 !important;
-							background-color: rgba(59, 130, 246, 0.1) !important;
-							padding: 2rpx 8rpx;
-							border-radius: 4rpx;
-							width: calc(45% - 10rpx);	
-							text-align: center;
-							white-space: nowrap;
-							overflow: hidden;
-							text-overflow: ellipsis;
-							box-sizing: border-box;
-						}
-						
-						.fs-fsd, .fs-fsdp {
-							color: #f59e0b !important;
-							background-color: rgba(245, 158, 11, 0.1) !important;
-							padding: 2rpx 8rpx;
-							border-radius: 4rpx;
-							width: calc(45% - 10rpx);
-							text-align: center;
-							white-space: nowrap;
-							overflow: hidden;
-							text-overflow: ellipsis;
-							box-sizing: border-box;
-						}
-						
-						/* 调整布局 */
-						.achievements, .ra {
-							flex: 0 0 130rpx;
-						}
-						
-						.fc-fc, .fc-fcp, .fc-ap, .fc-app, 
-						.fs-sc, .fs-fs, .fs-fsp, .fs-fsd, .fs-fsdp {
-							flex: 1;
+							
+							.fc-fc, .fc-fcp {
+								color: #10b981 !important;
+								background-color: rgba(16, 185, 129, 0.1) !important;
+								padding: 2rpx 6rpx;
+								border-radius: 4rpx;
+								width: 100%;
+								text-align: center;
+								font-size: 22rpx;
+							}
+							
+							.fc-ap, .fc-app {
+								color: #f59e0b !important;
+								background-color: rgba(245, 158, 11, 0.1) !important;
+								padding: 2rpx 6rpx;
+								border-radius: 4rpx;
+								width: 100%;
+								text-align: center;
+								font-size: 22rpx;
+							}
+							
+							.fs-sc, .fs-fs, .fs-fsp {
+								color: #3b82f6 !important;
+								background-color: rgba(59, 130, 246, 0.1) !important;
+								padding: 2rpx 6rpx;
+								border-radius: 4rpx;
+								width: 100%;
+								text-align: center;
+								font-size: 22rpx;
+							}
+							
+							.fs-fsd, .fs-fsdp {
+								color: #f59e0b !important;
+								background-color: rgba(245, 158, 11, 0.1) !important;
+								padding: 2rpx 6rpx;
+								border-radius: 4rpx;
+								width: 100%;
+								text-align: center;
+								font-size: 22rpx;
+							}
 						}
 					}
 				}
@@ -891,6 +905,10 @@
 		color: #fff;
 		white-space: nowrap;
 		box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
+		width: 120rpx;
+		box-sizing: border-box;
+
+
 		
 		&.level-0 {
 			background: linear-gradient(135deg, #2ecc71, #27ae60);

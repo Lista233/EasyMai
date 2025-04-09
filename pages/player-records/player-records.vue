@@ -1618,31 +1618,31 @@ const updateGridSize = (size) => {
 		position: relative;
 		display: flex;  
 		flex-wrap: wrap;  
-		gap: 5rpx; // 保持水平间距
-		row-gap: 4rpx; // 特别设置垂直间距更小
+		gap: 1rpx; // 保持水平间距
+		row-gap: 2rpx; // 特别设置垂直间距更小
 		padding: 8rpx; // 保持内边距
 		padding-bottom: 120rpx;
-		justify-content:  flex-start;
+		justify-content:  center;
 		align-content: center;
 		&.grid-size-2 .song-item {
-			width: calc((100% - 6rpx) / 2);  
+			width: calc((100% - 2rpx) / 2);  
 		}
 		
 		&.grid-size-3 .song-item {
-			width: calc((100% - 12rpx) / 3);  
+			width: calc((100% - 4rpx) / 3);  
 		}
 		
 		&.grid-size-4 .song-item {
-			width: calc((100% - 18rpx) / 4);  
+			width: calc((100% - 6rpx) / 4);  
 		}
 		
 		&.grid-size-5 .song-item {
-			width: calc((100% - 24rpx) / 5);  
+			width: calc((100% - 8rpx) / 5);  
 		}
 		
 		.song-item {
 			position: relative;
-			border-radius: 10rpx;
+			border-radius: 2rpx;
 			overflow: hidden;
 			margin-bottom: 0; // 移除底部间距，因为我们现在使用row-gap
 			box-sizing: border-box;
@@ -1661,8 +1661,8 @@ const updateGridSize = (size) => {
 				left: 0;
 				width: 100%;
 				height: 100%;
-				border-radius: 4px;
-				border: 3px solid transparent;
+				border-radius: 6px;
+				border: 4px solid transparent;
 				box-sizing: border-box;
 				
 				&.level-0 {

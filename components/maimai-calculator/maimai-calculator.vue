@@ -852,111 +852,135 @@ noteTypes.value.forEach(type => {
 });
 </script>
 
-<style>
+<style lang="scss">
+// 定义响应式变量
+$mobile-padding: 10px;
+$mobile-font-size-small: 12rpx;
+$mobile-font-size-normal: 14rpx;
+$mobile-font-size-medium: 16rpx;
+$mobile-font-size-large: 18rpx;
+$mobile-border-radius: 8rpx;
+
+// 颜色变量
+$primary-color: #3949ab;
+$primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+$background-color: #fff;
+$border-color: #ccc;
+$text-color: #333;
+$text-color-light: #666;
+
+// 判定颜色
+$cp-color: #ffcc00;
+$p-color: #ff9900;
+$g-color: #ff66cc;
+$gd-color: #33cc33;
+$m-color: #999999;
+
 .calculator-container {
-  padding: 10px;
-  padding-top: 30px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: $mobile-padding;
+  padding-top: 30rpx;
+  background-color: $background-color;
+  border-radius: $mobile-border-radius;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .title {
-
-  font-size: 20px;
+  font-size: 40rpx;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 20rpx;
+  color: $text-color;
 }
 
 .global-auto-calculate {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin: 0 10px 20px 10px;
-  padding: 8px 15px;
+  margin: 0 10rpx 20rpx 10rpx;
+  padding: 8rpx 15rpx;
   background-color: #f8f9fa;
-  border-radius: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e0e0e0;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  border: 1rpx solid #e0e0e0;
+  
+  text {
+    margin-right: 12rpx;
+    font-size: 28rpx;
+    color: $primary-color;
+    font-weight: 500;
+  }
+  
+  switch {
+    transform: scale(0.8);
+    
+    .uni-switch-input.uni-switch-input-checked {
+      background-color: #6366f1 !important;
+      border-color: #4f46e5 !important;
+    }
+  }
 }
 
-.global-auto-calculate text {
-  margin-right: 12px;
-  font-size: 14px;
-  color: #3949ab;
-  font-weight: 500;
-}
-
-.global-auto-calculate switch {
-  transform: scale(0.8);
-}
-
-.global-auto-calculate switch .uni-switch-input.uni-switch-input-checked {
-  background-color: #6366f1 !important;
-  border-color: #4f46e5 !important;
-}
-
-/* 表格样式 - 优化 */
+/* 表格样式修复 - 确保填满整个容器 */
 .table-section {
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 10px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20rpx;
+  border: 1rpx solid $border-color;
+  border-radius: $mobile-border-radius;
+
+  background-color: $background-color;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+  width: 100%; // 确保占满全宽
 }
 
 .note-table {
-  width: 100%;
+  width: 100%; // 确保表格占满容器全宽
   border-collapse: collapse;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  border: 1rpx solid $border-color;
+  border-radius: $mobile-border-radius;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  table-layout: fixed; // 固定表格布局确保均匀分配
 }
 
 .table-row {
   display: flex;
-  border-bottom: 1px solid #ccc;
-}
-
-.table-row:last-child {
-  border-bottom: none;
-}
-
-.table-row.header {
-  font-weight: bold;
-  background: linear-gradient(135deg, #f0f8ff, #e6f0ff);
-}
-
-.table-row.totals-row {
-  background-color: #f0f0f0;
-  border-top: 0px solid #ccc;
-  font-weight: bold;
+  border-bottom: 1rpx solid $border-color;
+  width: 100%; // 确保行占满表格宽度
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &.header {
+    font-weight: bold;
+    background: linear-gradient(135deg, #f0f8ff, #e6f0ff);
+  }
+  
+  &.totals-row {
+    background-color: #f0f0f0;
+    border-top: 0rpx solid $border-color;
+    font-weight: bold;
+  }
 }
 
 .table-cell {
-  width: 60px;
-  height: 45px;
-  padding: 6px;
+  flex: 1; // 改用flex布局确保单元格均匀分布
+  min-height: 60rpx; // 设置最小高度
+  padding: 6rpx 4rpx; // 调整内边距
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid #ccc;
+  border-right: 1rpx solid $border-color;
   overflow: hidden;
-}
-
-.table-cell:last-child {
-  border-right: none;
+  font-size: 24rpx; // 调整字体大小以适应移动端
+  
+  &:last-child {
+    border-right: none;
+  }
 }
 
 .first-cell {
-  width: 70px; /* 第一列稍宽一些 */
+  flex: 1.2; // 第一列稍宽一些
   text-align: center;
   justify-content: center;
   font-weight: bold;
@@ -970,18 +994,16 @@ noteTypes.value.forEach(type => {
 
 .note-type-label {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 28rpx;
   color: #3366cc;
 }
 
-.type-tap { color: #3366cc; }
-.type-hold { color: #3366cc; }
-.type-slide { color: #3366cc; }
-.type-touch { color: #3366cc; }
-.type-break { color: #3366cc; }
+.type-tap, .type-hold, .type-slide, .type-touch, .type-break { 
+  color: #3366cc; 
+}
 
 .judgement-label {
-  font-size: 12px; /* 更小的字体 */
+  font-size: 24rpx; /* 更小的字体 */
   text-align: center;
   line-height: 1.2;
   font-weight: bold;
@@ -991,14 +1013,14 @@ noteTypes.value.forEach(type => {
   background: linear-gradient(135deg, #ffcc00, #ffa500);
   -webkit-background-clip: text;
   color: transparent;
-  font-size: 10px;
+  font-size: 20rpx;
 }
 
 .p-label { 
   background: linear-gradient(135deg, #ff9900, #ff6600);
   -webkit-background-clip: text;
   color: transparent;
-  font-size: 10px;
+  font-size: 20rpx;
 }
 
 .g-label { 
@@ -1026,21 +1048,26 @@ noteTypes.value.forEach(type => {
 .m-cell { background: linear-gradient(135deg, #f5f5f5, #eeeeee); }
 
 .table-input {
-  width: 100%;
-  height: 35px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0 4px;
+  width: 90%; // 确保输入框不会超出单元格
+  height: 50rpx; // 增加输入框高度
+  border: 1rpx solid #ddd;
+  border-radius: 4rpx;
+  padding: 0 4rpx;
   text-align: center;
   box-sizing: border-box;
-  font-size: 14px;
-  background-color: #fff;
+  font-size: 24rpx; // 调整字体大小
+  background-color: $background-color;
   transition: all 0.3s ease;
-}
-
-.table-input:focus {
-  box-shadow: 0 0 0 2px rgba(51, 102, 204, 0.2);
-  transform: translateY(-1px);
+  
+  &:focus {
+    box-shadow: 0 0 0 2rpx rgba(51, 102, 204, 0.2);
+    transform: translateY(-1rpx);
+  }
+  
+  &:disabled {
+    background-color: #f0f0f0;
+    color: #888;
+  }
 }
 
 .cp-input { color: #e6b800; font-weight: bold; }
@@ -1051,7 +1078,7 @@ noteTypes.value.forEach(type => {
 
 .total-value {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 28rpx;
 }
 
 .cp-total { 
@@ -1089,55 +1116,65 @@ noteTypes.value.forEach(type => {
   font-weight: bold;
 }
 
-/* 禁用状态的输入框样式 */
-.table-input:disabled {
-  background-color: #f0f0f0;
-  color: #888;
-}
-
 /* BREAK音符部分样式 - 重新设计为表格布局 */
 .input-section {
-  margin-bottom: 20px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 10px;
+  margin-bottom: 20rpx;
+  border: 1rpx solid #eee;
+  border-radius: $mobile-border-radius;
+  padding: 20rpx;
   background-color: #f9f9f9;
-}
-
-.break-section {
-  border: 1px solid #ffcccc;
-  background-color: #fff9f9;
+  
+  &.break-section {
+    border: 1rpx solid #ffcccc;
+    background-color: #fff9f9;
+    border-radius: 24rpx;
+    padding: 30rpx;
+    margin-bottom: 50rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+    
+    .section-title {
+      font-size: 36rpx;
+      font-weight: bold;
+      color: $primary-color;
+      text-align: center;
+      padding-bottom: 20rpx;
+      border-bottom: 2rpx solid #c5cae9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
 }
 
 .input-group {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 20rpx;
 }
 
 .label {
-  width: 150px;
-  font-size: 14px;
-  color: #333;
+  width: 150rpx;
+  font-size: 28rpx;
+  color: $text-color;
 }
 
 .input {
   flex: 1;
-  height: 35px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0 10px;
-  background-color: #fff;
+  height: 70rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  background-color: $background-color;
 }
 
 .section-title {
-    font-size: 18px;
+  font-size: 36rpx;
   font-weight: bold;
-  color: #3949ab;
-  margin-bottom: 15px;
+  color: $primary-color;
+
   text-align: center;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #c5cae9;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #c5cae9;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1146,215 +1183,256 @@ noteTypes.value.forEach(type => {
 /* 计算按钮样式 */
 .calculate-btn {
   width: 100%;
-  height: 40px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  height: 20rpx;
+  background: $primary-gradient;
   color: white;
-  padding: 100rpx,20rpx;
+  padding: 60rpx 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
-  margin: 20px 0;
+  border-radius: 32rpx;
+  margin: 40rpx 0;
   font-weight: bold;
 }
 
 /* 结果显示部分样式 */
 .results {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
+  border: 1rpx solid #eee;
+  border-radius: $mobile-border-radius;
+  padding: 30rpx;
   background-color: #f9f9f9;
+  
+  .section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    margin: 40rpx 0 30rpx;
+    padding-bottom: 16rpx;
+    border-bottom: 2rpx solid $primary-color;
+    color: $primary-color;
+  }
 }
 
 .result-item {
-  margin-bottom: 15px;
-  padding: 12px;
+  margin-bottom: 30rpx;
+  padding: 24rpx;
   background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
-}
-
-.result-item:hover {
-  background-color: #f0f0f0;
-  transform: translateX(2px);
-}
-
-.result-item .result-label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #3949ab;
-  font-size: 15px;
-}
-
-.result-item .result-value {
-  display: inline-block;
-  color: #303f9f;
-  font-weight: bold;
-  font-size: 16px;
-  background-color: #f5f7ff;
-  padding: 5px 10px;
-  border-radius: 4px;
-  margin-bottom: 10px;
+  
+  &:hover {
+    background-color: #f0f0f0;
+    transform: translateX(4rpx);
+  }
+  
+  .result-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 16rpx;
+    color: $primary-color;
+    font-size: 30rpx;
+  }
+  
+  .result-value {
+    display: inline-block;
+    color: #303f9f;
+    font-weight: bold;
+    font-size: 32rpx;
+    background-color: #f5f7ff;
+    padding: 10rpx 20rpx;
+    border-radius: 8rpx;
+    margin-bottom: 20rpx;
+  }
+  
+  &:last-child .result-value {
+    color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.1);
+  }
 }
 
 /* 损失详情样式 */
 .loss-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed #e0e0e0;
-}
-
-.loss-details text {
-  background-color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #555;
-  border: 1px solid #eee;
-}
-
-/* 特定损失类型样式 */
-.loss-details text:nth-child(1) {
-  color: #ff3399; /* GREAT损失颜色 */
-  border-color: rgba(255, 51, 153, 0.2);
-}
-
-.loss-details text:nth-child(2) {
-  color: #33cc33; /* GOOD损失颜色 */
-  border-color: rgba(51, 204, 51, 0.2);
-}
-
-.loss-details text:nth-child(3) {
-  color: #666666; /* MISS损失颜色 */
-  border-color: rgba(102, 102, 102, 0.2);
-}
-
-/* BREAK奖励特殊样式 */
-.result-item:last-child .result-value {
-  color: #4caf50; /* 绿色表示奖励 */
-  background-color: rgba(76, 175, 80, 0.1);
-}
-
-/* 结果部分标题 */
-.results .section-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 20px 0 15px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #3949ab;
-  color: #3949ab;
+  gap: 16rpx;
+  margin-top: 16rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx dashed #e0e0e0;
+  
+  text {
+    background-color: $background-color;
+    padding: 8rpx 16rpx;
+    border-radius: 8rpx;
+    font-size: 26rpx;
+    color: $text-color-light;
+    border: 1rpx solid #eee;
+    
+    &:nth-child(1) {
+      color: #ff3399; /* GREAT损失颜色 */
+      border-color: rgba(255, 51, 153, 0.2);
+    }
+    
+    &:nth-child(2) {
+      color: #33cc33; /* GOOD损失颜色 */
+      border-color: rgba(51, 204, 51, 0.2);
+    }
+    
+    &:nth-child(3) {
+      color: #666666; /* MISS损失颜色 */
+      border-color: rgba(102, 102, 102, 0.2);
+    }
+  }
 }
 
 .note-details {
-  margin-bottom: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 15px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40rpx;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  background-color: $background-color;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
 }
 
 .note-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #eee;
 }
 
 .note-name {
   font-weight: bold;
-  color: #3949ab;
-  font-size: 16px;
+  color: $primary-color;
+  font-size: 32rpx;
 }
 
 .note-achievement {
   color: #303f9f;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 32rpx;
   background-color: #f5f7ff;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 10rpx 20rpx;
+  border-radius: 8rpx;
 }
 
 .note-detail-content {
-  margin-left: 10px;
+  margin-left: 20rpx;
 }
 
 .note-detail-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  color: #555;
+  margin-bottom: 16rpx;
+  padding: 12rpx 20rpx;
+  font-size: 26rpx;
+  color: $text-color-light;
   background-color: #f9f9f9;
-  border-radius: 6px;
+  border-radius: 12rpx;
   transition: all 0.2s ease;
-}
-
-.note-detail-row:hover {
-  background-color: #f0f0f0;
-  transform: translateX(2px);
-}
-
-.note-detail-row .label {
-  font-weight: bold;
-  color: #3949ab;
-}
-
-.note-detail-row .value {
-  font-weight: 500;
-  color: #303f9f;
+  
+  &:hover {
+    background-color: #f0f0f0;
+    transform: translateX(4rpx);
+  }
+  
+  .label {
+    font-weight: bold;
+    color: $primary-color;
+  }
+  
+  .value {
+    font-weight: 500;
+    color: #303f9f;
+  }
 }
 
 .auto-calculate-switch {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-bottom: 15px;
-}
-
-.auto-calculate-switch text {
-  margin-right: 10px;
-  font-size: 14px;
+  margin-bottom: 30rpx;
+  
+  text {
+    margin-right: 20rpx;
+    font-size: 28rpx;
+  }
 }
 
 /* BREAK音符表格样式 */
 .break-table-section {
   justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
-
+  margin-bottom: 30rpx;
   width: 100%;
+  
+  &:nth-child(2) {
+    .break-table-title {
+      background: linear-gradient(135deg, #fff8e1, #ffecb3);
+      color: #ff9800;
+    }
+    
+    .break-table {
+      border-color: #ffe0b2;
+    }
+    
+    .break-label-cell {
+      background-color: #fff8e1;
+      color: #ff9800;
+    }
+  }
+  
+  &:nth-child(3) {
+    .break-table-title {
+      background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+      color: #9c27b0;
+    }
+    
+    .break-table {
+      border-color: #e1bee7;
+    }
+    
+    .break-label-cell {
+      background-color: #f3e5f5;
+      color: #9c27b0;
+    }
+  }
 }
 
 .break-table-title {
   font-weight: bold;
-  margin-bottom: 8px;
-  color: #3949ab;
-  font-size: 16px;
+  margin-bottom: 16rpx;
+  color: $primary-color;
+  font-size: 32rpx;
   text-align: center;
-  padding: 5px 10px;
+  padding: 10rpx 20rpx;
   background: linear-gradient(135deg, #e8eaf6, #c5cae9);
-  border-radius: 6px;
+  border-radius: 12rpx;
 }
 
 .break-table {
-  border: 1px solid #c5cae9;
-  border-radius: 12px;
+  border: 2rpx solid #c5cae9;
+  border-radius: 24rpx;
   overflow: hidden;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 15px;
+  background-color: $background-color;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 30rpx;
   width: 100%;
+}
+
+.break-table-row {
+  display: flex;
+  width: 100%;
+  border-bottom: 2rpx solid #e0e0e0;
+  margin: 0;
+  padding: 2rpx;
+  transition: all 0.2s ease;
+  
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 /* 容器样式 */
@@ -1362,7 +1440,7 @@ noteTypes.value.forEach(type => {
   display: flex;
   width: 100%;
   margin: 0;
-  border-radius: 8px;
+  border-radius: 16rpx;
   overflow: hidden;
   background-color: #fafafa;
   transition: all 0.2s ease;
@@ -1371,250 +1449,211 @@ noteTypes.value.forEach(type => {
 /* 输入框容器样式 */
 .break-input-container {
   flex: 1;
-  padding: 8px 15px;
+  padding: 16rpx 30rpx;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   background-color: white;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 16rpx;
+  border-bottom-right-radius: 16rpx;
 }
 
 /* 标签单元格样式 */
 .break-label-cell {
-  width: 70px;
-  min-width: 100px;
+  width: 140rpx;
+  min-width: 200rpx;
   font-weight: bold;
-  font-size: 14px;
-  padding: 12px 10px;
+  font-size: 28rpx;
+  padding: 24rpx 20rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 8px;
-  border-right: 1px solid #e0e0e0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 16rpx;
+  border-right: 2rpx solid #e0e0e0;
   box-sizing: border-box;
   transition: all 0.2s ease;
-}
-
-/* Perfect部分标签样式 */
-.break-table-section:nth-child(2) .break-label-cell {
-  background-color: #fff8e1;
-  color: #ff9800;
-}
-
-/* Great部分标签样式 */
-.break-table-section:nth-child(3) .break-label-cell {
-  background-color: #f3e5f5;
-  color: #9c27b0;
-}
-
-/* GOOD标签样式 */
-.good-label {
-  background-color: #e8f5e9 !important;
-  color: #4caf50 !important;
-}
-
-/* MISS标签样式 */
-.miss-label {
-  background-color: #fafafa !important;
-  color: #757575 !important;
+  
+  &.good-label {
+    background-color: #e8f5e9 !important;
+    color: #4caf50 !important;
+  }
+  
+  &.miss-label {
+    background-color: #fafafa !important;
+    color: #757575 !important;
+  }
 }
 
 /* 输入框样式 */
 .break-input {
   width: 100%;
-  height: 38px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0 15px;
+  height: 76rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 12rpx;
+  padding: 0 30rpx;
   text-align: center;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 30rpx;
   transition: all 0.3s ease;
-}
-
-.break-input:focus {
-  border-color: #3949ab;
-  box-shadow: 0 0 0 2px rgba(57, 73, 171, 0.2);
-  outline: none;
-  transform: translateY(-1px);
-}
-
-/* 特定输入框样式 */
-.critical-perfect-input {
-  color: #ff9800;
-  background-color: rgba(255, 152, 0, 0.05);
-}
-
-.perfect-high-input, .perfect-low-input {
-  color: #ff9800;
-  background-color: rgba(255, 152, 0, 0.05);
-}
-
-.great-high-input, .great-mid-input, .great-low-input {
-  color: #9c27b0;
-  background-color: rgba(156, 39, 176, 0.05);
-}
-
-.good-input {
-  color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.05);
-}
-
-.miss-input {
-  color: #757575;
-  background-color: rgba(117, 117, 117, 0.05);
+  
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 4rpx rgba(57, 73, 171, 0.2);
+    outline: none;
+    transform: translateY(-2rpx);
+  }
+  
+  &.critical-perfect-input {
+    color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.05);
+  }
+  
+  &.perfect-high-input, &.perfect-low-input {
+    color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.05);
+  }
+  
+  &.great-high-input, &.great-mid-input, &.great-low-input {
+    color: #9c27b0;
+    background-color: rgba(156, 39, 176, 0.05);
+  }
+  
+  &.good-input {
+    color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.05);
+  }
+  
+  &.miss-input {
+    color: #757575;
+    background-color: rgba(117, 117, 117, 0.05);
+  }
 }
 
 /* 总数组样式 */
 .total-group {
-  margin-top: 20px;
+  margin-top: 40rpx;
   display: flex;
   align-items: center;
   background-color: #e8eaf6;
-  padding: 12px 15px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.total-group .label {
-  font-weight: bold;
-  margin-right: 10px;
-  color: #3949ab;
-  font-size: 16px;
-}
-
-.total-group .input {
-  flex: 1;
-  height: 40px;
-  border: 1px solid #c5cae9;
-  border-radius: 6px;
-  padding: 0 15px;
-  font-weight: bold;
-  background-color: #fff;
-  font-size: 16px;
-  color: #3949ab;
-  transition: all 0.3s ease;
-}
-
-.total-group .input:focus {
-  border-color: #3949ab;
-  box-shadow: 0 0 0 2px rgba(57, 73, 171, 0.2);
-  outline: none;
-}
-
-/* BREAK音符部分整体样式 */
-.input-section.break-section {
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 25px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.input-section.break-section .section-title {
-  font-size: 18px;
-  font-weight: bold;
-  color: #3949ab;
-  margin-bottom: 15px;
-  text-align: center;
-  padding-bottom: 10px;
-  border-bottom: 2rpx solid #c5cae9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Perfect部分特殊样式 */
-.break-table-section:nth-child(2) .break-table-title {
-  background: linear-gradient(135deg, #fff8e1, #ffecb3);
-  color: #ff9800;
-}
-
-.break-table-section:nth-child(2) .break-table {
-  border-color: #ffe0b2;
-}
-
-/* Great部分特殊样式 */
-.break-table-section:nth-child(3) .break-table-title {
-  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
-  color: #9c27b0;
-}
-
-.break-table-section:nth-child(3) .break-table {
-  border-color: #e1bee7;
-}
-
-/* 行样式 */
-.break-table-row {
-  display: flex;
-  width: 100%;
-  border-bottom: 1px solid #e0e0e0;
-  margin: 0px 0px;
-  padding: 1px;
-  transition: all 0.2s ease;
-}
-
-.break-table-row:last-child {
-  border-bottom: none;
+  padding: 24rpx 30rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+  
+  .label {
+    font-weight: bold;
+    margin-right: 20rpx;
+    color: $primary-color;
+    font-size: 32rpx;
+  }
+  
+  .input {
+    flex: 1;
+    height: 80rpx;
+    border: 2rpx solid #c5cae9;
+    border-radius: 12rpx;
+    padding: 0 30rpx;
+    font-weight: bold;
+    background-color: $background-color;
+    font-size: 32rpx;
+    color: $primary-color;
+    transition: all 0.3s ease;
+    
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 4rpx rgba(57, 73, 171, 0.2);
+      outline: none;
+    }
+  }
 }
 
 /* BREAK音符详细信息样式 */
 .break-details {
   flex-direction: column;
-  gap: 10px;
-  padding: 12px !important;
+  gap: 20rpx;
+  padding: 24rpx !important;
   background-color: #f5f5f5 !important;
 }
 
 .break-detail-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px;
+  gap: 16rpx;
+  padding: 16rpx;
   background-color: white;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  border-radius: 12rpx;
+  border: 2rpx solid #e0e0e0;
+  
+  .break-label {
+    width: 100%;
+    font-weight: bold;
+    color: $primary-color;
+    margin-bottom: 8rpx;
+    padding-bottom: 8rpx;
+    border-bottom: 2rpx solid #e0e0e0;
+  }
+  
+  text:not(.break-label) {
+    font-size: 26rpx;
+    color: $text-color-light;
+    background-color: #f8f9fa;
+    padding: 8rpx 16rpx;
+    border-radius: 8rpx;
+    border: 2rpx solid #eee;
+  }
+  
+  &:nth-child(1) text:not(.break-label) {
+    color: #ff9800;
+    background-color: #fff8e1;
+    border-color: #ffe0b2;
+  }
+  
+  &:nth-child(2) text:not(.break-label) {
+    color: #9c27b0;
+    background-color: #f3e5f5;
+    border-color: #e1bee7;
+  }
+  
+  &:nth-child(3) text:not(.break-label) {
+    color: #757575;
+    background-color: #fafafa;
+    border-color: #e0e0e0;
+  }
 }
 
-.break-label {
-  width: 100%;
-  font-weight: bold;
-  color: #3949ab;
-  margin-bottom: 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e0e0e0;
+// 媒体查询适配不同设备
+@media screen and (max-width: 375px) {
+  .break-label-cell {
+    min-width: 160rpx;
+    font-size: 24rpx;
+  }
+  
+  .break-input {
+    font-size: 26rpx;
+  }
+  
+  .table-cell {
+    width: 50rpx;
+    height: 40rpx;
+    font-size: 22rpx;
+  }
+  
+  .judgement-label {
+    font-size: 20rpx;
+  }
 }
 
-.break-detail-group text:not(.break-label) {
-  font-size: 13px;
-  color: #555;
-  background-color: #f8f9fa;
-  padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid #eee;
-}
-
-/* Perfect组的样式 */
-.break-detail-group:nth-child(1) text:not(.break-label) {
-  color: #ff9800;
-  background-color: #fff8e1;
-  border-color: #ffe0b2;
-}
-
-/* Great组的样式 */
-.break-detail-group:nth-child(2) text:not(.break-label) {
-  color: #9c27b0;
-  background-color: #f3e5f5;
-  border-color: #e1bee7;
-}
-
-/* 其他组的样式 */
-.break-detail-group:nth-child(3) text:not(.break-label) {
-  color: #757575;
-  background-color: #fafafa;
-  border-color: #e0e0e0;
+@media screen and (min-width: 768px) {
+  .calculator-container {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+  
+  .break-table-section {
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 </style> 

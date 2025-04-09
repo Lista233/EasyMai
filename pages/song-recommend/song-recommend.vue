@@ -145,7 +145,7 @@
 								<text class="stat-label">平均达成:</text>
 								<text class="stat-value">{{ chart.avg }}%</text>
 								<text v-if="chart.playerAchievement" class="player-achievement">
-									(您: {{ chart.playerAchievement.toFixed(2) }}%)
+									(您:{{ chart.playerAchievement.toFixed(2) }}%)
 								</text>
 							</view>
 							<view class="stat-item difficulty">
@@ -592,7 +592,7 @@ watch(userRating, (newRating) => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 /* 导入深色模式样式 */
 @import '@/uni.scss';
 @import './dark-song-recommend.scss';
@@ -944,9 +944,9 @@ watch(userRating, (newRating) => {
 .stat-item {
 	display: flex;
 	align-items: center;
-	padding: 6rpx 12rpx;
+	padding: 6rpx 8rpx;
 	border-radius: 8rpx;
-	font-size: 24rpx;
+	font-size: 23rpx;
 }
 
 .stat-label {

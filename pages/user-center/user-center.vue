@@ -1291,7 +1291,7 @@ const updateTabBarStyle = () => {
       font-size: 32rpx;
       font-weight: 800;
       margin: 28rpx auto;
-      margin-bottom: 20rpx;
+      margin-bottom: 10rpx;
       margin-top: -25rpx;
       color: var(--text-color);
       padding: 10rpx 20rpx;
@@ -1374,7 +1374,9 @@ const updateTabBarStyle = () => {
     .function-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 15rpx;
+	  
+      gap: 8rpx;
+	  row-gap: 10rpx;
       margin-bottom: 40rpx;
       
       &.account-grid {

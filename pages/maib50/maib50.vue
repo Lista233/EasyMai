@@ -178,7 +178,7 @@
 						v-for="(item,index) in b35" 
 						@click="showRecordCard(item,index)"
 					> 
-					 	<view class="song-cover">
+						<view class="song-cover">
 							<image class="cover-image" :class="'level-' + item.level_index" :src="getCoverUrl(item.song_id)"></image>
 							<view class="ds-tag" :class="'level-' + item.level_index">{{Number(item.ds).toFixed(1)}}</view>
 						</view>
@@ -187,14 +187,19 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text v-if="item.fc" class="stat-item fc-fs" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
-								<text v-if="item.fs" class="stat-item fs-fs" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
+								<view class="fc-fs-row">
+									<view class="fc-container" v-if="item.fc">
+										<text class="stat-item" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
+									</view>
+									<view class="fs-container" v-if="item.fs">
+										<text class="stat-item" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
+									</view>
+								</view>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{
 							'rainbowp': item.rate?.includes('sssp'),
 							'rainbow': item.rate?.includes('sss')&& !item.rate?.includes('sssp'),
-						
 							'gold': item.rate?.includes('ss') && !item.rate?.includes('sss')
 						}">{{item.rate?.endsWith('p') ? item.rate.slice(0, -1) + '+' : item.rate}}</text>
 					</view>
@@ -217,8 +222,14 @@
 							<view class="song-stats">
 								<text class="stat-item achievements">{{Number(item.achievements).toFixed(4)}}%</text>
 								<text class="stat-item ra">Rating: {{item.ra}}</text>
-								<text v-if="item.fc" class="stat-item fc-fs" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
-								<text v-if="item.fs" class="stat-item fs-fs" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
+								<view class="fc-fs-row">
+									<view class="fc-container" v-if="item.fc">
+										<text class="stat-item" :class="getFcClass(item.fc)">{{ formatCombo(item.fc) }}</text>
+									</view>
+									<view class="fs-container" v-if="item.fs">
+										<text class="stat-item" :class="getFsClass(item.fs)">{{ formatFS(item.fs) }}</text>
+									</view>
+								</view>
 							</view>
 						</view>
 						<text class="rate-badge" :class="{
@@ -1101,6 +1112,9 @@ function getFcClass(fc) {
 // 获取 FS 状态的样式类
 function getFsClass(fs) {
   if (!fs) return '';
+  if(fs.includes('sync')){
+    return 'fs-sc';
+  }
   return 'fs-' + fs.toLowerCase();
 }
 
@@ -1141,7 +1155,6 @@ onMounted(async () => {
 }
 
 .record-modal-content {
-  background: white;
   border-radius: 12rpx;
   padding: 60rpx;
   width: 90%;
@@ -1181,51 +1194,5 @@ onMounted(async () => {
   padding: 2rpx 4rpx;
   border-radius: 4rpx;
   
-}
-
-/* 深色模式下的模态框样式 */
-.modal-container.dark-mode,
-.record-modal-content.dark-mode {
-  background: $dark-card-bg !important;
-  border: 1px solid $dark-card-border !important;
-  color: $dark-text-primary !important;
-  
-  .modal-title {
-    color: $dark-text-primary !important;
-  }
-  
-  .form-item {
-    .form-label {
-      color: $dark-text-secondary !important;
-    }
-    
-    .form-input {
-      background: rgba(0, 0, 0, 0.2) !important;
-      border: 1px solid rgba(255, 255, 255, 0.1) !important;
-      color: $dark-text-primary !important;
-      
-      &:focus {
-        border-color: #818cf8 !important;
-        background: rgba(0, 0, 0, 0.3) !important;
-      }
-      
-      &::placeholder {
-        color: $dark-text-hint !important;
-      }
-    }
-  }
-  
-  .modal-buttons {
-    .modal-btn {
-      &.cancel {
-        background: rgba(0, 0, 0, 0.3) !important;
-        color: $dark-text-primary !important;
-      }
-      
-      &.confirm {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
-      }
-    }
-  }
 }
 </style>
