@@ -1,6 +1,16 @@
 {
 	"pages": [
 		{
+			"path" : "pages/user-center/user-center",
+			"style" : 
+			{
+				"navigationBarTitleText" : ""
+				//"navigationStyle":"custom",
+				// "hideStatusBar":true,
+				// "hideBottomNavigationIndicator":true
+			}
+		},
+		{
 			"path": "pages/splash/splash",
 			"style": {
 				"navigationStyle": "custom"
@@ -27,7 +37,7 @@
 		},
 		
 		{
-			"path" : "pages/maiupdate/maib50",
+			"path" : "pages/maib50/maib50",
 			"style" : 
 			{
 				"navigationBarTitleText" : "",
@@ -88,16 +98,7 @@
 			}
 		},
 		
-		{
-			"path" : "pages/user-center/user-center",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-				//"navigationStyle":"custom",
-				// "hideStatusBar":true,
-				// "hideBottomNavigationIndicator":true
-			}
-		},
+	
 		{
 			"path" : "pages/login/login",
 			"style" : 
@@ -106,7 +107,7 @@
 			}
 		},
 		{
-			"path" : "pages/PlayerRecords/PlayerRecords",
+			"path" : "pages/player-records/player-records",
 			"style" : 
 			{
 				"navigationBarTitleText" : ""
@@ -169,15 +170,9 @@
 			}
 		},
 		{
-			"path": "pages/test1/index",
+			"path": "pages/maimai-calculator/maimai-calculator",
 			"style": {
-				"navigationBarTitleText": "maimai达成率计算器"
-			}
-		},
-		{
-			"path": "pages/loss-calculator/loss-calculator",
-			"style": {
-				"navigationBarTitleText": "maimai达成率计算器"
+				"navigationBarTitleText": "达成率计算"
 			}
 		}
 	],

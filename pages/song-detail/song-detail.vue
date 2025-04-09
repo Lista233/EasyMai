@@ -308,10 +308,10 @@ import SongService from '@/utils/songService.js'
 import playerRecordService from '@/utils/playerRecordService.js'
 import * as maiApi from '../../api/maiapi.js'
 import { onLoad, onHide, onShow } from '@dcloudio/uni-app'
-import { getCoverUrl, isLoading } from '@/util/coverManager.js'
+import { getCoverUrl, isLoading } from '@/utils/coverManager.js'
 import SongSearcher from '../../utils/SongSearcher'
 import {openBiliSearch} from '@/utils/biliUtils.js'
-import MaimaiLossCalculator from '@/components/maimai-loss-calculator/index.vue'
+import MaimaiLossCalculator from '@/components/maimai-loss-calculator/maimai-loss-calculator.vue'
 import {updateNativeTabBar } from '@/utils/updateNativeTabBar.js'
 // 注入主题服务
 const applyTheme = inject('applyTheme');

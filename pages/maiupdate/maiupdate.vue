@@ -75,7 +75,7 @@
 <script setup>
 	import { ref } from "vue";
     import * as maiApi from "../../api/maiapi.js"
-	import * as adapter from "../../util/b50adapter.js";
+	import * as adapter from "../../utils/b50adapter.js";
 	let importToken=ref('');
 	let QrCode=ref('');
 	let uid=ref(-1);

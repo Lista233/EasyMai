@@ -155,7 +155,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch,onBeforeMount,inject} from 'vue';
-import { getCoverUrl } from '../../util/coverManager.js';
+import { getCoverUrl } from '../../utils/coverManager.js';
 import SongService from '../../utils/SongService.js';
 import {updateNativeTabBar } from '@/utils/updateNativeTabBar.js'
 // 注入主题服务
@@ -747,6 +747,7 @@ const getDifficultyName = (song) => {
       gap: 30rpx;
       
       .count-selector {
+		  margin-top: 15rpx;
         display: flex;
         align-items: center;
         

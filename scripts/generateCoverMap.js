@@ -4,7 +4,7 @@ const path = require('path');
 // maicover 目录路径（相对于脚本位置）
 const COVER_DIR = '../static/maicover';
 // 输出文件路径
-const OUTPUT_FILE = '../util/maiCoverData.js';
+const OUTPUT_FILE = '../utils/maiCoverData.js';
 
 try {
     // 读取 maicover 目录

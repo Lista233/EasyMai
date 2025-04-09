@@ -2,8 +2,8 @@ export const remoteRoute='https://mai.lista233.cn';
 export const aliasRoute='https://api.yuzuchan.moe/maimaidx/maimaidxalias'
 export const divingFishRoute = 'https://www.diving-fish.com';
 export const h5ProxyRoute = '/h5api';
-export const version = '20250330';
-export const apiversion = '20250330';
+export const version = '20250409';
+export const apiversion = '20250409';
 export const ProxyRoute = 'http://localhost:3000';
 
 export const proxyConfig = {

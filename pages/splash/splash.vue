@@ -18,7 +18,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import UpdateChecker from '@/components/UpdateChecker.vue'
+import UpdateChecker from '@/components/UpdateChecker/UpdateChecker.vue'
 import {version} from '@/static/apiconfig.js'
 import { getVersion } from '@/api/myapi.js'
 import { refreshAllBaseData } from '@/api/maiapi.js' // 导入刷新API的函数

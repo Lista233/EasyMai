@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-	import {getCoverUrl} from '../../util/coverManager.js'
+	import {getCoverUrl} from '../../utils/coverManager.js'
 	import {defineProps, reactive, computed,inject,ref} from 'vue'
     const isDarkMode = inject('isDarkMode');
 	const props = defineProps(['record', 'index'])

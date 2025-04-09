@@ -204,7 +204,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, inject } from 'vue';
 import SongService from '@/utils/songService.js';
-import { getCoverUrl } from '@/util/coverManager.js';
+import { getCoverUrl } from '@/utils/coverManager.js';
 import {onShow} from '@dcloudio/uni-app';
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js';
 

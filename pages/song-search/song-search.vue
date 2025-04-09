@@ -327,7 +327,7 @@
 import { ref, onMounted, computed, watch, inject } from 'vue'
 import SongSearcher from '@/utils/songSearcher.js'
 import SongService from '@/utils/songService.js'
-import {getCoverUrl} from '../../util/coverManager.js'
+import {getCoverUrl} from '../../utils/coverManager.js'
 
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 

@@ -197,10 +197,10 @@ import * as maiApi from '../../api/maiapi.js';
 import { onLoad, onShow } from '@dcloudio/uni-app'
 import QrCodeModal from '@/components/QrCodeModal/QrCodeModal.vue';
 import AccountSettingsModal from '@/components/AccountSettingsModal/AccountSettingsModal.vue';
-import RatingDisplay from '@/components/RatingDisplay.vue';
-import UpdateChecker from '@/components/UpdateChecker.vue'; // 导入更新检查器组件
-import {b50adapter} from '@/util/b50adapter.js'
-import { avatarList as importedAvatarList } from '../../utils/avatarList.js';
+import RatingDisplay from '@/components/RatingDisplay/RatingDisplay.vue';
+import UpdateChecker from '@/components/UpdateChecker/UpdateChecker.vue'; // 导入更新检查器组件
+import {b50adapter} from '@/utils/b50adapter.js'
+import { avatarList as importedAvatarList } from '@/static/data/avatarList.js';
 import {addAPICount,getVersion} from '@/api/myapi.js';
 // 确保导入 uni-popup 组件
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
@@ -421,14 +421,14 @@ const handleSettings = () => {
 
 const handlePlayerRecords = () => {	
   uni.navigateTo({
-    url: '/pages/PlayerRecords/PlayerRecords'
+    url: '/pages/player-records/player-records'
   });
   addAPICount('PlayerRecords')
 };
 
 const handleB50 = () => {
   uni.navigateTo({
-    url: '/pages/maiupdate/maib50'
+    url: '/pages/maib50/maib50'
   });
   addAPICount('MaiB50')
 };

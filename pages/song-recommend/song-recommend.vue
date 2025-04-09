@@ -198,7 +198,7 @@ import { ref, onMounted, computed, watch, inject } from 'vue';
 import { getComprehensiveRecommendations, getComprehensiveRecommendationsByDsRange } from '@/utils/recommendationUtils';
 import { getRecommendedDsByRating } from '@/utils/ratingUtils';
 import SongService from '@/utils/SongService';
-import {getCoverUrl} from '@/util/coverManager.js'
+import {getCoverUrl} from '@/utils/coverManager.js'
 import playerRecordService from '@/utils/PlayerRecordService';
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 
