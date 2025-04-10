@@ -1,6 +1,8 @@
 #index {
 	display: flex;
 	flex-direction: column;
+	justify-self: center;
+	align-self: center;
 	justify-content: center;
 	align-content: center;
 	position: relative;
@@ -115,7 +117,8 @@
 		box-sizing: border-box;
 
 		.section-title {
-			width: calc(90% - 20rpx);
+
+			width: calc(89% - 20rpx);
 			text-align: center;
 			font-size: 36rpx;
 			font-weight: 800;
@@ -131,7 +134,7 @@
 			text-align: left;
 			background: transparent;
 			box-shadow: none;
-			transform: translateX(-20rpx);
+		
 			opacity: 0.7;
 			justify-self: center;
 			.title-content {
@@ -165,15 +168,17 @@
 			}
 			
 			&.has-data {
-				display: block;
+				display: flex;
 				text-align: center;
-				width: calc(95% - 20rpx);
+				margin-bottom: 10rpx;
+				width: calc(88% - 20rpx);
 				background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
 				box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
 				backdrop-filter: blur(10px);
-				transform: translateX(0);
+				transform: translateX(-3rpx);
 				opacity: 1;
 				justify-self: center;
+				justify-content: center;
 				.title-content {
 					transform: translateX(0);
 					
@@ -208,15 +213,25 @@
 		}
 		
 		.rating-container {
+			display: flex;
+		
+			flex-direction:column;
+			justify-self: center;
+			align-self: center;
+			justify-content: center;
+			align-content: center;
+			width: 80%;
 		    background: rgba(255, 255, 255, 0.95);
 		    backdrop-filter: blur(10px);
 		    border-radius: 20rpx;
 		    padding: 32rpx 40rpx;
-		    margin: 0 auto 0rpx auto;
-		    box-sizing: border-box;
+			margin-top: 5rpx;
+			margin-bottom: 10rpx;
+		   transform: translateX(-3rpx);
+		    //box-sizing: border-box;
 		    text-align: center;
 		    transition: all 0.3s ease;
-		    border: 1px solid rgba(255, 255, 255, 0.7);
+		  //  border: 1px solid rgba(255, 255, 255, 0.7);
 		    position: relative;
 		    overflow: hidden;
 		    
@@ -369,9 +384,10 @@
 			row-gap: 4rpx;
 			justify-content:flex-start;
 			align-content:flex-start;
+			transform: translateX(-1rpx);
 			.song-card {
 				position: relative;
-				width: calc(50% - 4rpx);
+				width: calc(50% - 1rpx);
 				margin: 0;
 				background: white;
 				border-radius: 16rpx;

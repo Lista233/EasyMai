@@ -3,12 +3,17 @@
     <view class="header">
       <text class="title">我的收藏</text>
       <view class="header-actions">
+		  <view class="add-btn" @click="showNewFolderDialog">
+		    <text class="add-icon">+</text>
+		  </view>
         <view class="manage-btn" @click="showFolderManageDialog">
           <text class="manage-icon">管理收藏夹️</text>
         </view>
-        <view class="add-btn" @click="showNewFolderDialog">
-          <text class="add-icon">+</text>
-        </view>
+        
+		<view class="manage-btn"  @click="importFavorites">
+		  <text class="manage-icon" >导入收藏夹️</text>
+		</view>
+	
       </view>
     </view>
     
@@ -34,13 +39,16 @@
     <view class="songs-section" v-if="!loading">
       <view v-if="favoriteFolders.length > 0">
         <view v-if="currentSongs.length > 0">
+		<view class="random-song-box">
           <view class="random-song-btn" @click="selectRandomSong">
-         
             <text class="random-text">随机选歌</text>
           </view>
-          
+          <view class="random-song-btn" @click="exportFavorites" >               
+            <text class="random-text" >导出当前收藏夹</text>
+          </view>
+		  </view>
           <view 
-            v-for="(song, index) in currentSongs" 
+            v-for="(song, index) in paginatedSongs" 
             :key="index" 
             class="song-card"
             @click="navigateToDetail(song.id, song.selectedDifficulty)"
@@ -62,6 +70,37 @@
             </view>
             <view class="remove-btn" @click.stop="removeSong(song.id,song.selectedDifficulty)">
               <text class="remove-icon">×</text>
+            </view>
+          </view>
+          
+          <!-- 添加分页控件 -->
+          <view class="pagination" v-if="totalPages > 1">
+            <view 
+              class="pagination-btn prev" 
+              :class="{ disabled: currentPage === 1 }"
+              @click="changePage(currentPage - 1)"
+            >
+              <text class="pagination-icon">‹</text>
+            </view>
+            
+            <view class="pagination-pages">
+              <view 
+                v-for="page in displayedPages" 
+                :key="page" 
+                class="page-item"
+                :class="{ active: currentPage === page }"
+                @click="changePage(page)"
+              >
+                <text>{{ page }}</text>
+              </view>
+            </view>
+            
+            <view 
+              class="pagination-btn next" 
+              :class="{ disabled: currentPage === totalPages }"
+              @click="changePage(currentPage + 1)"
+            >
+              <text class="pagination-icon">›</text>
             </view>
           </view>
         </view>
@@ -193,8 +232,96 @@
             :class="{ 'stop-btn': isRolling, 'play-btn': !isRolling }" 
             @click="toggleRolling"
           >
-            {{ isRolling ? '点击停止' : '再抽一次' }}
+            {{ isRolling ? '点击停止' : '开始抽取' }}
           </button>
+        </view>
+      </view>
+    </uni-popup>
+    
+    <!-- 导出收藏夹弹窗 -->
+    <uni-popup ref="exportPopupRef" type="center">
+      <view class="custom-popup">
+        <view class="popup-header">
+          <text class="title">导出收藏夹</text>
+          <text class="close-btn" @click="closeExportPopup">×</text>
+        </view>
+        <view class="popup-content">
+          <view class="export-info">
+            <text class="folder-title">{{ getCurrentFolderName() }}</text>
+            <text class="folder-desc">共 {{ currentSongs.length }} 首歌曲</text>
+          </view>
+          <text class="export-tip">点击下方按钮，将收藏夹数据复制到剪贴板</text>
+          <view class="export-data-preview" v-if="exportDataString">
+            <text class="preview-text">{{ exportDataString.slice(0, 50) + (exportDataString.length > 50 ? '...' : '') }}</text>
+          </view>
+        </view>
+        <view class="popup-footer">
+          <button class="action-btn export-btn" @click="copyExportData">复制数据</button>
+        </view>
+      </view>
+    </uni-popup>
+
+    <!-- 导入收藏夹弹窗 -->
+    <uni-popup ref="importPopupRef" type="center">
+      <view class="custom-popup">
+        <view class="popup-header">
+          <text class="title">导入收藏夹</text>
+          <text class="close-btn" @click="closeImportPopup">×</text>
+        </view>
+        <view class="popup-content">
+          <text class="import-tip">请粘贴之前导出的收藏夹数据：</text>
+          <textarea 
+            class="import-textarea" 
+            v-model="importDataString" 
+            placeholder="在此粘贴导出的JSON数据..." 
+            auto-height 
+            maxlength="-1"
+          />
+        </view>
+        <view class="popup-footer">
+          <button class="action-btn cancel-btn" @click="closeImportPopup">取消</button>
+          <button class="action-btn import-btn" @click="confirmImport" :disabled="!importDataString">导入</button>
+        </view>
+      </view>
+    </uni-popup>
+    
+    <!-- 编辑收藏夹弹窗 -->
+    <uni-popup ref="editFolderPopupRef" type="center">
+      <view class="edit-folder-popup">
+        <view class="popup-header">
+          <text class="title">重命名收藏夹</text>
+          <text class="close-btn" @click="closeEditFolderDialog">×</text>
+        </view>
+        <view class="popup-content">
+          <input 
+            type="text" 
+            v-model="editFolderName" 
+            placeholder="输入收藏夹新名称" 
+            class="folder-input"
+            maxlength="20"
+          />
+        </view>
+        <view class="popup-footer">
+          <button class="cancel-btn" @click="closeEditFolderDialog">取消</button>
+          <button class="confirm-btn" @click="confirmEditFolder">确认</button>
+        </view>
+      </view>
+    </uni-popup>
+    
+    <!-- 删除确认弹窗 -->
+    <uni-popup ref="deleteConfirmPopupRef" type="center">
+      <view class="delete-confirm-popup">
+        <view class="popup-header">
+          <text class="title">确认删除</text>
+          <text class="close-btn" @click="closeDeleteConfirmDialog">×</text>
+        </view>
+        <view class="popup-content">
+          <text class="confirm-message">删除收藏夹将同时删除其中的所有收藏</text>
+          <text class="warning-text">此操作无法撤销，确定要删除吗？</text>
+        </view>
+        <view class="popup-footer">
+          <button class="cancel-btn" @click="closeDeleteConfirmDialog">取消</button>
+          <button class="confirm-btn" @click="confirmDeleteFolder">删除</button>
         </view>
       </view>
     </uni-popup>
@@ -222,6 +349,10 @@ const newFolderName = ref('');
 const currentFolderId = ref('');
 const currentSongs = ref([]);
 
+// 添加分页相关变量
+const currentPage = ref(1);
+const itemsPerPage = ref(6); // 每页显示10首歌曲
+
 // 随机选歌相关变量
 const randomSongPopupRef = ref(null);
 const isRolling = ref(false);
@@ -233,6 +364,50 @@ const rollingSpeed = ref(100); // 初始滚动速度(毫秒)
 const maxRollingTime = 5000; // 最大滚动时间(毫秒)
 const rollingStartTime = ref(0);
 const usedRandomIndices = ref({}); // 改为对象，按收藏夹ID存储已使用的索引
+
+// 添加导入导出弹窗的引用
+const exportPopupRef = ref(null);
+const importPopupRef = ref(null);
+const exportDataString = ref('');
+const importDataString = ref('');
+
+// 添加编辑收藏夹相关变量
+const editFolderPopupRef = ref(null);
+const editFolderName = ref('');
+const editingFolderId = ref('');
+
+// 添加删除确认相关变量
+const deleteConfirmPopupRef = ref(null);
+const deletingFolderId = ref('');
+
+// 计算总页数
+const totalPages = computed(() => {
+  return Math.ceil(currentSongs.value.length / itemsPerPage.value);
+});
+
+// 计算当前页显示的歌曲
+const paginatedSongs = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+  const endIndex = startIndex + itemsPerPage.value;
+  return currentSongs.value.slice(startIndex, endIndex);
+});
+
+// 计算要显示的页码范围（显示最多5个页码）
+const displayedPages = computed(() => {
+  const pages = [];
+  let startPage = Math.max(currentPage.value - 2, 1);
+  let endPage = Math.min(startPage + 4, totalPages.value);
+  
+  if (endPage - startPage < 4) {
+    startPage = Math.max(endPage - 4, 1);
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+});
 
 // 格式化曲风
 const formatGenre = (genre) => {
@@ -279,6 +454,13 @@ const versionMap = {
 // 格式化版本显示
 const formatVersion = (version) => {
   return versionMap[version] || version;
+};
+
+// 切换页码
+const changePage = (page) => {
+  if (page < 1 || page > totalPages.value) return;
+  currentPage.value = page;
+  
 };
 
 // 初始化数据
@@ -367,6 +549,8 @@ const selectFolder = (folderId) => {
   
   currentFolderId.value = folderId;
   loadFavoriteSongs();
+  // 重置页码为第一页
+  currentPage.value = 1;
   
   // 切换收藏夹时重置随机选歌状态
   if (!usedRandomIndices.value[folderId]) {
@@ -620,98 +804,63 @@ const closeFolderManageDialog = () => {
   }
 };
 
-// 删除收藏夹
-const deleteFolder = (folderId) => {
-  uni.showModal({
-    title: '确认删除',
-    content: '删除收藏夹将同时删除其中的所有收藏，确定要删除吗？',
-    success: (res) => {
-      if (res.confirm) {
-        try {
-          // 删除收藏夹
-          let folders = uni.getStorageSync('favoriteFolders') || [];
-          folders = folders.filter(folder => folder.id !== folderId);
-          uni.setStorageSync('favoriteFolders', folders);
-          
-          // 删除收藏夹中的歌曲
-          const allFavorites = uni.getStorageSync('favorites') || {};
-          delete allFavorites[folderId];
-          uni.setStorageSync('favorites', allFavorites);
-          
-          // 刷新列表
-          loadFavoriteFolders();
-          
-          // 如果删除的是当前选中的收藏夹，则选择第一个收藏夹
-          if (currentFolderId.value === folderId) {
-            if (folders.length > 0) {
-              selectFolder(folders[0].id);
-            } else {
-              currentFolderId.value = '';
-              currentSongs.value = [];
-            }
-          }
-          
-          // 关闭弹窗
-          closeFolderManageDialog();
-          
-          uni.showToast({
-            title: '删除成功',
-            icon: 'success'
-          });
-        } catch (e) {
-          console.error('删除收藏夹失败:', e);
-          uni.showToast({
-            title: '删除失败',
-            icon: 'none'
-          });
-        }
-      }
-    }
-  });
+// 打开编辑收藏夹弹窗
+const showEditFolderDialog = (folder) => {
+  editingFolderId.value = folder.id;
+  editFolderName.value = folder.name;
+  
+  if (editFolderPopupRef.value) {
+    editFolderPopupRef.value.open();
+  }
 };
 
-// 编辑收藏夹
-const showEditFolderDialog = (folder) => {
-  // 这里可以添加编辑收藏夹的逻辑
-  uni.showModal({
-    title: '重命名收藏夹',
-    editable: true,
-    placeholderText: '请输入新名称',
-    content: folder.name,
-    success: (res) => {
-      if (res.confirm && res.content.trim()) {
-        try {
-          // 更新收藏夹名称
-          const folders = uni.getStorageSync('favoriteFolders') || [];
-          const updatedFolders = folders.map(f => {
-            if (f.id === folder.id) {
-              return { ...f, name: res.content.trim() };
-            }
-            return f;
-          });
-          
-          uni.setStorageSync('favoriteFolders', updatedFolders);
-          
-          // 刷新列表
-          loadFavoriteFolders();
-          
-          // 关闭弹窗
-          closeFolderManageDialog();
-          
-          uni.showToast({
-            title: '重命名成功',
-            icon: 'success'
-          });
-        } catch (e) {
-          console.error('重命名收藏夹失败:', e);
-          uni.showToast({
-            title: '重命名失败',
-            icon: 'none'
-          });
-        }
+// 关闭编辑收藏夹弹窗
+const closeEditFolderDialog = () => {
+  if (editFolderPopupRef.value) {
+    editFolderPopupRef.value.close();
+  }
+};
+
+// 确认编辑收藏夹
+const confirmEditFolder = () => {
+  if (!editFolderName.value.trim()) {
+    uni.showToast({
+      title: '请输入收藏夹名称',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  try {
+    // 更新收藏夹名称
+    const folders = uni.getStorageSync('favoriteFolders') || [];
+    const updatedFolders = folders.map(f => {
+      if (f.id === editingFolderId.value) {
+        return { ...f, name: editFolderName.value.trim() };
       }
-    }
-  });
+      return f;
+    });
+    
+    uni.setStorageSync('favoriteFolders', updatedFolders);
+    
+    // 刷新列表
+    loadFavoriteFolders();
+    
+    // 关闭弹窗
+    closeEditFolderDialog();
+    closeFolderManageDialog();
+    
+    uni.showToast({
+      title: '重命名成功',
+      icon: 'success'
+    });
+  } catch (e) {
+    console.error('重命名收藏夹失败:', e);
+    uni.showToast({
+      title: '重命名失败',
+      icon: 'none'
+    });
+  }
 };
 
 // 获取歌曲封面
@@ -864,8 +1013,283 @@ const getCharter = (song) => {
   return chart?.charter || '';
 };
 
+// 获取当前收藏夹名称
+const getCurrentFolderName = () => {
+  const currentFolder = favoriteFolders.value.find(folder => folder.id === currentFolderId.value);
+  return currentFolder ? currentFolder.name : '未选择收藏夹';
+};
 
+// 打开导出弹窗
+const exportFavorites = () => {
+  try {
+    // 确保有选中的收藏夹
+    if (!currentFolderId.value) {
+      uni.showToast({
+        title: '请先选择一个收藏夹',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 获取当前选中的收藏夹信息
+    const currentFolder = favoriteFolders.value.find(folder => folder.id === currentFolderId.value);
+    if (!currentFolder) {
+      uni.showToast({
+        title: '收藏夹信息获取失败',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 获取当前收藏夹中的歌曲
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    const currentSongList = allFavorites[currentFolderId.value] || [];
+    
+    // 极简数据结构：
+    // n: 收藏夹名称
+    // s: 歌曲数组，每首歌是一个包含 i(id) 和 d(difficulty) 的对象
+    const exportData = {
+      n: currentFolder.name,
+      s: currentSongList.map(song => ({
+        i: song.id,
+        d: song.difficulty
+      }))
+    };
+    
+    // 转为JSON字符串 - 去掉所有不必要的空格
+    exportDataString.value = JSON.stringify(exportData);
+    
+    // 打开导出弹窗
+    if (exportPopupRef.value) {
+      exportPopupRef.value.open();
+    }
 
+  } catch (error) {
+    uni.showToast({
+      title: '导出失败: ' + error.message,
+      icon: 'none'
+    });
+  }
+};
+
+// 复制导出数据
+const copyExportData = () => {
+  if (!exportDataString.value) {
+    uni.showToast({
+      title: '没有可复制的数据',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  uni.setClipboardData({
+    data: exportDataString.value,
+    success: () => {
+      uni.showToast({
+        title: '已复制到剪贴板',
+        icon: 'success'
+      });
+      // 关闭弹窗
+      closeExportPopup();
+    }
+  });
+};
+
+// 关闭导出弹窗
+const closeExportPopup = () => {
+  if (exportPopupRef.value) {
+    exportPopupRef.value.close();
+  }
+};
+
+// 打开导入弹窗
+const importFavorites = () => {
+  // 清空上次导入的数据
+  importDataString.value = '';
+  
+  // 打开导入弹窗
+  if (importPopupRef.value) {
+    importPopupRef.value.open();
+  }
+};
+
+// 确认导入
+const confirmImport = () => {
+  if (!importDataString.value) {
+    uni.showToast({
+      title: '请先粘贴导入数据',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  // 处理导入数据
+  processImportData(importDataString.value);
+  
+  // 关闭弹窗
+  closeImportPopup();
+};
+
+// 关闭导入弹窗
+const closeImportPopup = () => {
+  if (importPopupRef.value) {
+    importPopupRef.value.close();
+  }
+};
+
+// 处理导入的数据
+const processImportData = (data) => {
+  try {
+    const importedData = JSON.parse(data);
+    
+    // 验证导入的数据结构
+    if (!validateImportedData(importedData)) {
+      uni.showToast({
+        title: '无效的收藏夹数据格式',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 创建新收藏夹 - 适配简化的字段名
+    const folderName = importedData.n || importedData.name || '导入的收藏夹';
+    const newFolderId = 'imported-' + Date.now().toString();
+    
+    // 获取当前所有收藏夹
+    const folders = uni.getStorageSync('favoriteFolders') || [];
+    
+    // 添加新收藏夹
+    const songs = importedData.s || importedData.songs || [];
+    const newFolder = {
+      id: newFolderId,
+      name: folderName,
+      count: songs.length
+    };
+    folders.push(newFolder);
+    
+    // 保存更新后的收藏夹列表
+    uni.setStorageSync('favoriteFolders', folders);
+    
+    // 转换并保存歌曲数据
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    
+    // 转换导入的简化歌曲数据为完整格式
+    // 适配多种可能的字段名
+    const songList = songs.map(song => ({
+      id: song.i || song.id || '',
+      difficulty: song.d || song.difficulty || 3
+    })).filter(song => song.id); // 过滤掉没有id的歌曲
+    
+    // 将歌曲列表保存到新收藏夹
+    allFavorites[newFolderId] = songList;
+    uni.setStorageSync('favorites', allFavorites);
+    
+    // 更新收藏夹列表
+    favoriteFolders.value = folders;
+    
+    // 自动选择新导入的收藏夹
+    selectFolder(newFolderId);
+    
+    uni.showToast({
+      title: '导入成功',
+      icon: 'success'
+    });
+  } catch (error) {
+    console.error('导入收藏夹错误:', error);
+    uni.showToast({
+      title: '导入失败：' + error.message,
+      icon: 'none'
+    });
+  }
+};
+
+// 验证导入的数据结构 - 支持简化的字段名
+const validateImportedData = (data) => {
+  // 基本结构检查
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+  
+  // 检查是否包含name字段(n)
+  if (!(data.n || data.name) || (typeof data.n !== 'string' && typeof data.name !== 'string')) {
+    return false;
+  }
+  
+  // 检查songs是否为数组(s)
+  const songs = data.s || data.songs;
+  if (!Array.isArray(songs)) {
+    return false;
+  }
+  
+  // 检查歌曲格式是否正确
+  for (const song of songs) {
+    // 检查是否有id(i)字段
+    if (!(song.i || song.id)) {
+      return false;
+    }
+  }
+  
+  return true;
+};
+
+// 删除收藏夹
+const deleteFolder = (folderId) => {
+  deletingFolderId.value = folderId;
+  
+  if (deleteConfirmPopupRef.value) {
+    deleteConfirmPopupRef.value.open();
+  }
+};
+
+// 关闭删除确认弹窗
+const closeDeleteConfirmDialog = () => {
+  if (deleteConfirmPopupRef.value) {
+    deleteConfirmPopupRef.value.close();
+  }
+};
+
+// 确认删除收藏夹
+const confirmDeleteFolder = () => {
+  try {
+    // 删除收藏夹
+    let folders = uni.getStorageSync('favoriteFolders') || [];
+    folders = folders.filter(folder => folder.id !== deletingFolderId.value);
+    uni.setStorageSync('favoriteFolders', folders);
+    
+    // 删除收藏夹中的歌曲
+    const allFavorites = uni.getStorageSync('favorites') || {};
+    delete allFavorites[deletingFolderId.value];
+    uni.setStorageSync('favorites', allFavorites);
+    
+    // 刷新列表
+    loadFavoriteFolders();
+    
+    // 如果删除的是当前选中的收藏夹，则选择第一个收藏夹
+    if (currentFolderId.value === deletingFolderId.value) {
+      if (folders.length > 0) {
+        selectFolder(folders[0].id);
+      } else {
+        currentFolderId.value = '';
+        currentSongs.value = [];
+      }
+    }
+    
+    // 关闭弹窗
+    closeDeleteConfirmDialog();
+    closeFolderManageDialog();
+    
+    uni.showToast({
+      title: '删除成功',
+      icon: 'success'
+    });
+  } catch (e) {
+    console.error('删除收藏夹失败:', e);
+    uni.showToast({
+      title: '删除失败',
+      icon: 'none'
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped>
@@ -877,557 +1301,155 @@ const getCharter = (song) => {
   background-color: #f8fafc;
   min-height: 100vh;
   .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30rpx;
-  
-  .title {
-    font-size: 40rpx;
-    font-weight: 700;
-    color: #1e293b;
-  }
-  
-  .header-actions {
     display: flex;
-    gap: 20rpx;
-  }
-  
-  .manage-btn {
-    width: 200rpx;
-    height: 60rpx;
-    display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    background-color: #6366f1;
-    border-radius: 30rpx;
+    margin-bottom: 30rpx;
     
-    .manage-icon, .add-icon {
-      font-size: 28rpx;
-      color: white;
-    }
-  }
-  .add-btn {
-     width: 60rpx;
-     height: 60rpx;
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     background-color: #6366f1;
-     border-radius: 30rpx;
-     
-     .manage-icon, .add-icon {
-       font-size: 32rpx;
-       color: white;
-     }
-   }
-}
-
-.folder-tabs {
-  margin-bottom: 30rpx;
-  max-height: 100rpx;
-  
-  .folder-scroll {
-    width: 100%;
-    height: 100%;
-  }
-  
-  .folder-tabs-inner {
-    display: flex;
-    flex-direction: row;
-    padding: 10rpx;
-    white-space: nowrap;
-    height: 80rpx;
-    min-width: 100%;
-  }
-  
-  .folder-tab {
-    display: inline-flex;
-    align-items: center;
-    height: 80rpx;
-    padding: 0 30rpx;
-    margin-right: 20rpx;
-    background-color: #ffffff;
-    border-radius: 30rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-    
-    &.active {
-      background-color: #6366f1;
-      
-      .folder-name, .folder-count {
-        color: white;
-      }
-    }
-    
-    .folder-name {
-      font-size: 28rpx;
-      font-weight: 600;
-      color: #334155;
-    }
-    
-    .folder-count {
-      font-size: 24rpx;
-      color: #64748b;
-      margin-left: 8rpx;
-    }
-  }
-}
-
-.songs-section {
-  margin-bottom: 30rpx;
-}
-
-.song-card {
-  display: flex;
-  align-items: center;
-  padding: 20rpx;
-  background-color: #ffffff;
-  border-radius: 16rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  
-  &:active {
-    transform: scale(0.98);
-    opacity: 0.9;
-  }
-  
-  .song-cover {
-    position: relative;
-    width: 120rpx;
-    height: 120rpx;
-    border-radius: 12rpx;
-    overflow: hidden;
-    margin-right: 20rpx;
-    
-    .cover-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .difficulty-badge {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 4rpx 0;
-      font-size: 20rpx;
+    .title {
+      font-size: 40rpx;
       font-weight: 700;
-      text-align: center;
-      color: white;
-      background-color: rgba(0, 0, 0, 0.6);
-      
-      &.basic {
-        background-color: rgb(83, 206, 134);
-      }
-      
-      &.advanced {
-         background-color:  rgb(227, 206, 42);
-      }
-      
-      &.expert {
-        background-color: rgba(225, 71, 87, 1);
-      }
-      
-      &.master {
-        background-color: rgba(156, 136, 255, 1);
-      }
-      
-      &.remaster {
-        background-color: rgb(225, 181, 247);
-      }
-    }
-  }
-  
-  .song-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8rpx;
-    overflow: hidden;
-    
-    .song-title {
-      font-size: 30rpx;
-      font-weight: 500;
-      color: #334155;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      position: relative;
-      padding-left: 20rpx;
-      
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 8rpx;
-        height: 30rpx;
-        background-color: #6366f1;
-        border-radius: 4rpx;
-      }
+      color: #1e293b;
     }
     
-    .song-details {
+    .header-actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10rpx;
+      gap: 20rpx;
+    }
+    
+    .manage-btn {
+      width: 200rpx;
+      height: 60rpx;
+      display: flex;
       justify-content: center;
       align-items: center;
-      .song-artist, .song-version, .song-genre, .song-bpm {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24rpx;
-        color: #64748b;
-        padding: 4rpx 12rpx;
-        border-radius: 6rpx;
-        white-space: nowrap;
-      }
+      background-color: #6366f1;
+      border-radius: 30rpx;
       
-      .song-version {
-        background-color: #e0f2fe;
-        color: #0369a1;
-      }
-      
-      .song-artist {
-        background-color: #fdfbf0;
-        color: #f1a25d;
-      }
-      
-      .song-genre {
-        background-color: #f0fdf4;
-        color: #16a34a;
-      }
-      
-      .song-bpm {
-        background-color: #f4f0fd;
-        color: #6e5df1;
-      }
-    }
-  }
-  
-  .remove-btn {
-    width: 60rpx;
-    height: 60rpx;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    .remove-icon {
-      font-size: 40rpx;
-      color: #94a3b8;
-    }
-  }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80rpx 0;
-  
-  .empty-icon {
-    width: 200rpx;
-    height: 200rpx;
-    margin-bottom: 30rpx;
-    opacity: 0.7;
-  }
-  
-  .empty-text {
-    font-size: 28rpx;
-    color: #94a3b8;
-    margin-bottom: 40rpx;
-  }
-  
-  .create-folder-btn, .browse-btn {
-    background-color: #6366f1;
-    color: white;
-    font-size: 28rpx;
-    padding: 20rpx 40rpx;
-    border-radius: 10rpx;
-    border: none;
-  }
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300rpx;
-  
-  .loading-text {
-    font-size: 28rpx;
-    color: #94a3b8;
-  }
-}
-
-.folder-popup {
-  width: 600rpx;
-  background: white;
-  border-radius: 20rpx;
-  overflow: hidden;
-  
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24rpx;
-    border-bottom: 1px solid #f0f0f0;
-    
-    .title {
-      font-size: 32rpx;
-      font-weight: 600;
-      color: #333;
-    }
-    
-    .close-btn {
-      font-size: 40rpx;
-      color: #999;
-      padding: 0 10rpx;
-    }
-  }
-  
-  .popup-content {
-    padding: 30rpx;
-    
-    .folder-input {
-      width: 100%;
-      height: 80rpx;
-      border: 1px solid #d1d5db;
-      border-radius: 8rpx;
-      padding: 0 20rpx;
-      font-size: 28rpx;
-      box-sizing: border-box;
-    }
-  }
-  
-  .popup-footer {
-    display: flex;
-    border-top: 1px solid #f0f0f0;
-    
-    button {
-      flex: 1;
-      height: 90rpx;
-      line-height: 90rpx;
-      text-align: center;
-      font-size: 30rpx;
-      border: none;
-      border-radius: 0;
-      
-      &.cancel-btn {
-        background-color: #f8f8f8;
-        color: #666;
-      }
-      
-      &.confirm-btn {
-        background-color: #6366f1;
+      .manage-icon, .add-icon {
+        font-size: 28rpx;
         color: white;
       }
     }
+    .add-btn {
+       width: 60rpx;
+       height: 60rpx;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       background-color: #6366f1;
+       border-radius: 30rpx;
+       
+       .manage-icon, .add-icon {
+         font-size: 32rpx;
+         color: white;
+       }
+     }
   }
-}
 
-.folder-manage-popup {
-  background: white;
-  border-top-left-radius: 20rpx;
-  border-top-right-radius: 20rpx;
-  overflow: hidden;
-  
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24rpx;
-    border-bottom: 1px solid #f0f0f0;
+  .folder-tabs {
+    margin-bottom: 30rpx;
+    max-height: 100rpx;
     
-    .title {
-      font-size: 32rpx;
-      font-weight: 600;
-      color: #333;
+    .folder-scroll {
+      width: 100%;
+      height: 100%;
     }
     
-    .close-btn {
-      font-size: 40rpx;
-      color: #999;
-      padding: 0 10rpx;
-    }
-  }
-  
-  .folder-list {
-    max-height: 600rpx;
-    overflow-y: auto;
-    
-    .folder-item {
+    .folder-tabs-inner {
       display: flex;
-      justify-content: space-between;
+      flex-direction: row;
+      padding: 10rpx;
+      white-space: nowrap;
+      height: 80rpx;
+      min-width: 100%;
+    }
+    
+    .folder-tab {
+      display: inline-flex;
       align-items: center;
-      padding: 30rpx;
-      border-bottom: 1px solid #f5f5f5;
+      height: 80rpx;
+      padding: 0 30rpx;
+      margin-right: 20rpx;
+      background-color: #ffffff;
+      border-radius: 30rpx;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      
+      &.active {
+        background-color: #6366f1;
+        
+        .folder-name, .folder-count {
+          color: white;
+        }
+      }
       
       .folder-name {
         font-size: 28rpx;
-        color: #333;
+        font-weight: 600;
+        color: #334155;
       }
       
-      .folder-actions {
-        display: flex;
-        gap: 20rpx;
-        
-        .edit-btn, .delete-btn {
-          font-size: 24rpx;
-          padding: 8rpx 16rpx;
-          border-radius: 6rpx;
-        }
-        
-        .edit-btn {
-          color: #6366f1;
-          background-color: #eff6ff;
-        }
-        
-        .delete-btn {
-          color: #ef4444;
-          background-color: #fef2f2;
-        }
+      .folder-count {
+        font-size: 24rpx;
+        color: #64748b;
+        margin-left: 8rpx;
       }
     }
   }
-}
 
-/* 随机歌曲按钮样式 */
-.random-song-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #6366f1;
-  padding: 16rpx;
-  border-radius: 12rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.random-icon {
-  font-size: 36rpx;
-  margin-right: 10rpx;
-}
-
-.random-text {
-  color: #ffffff;
-  font-size: 28rpx;
-  font-weight: bold;
-}
-
-/* 随机选歌弹窗样式 - 优化版 */
-.random-song-popup {
-  width: 600rpx;
-  background-color: #ffffff;
-  border-radius: 16rpx;
-  overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
-  
-  .popup-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24rpx 30rpx;
-    border-bottom: 1px solid #f0f0f0;
-    background-color: #f9f9f9;
-    
-    .title {
-      font-size: 32rpx;
-      font-weight: bold;
-      color: #333;
-    }
-    
-    .close-btn {
-      font-size: 40rpx;
-      color: #999;
-      padding: 0 10rpx;
-    }
+  .songs-section {
+    margin-bottom: 30rpx;
   }
-  
-  .popup-content {
-    padding: 30rpx;
+
+  .song-card {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    padding: 20rpx;
+    background-color: #ffffff;
+    border-radius: 16rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
     
-    .cover-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20rpx;
+    &:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+    
+    .song-cover {
+      position: relative;
+      width: 120rpx;
+      height: 120rpx;
+      border-radius: 12rpx;
+      overflow: hidden;
+      margin-right: 20rpx;
       
-      .cover-container {
-        width: 300rpx;
-        height: 300rpx;
-        border-radius: 12rpx;
-        overflow: hidden;
-        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-        border: 4rpx solid #f0f0f0;
-        margin-bottom: 10rpx; /* 减少封面与难度标识的间距 */
-        
-        &.clickable {
-          cursor: pointer;
-          position: relative;
-          
-          &::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            transition: opacity 0.2s;
-          }
-          
-          &:hover::after {
-            opacity: 1;
-          }
-        }
-        
-        .rolling-cover, .selected-cover {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        
-        .placeholder-cover {
-          width: 100%;
-          height: 100%;
-          background-color: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #999;
-        }
+      .cover-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
       
       .difficulty-badge {
-        width: 260rpx; /* 固定宽度，接近封面宽度 */
-        padding: 10rpx 0; /* 增加高度 */
-        border-radius: 10rpx; /* 减小圆角 */
-        font-size: 28rpx; /* 增大字体 */
-        font-weight: bold;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 4rpx 0;
+        font-size: 20rpx;
+        font-weight: 700;
         text-align: center;
         color: white;
-        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+        background-color: rgba(0, 0, 0, 0.6);
         
         &.basic {
           background-color: rgb(83, 206, 134);
         }
         
         &.advanced {
-          background-color: rgb(227, 206, 42);
-          color: #333;
+           background-color:  rgb(227, 206, 42);
         }
         
         &.expert {
@@ -1439,115 +1461,281 @@ const getCharter = (song) => {
         }
         
         &.remaster {
-          background-color: rgb(236, 199, 254);
-        
+          background-color: rgb(225, 181, 247);
         }
       }
     }
     
     .song-info {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      width: 100%;
-      background-color: #f9f9f9;
-      padding: 16rpx;
-      border-radius: 12rpx;
+      gap: 8rpx;
+      overflow: hidden;
       
       .song-title {
-        font-size: 36rpx; /* 增大标题字体 */
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 8rpx;
-        text-align: center;
-        width: 100%;
+        font-size: 30rpx;
+        font-weight: 500;
+        color: #334155;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
-        padding-bottom: 12rpx; /* 为分隔线留出空间 */
-        position: relative; /* 为伪元素定位 */
+        position: relative;
+        padding-left: 20rpx;
         
-        &::after { /* 添加标题下方分隔线 */
+        &::before {
           content: '';
           position: absolute;
-          bottom: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 80%;
-          height: 1px;
-          background-color: #e0e0e0;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 8rpx;
+          height: 30rpx;
+          background-color: #6366f1;
+          border-radius: 4rpx;
         }
       }
       
-      .song-artist {
-        font-size: 24rpx;
-        color: #666;
-        margin-top: 8rpx; /* 添加与分隔线的间距 */
-        margin-bottom: 12rpx;
-        text-align: center;
-        width: 100%;
-      }
-      
-      /* 添加BPM和谱师信息样式 */
       .song-details {
         display: flex;
-        justify-content: center;
         flex-wrap: wrap;
         gap: 10rpx;
-        margin-top: 4rpx;
-        width: 100%;
-        
-        .bpm-info, .charter-info {
-          font-size: 22rpx;
-          color: #666;
-          background-color: #ffffff;
+        justify-content: center;
+        align-items: center;
+        .song-artist, .song-version, .song-genre, .song-bpm {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 24rpx;
+          color: #64748b;
           padding: 4rpx 12rpx;
           border-radius: 6rpx;
-          border: 1px solid #eaeaea;
+          white-space: nowrap;
+        }
+        
+        .song-version {
+          background-color: #e0f2fe;
+          color: #0369a1;
+        }
+        
+        .song-artist {
+          background-color: #fdfbf0;
+          color: #f1a25d;
+        }
+        
+        .song-genre {
+          background-color: #f0fdf4;
+          color: #16a34a;
+        }
+        
+        .song-bpm {
+          background-color: #f4f0fd;
+          color: #6e5df1;
         }
       }
     }
     
-    .rolling-tip {
-      margin-top: 20rpx;
-      font-size: 28rpx;
-      color: #666;
-      background-color: #f5f5f5;
-      padding: 8rpx 16rpx;
-      border-radius: 8rpx;
+    .remove-btn {
+      width: 60rpx;
+      height: 60rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      .remove-icon {
+        font-size: 40rpx;
+        color: #94a3b8;
+      }
     }
   }
-  
-  .popup-footer {
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80rpx 0;
+    
+    .empty-icon {
+      width: 200rpx;
+      height: 200rpx;
+      margin-bottom: 30rpx;
+      opacity: 0.7;
+    }
+    
+    .empty-text {
+      font-size: 28rpx;
+      color: #94a3b8;
+      margin-bottom: 40rpx;
+    }
+    
+    .create-folder-btn, .browse-btn {
+      background-color: #6366f1;
+      color: white;
+      font-size: 28rpx;
+      padding: 20rpx 40rpx;
+      border-radius: 10rpx;
+      border: none;
+    }
+  }
+
+  .loading-container {
     display: flex;
     justify-content: center;
-    padding: 24rpx 30rpx;
-    border-top: 1px solid #f0f0f0;
-    gap: 20rpx;
-    background-color: #f9f9f9;
+    align-items: center;
+    height: 300rpx;
     
-    .action-btn {
-      flex: 1;
-      height: 80rpx;
-      line-height: 80rpx;
-      text-align: center;
-      border-radius: 40rpx;
+    .loading-text {
       font-size: 28rpx;
-      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+      color: #94a3b8;
+    }
+  }
+
+  .folder-popup, .edit-folder-popup, .delete-confirm-popup {
+    width: 600rpx;
+    background: white;
+    border-radius: 20rpx;
+    overflow: hidden;
+    
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24rpx;
+      border-bottom: 1px solid #f0f0f0;
       
-      &.stop-btn {
-        background-color: #ff6b6b;
-        color: white;
+      .title {
+        font-size: 32rpx;
+        font-weight: 600;
+        color: #333;
       }
       
-      &.play-btn {
-        background-color: #6366f1;
-        color: white;
+      .close-btn {
+        font-size: 40rpx;
+        color: #999;
+        padding: 0 10rpx;
+      }
+    }
+    
+    .popup-content {
+      padding: 30rpx;
+      
+      .folder-input {
+        width: 100%;
+        height: 80rpx;
+        border: 1px solid #d1d5db;
+        border-radius: 8rpx;
+        padding: 0 20rpx;
+        font-size: 28rpx;
+        box-sizing: border-box;
+      }
+    }
+    
+    .popup-footer {
+      display: flex;
+      border-top: 1px solid #f0f0f0;
+      
+      button {
+        flex: 1;
+        height: 90rpx;
+        line-height: 90rpx;
+        text-align: center;
+        font-size: 30rpx;
+        border: none;
+        border-radius: 0;
+        
+        &.cancel-btn {
+          background-color: #f8f8f8;
+          color: #666;
+        }
+        
+        &.confirm-btn {
+          background-color: #6366f1;
+          color: white;
+        }
+      }
+    }
+  }
+
+  .random-song-box{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left:10rpx;
+    padding-right:10rpx ;
+    gap:10rpx;
+    .random-song-btn{flex:1;}
+  }
+  
+  .random-song-btn {
+	.random-text{color: white;}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #6366f1;
+    padding: 16rpx;
+    padding-top: 20rpx;
+    padding-bottom: 20rpx;
+    border-radius: 12rpx;
+    margin-bottom: 20rpx;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 分页样式 */
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30rpx;
+    margin-bottom: 30rpx;
+    
+    .pagination-btn {
+      width: 70rpx;
+      height: 70rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      
+      &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      .pagination-icon {
+        font-size: 36rpx;
+        color: #6366f1;
+        font-weight: bold;
+      }
+    }
+    
+    .pagination-pages {
+      display: flex;
+      margin: 0 20rpx;
+      
+      .page-item {
+        width: 70rpx;
+        height: 70rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #ffffff;
+        border-radius: 50%;
+        margin: 0 8rpx;
+        font-size: 28rpx;
+        color: #333;
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+        
+        &.active {
+          background-color: #6366f1;
+          color: white;
+        }
       }
     }
   }
 }
-}
-
-
 </style> 

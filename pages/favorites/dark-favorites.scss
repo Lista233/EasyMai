@@ -382,26 +382,198 @@
         }
       }
     }
-  }
-  
-  .add-folder-btn {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
-    
-    &:active {
-      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+    .custom-popup {
+      background-color: $dark-card-bg;
+      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+      border: 1px solid $dark-card-border;
+      
+      .popup-header {
+        background-color: $dark-element-bg;
+        border-bottom: 1px solid $dark-card-border;
+        
+        .title {
+          color: $dark-text-primary;
+        }
+        
+        .close-btn {
+          color: $dark-text-secondary;
+          
+          &:active {
+            background-color: $dark-element-active-bg;
+          }
+        }
+      }
+      
+      .popup-content {
+        padding: 30rpx;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        
+        .export-info {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 20rpx;
+          width: 100%;
+          
+          .folder-title {
+            font-size: 36rpx;
+            font-weight: bold;
+            color: $dark-text-primary;
+            margin-bottom: 8rpx;
+            text-align: center;
+          }
+          
+          .folder-desc {
+            font-size: 24rpx;
+            color: $dark-text-secondary;
+            text-align: center;
+          }
+        }
+        
+        .export-tip, .import-tip {
+          font-size: 28rpx;
+          color: $dark-text-hint;
+          margin-bottom: 20rpx;
+          text-align: center;
+        }
+        
+        .export-data-preview {
+          width: 100%;
+          padding: 16rpx;
+          background-color: $dark-element-bg;
+          border-radius: 8rpx;
+          margin-top: 10rpx;
+          border: 1px solid $dark-card-border;
+          
+          .preview-text {
+            font-size: 24rpx;
+            color: $dark-text-secondary;
+            font-family: monospace;
+            word-break: break-all;
+          }
+        }
+        
+        .import-textarea {
+          width: 100%;
+          min-height: 240rpx;
+          background-color: $dark-element-bg;
+          border-radius: 8rpx;
+          padding: 16rpx;
+          font-size: 24rpx;
+          color: $dark-text-primary;
+          border: 1px solid $dark-card-border;
+          
+          &::placeholder {
+            color: $dark-text-hint;
+          }
+          
+          &:focus {
+            border-color: $dark-primary-button-border;
+            background-color: $dark-element-active-bg;
+          }
+        }
+      }
+      
+      .popup-footer {
+        display: flex;
+        justify-content: center;
+        padding: 24rpx 30rpx;
+        border-top: 1px solid $dark-card-border;
+        gap: 20rpx;
+        background-color: $dark-element-bg;
+        
+        .action-btn {
+         flex: 1;
+         height: 80rpx;
+         line-height: 80rpx;
+         text-align: center;
+         border-radius: 40rpx;
+         font-size: 28rpx;
+         box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+        background-color: $dark-primary-button-bg;
+        color: $dark-primary-button-text;
+        border: 1px solid $dark-primary-button-border;
+          
+          &.cancel-btn {
+            background-color: $dark-secondary-button-bg;
+            color: $dark-secondary-button-text;
+            border: 1px solid $dark-secondary-button-border;
+            
+            &:active {
+              background-color: $dark-secondary-button-hover-bg;
+              border-color: $dark-secondary-button-hover-border;
+            }
+          }
+          
+          &:disabled {
+            background-color: $dark-button-disabled-bg;
+            color: $dark-button-disabled-text;
+            border: 1px solid $dark-button-disabled-border;
+          }
+        }
+      }
     }
+    .add-folder-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+      
+      &:active {
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+      }
+    }
+    
+    /* 文件夹管理弹窗样式 */
+    .folder-popup {
+      background-color: $dark-card-bg;
+      border: 1px solid $dark-card-border;
+      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+      
+      .popup-header {
+        border-bottom: 1px solid $dark-card-border;
+        background-color: rgba(0, 0, 0, 0.2);
+        
+        .title {
+          color: $dark-text-primary;
+        }
+        
+        .close-btn {
+          color: $dark-text-secondary;
+        }
+      }
+      
+      .folder-list {
+        .folder-item {
+          border-bottom: 1px solid $dark-card-border;
+          
+          .folder-name {
+            color: $dark-text-primary;
+          }
+          
+          .folder-actions {
+            .edit-btn {
+              color: #6366f1;
+              background-color: rgba(99, 102, 241, 0.15);
+            }
+            
+            .delete-btn {
+              color: #ef4444;
+              background-color: rgba(239, 68, 68, 0.15);
+            }
+          }
+        }
+      }
+    
   }
   
-  /* 文件夹管理弹窗样式 */
-  .folder-popup {
-    background-color: $dark-card-bg;
-    border: 1px solid $dark-card-border;
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
+  .folder-manage-popup {
+    background: $dark-card-bg;
+    border-top-left-radius: 20rpx;
+    border-top-right-radius: 20rpx;
     
     .popup-header {
       border-bottom: 1px solid $dark-card-border;
-      background-color: rgba(0, 0, 0, 0.2);
       
       .title {
         color: $dark-text-primary;
@@ -409,6 +581,10 @@
       
       .close-btn {
         color: $dark-text-secondary;
+        
+        &:active {
+          background-color: $dark-element-active-bg;
+        }
       }
     }
     
@@ -421,17 +597,184 @@
         }
         
         .folder-actions {
+          .edit-btn, .delete-btn {
+            color: $dark-text-primary;
+          }
+          
           .edit-btn {
-            color: #6366f1;
-            background-color: rgba(99, 102, 241, 0.15);
+            color: #8183f4; // 稍微亮一点的紫色
+            background-color: rgba(99, 102, 241, 0.2); // 紫色半透明背景
           }
           
           .delete-btn {
-            color: #ef4444;
-            background-color: rgba(239, 68, 68, 0.15);
+            color: #f47575; // 稍微亮一点的红色
+            background-color: rgba(239, 68, 68, 0.2); // 红色半透明背景
           }
         }
       }
     }
   }
-
+  
+  /* 编辑收藏夹弹窗 */
+  .edit-folder-popup {
+    background-color: $dark-card-bg;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+    border: 1px solid $dark-card-border;
+    
+    .popup-header {
+      background-color: $dark-element-bg;
+      border-bottom: 1px solid $dark-card-border;
+      
+      .title {
+        color: $dark-text-primary;
+      }
+      
+      .close-btn {
+        color: $dark-text-secondary;
+        
+        &:active {
+          background-color: $dark-element-active-bg;
+        }
+      }
+    }
+    
+    .popup-content {
+      .folder-input {
+        background-color: $dark-element-bg;
+        color: $dark-text-primary;
+        border: 1px solid $dark-card-border;
+        
+        &::placeholder {
+          color: $dark-text-hint;
+        }
+        
+        &:focus {
+          border-color: $dark-primary-button-border;
+          background-color: $dark-element-active-bg;
+        }
+      }
+    }
+    
+    .popup-footer {
+      background-color: $dark-element-bg;
+      border-top: 1px solid $dark-card-border;
+      
+      .cancel-btn {
+        background-color: $dark-secondary-button-bg;
+        color: $dark-secondary-button-text;
+        border: 1px solid $dark-secondary-button-border;
+        
+        &:active {
+          background-color: $dark-secondary-button-hover-bg;
+          border-color: $dark-secondary-button-hover-border;
+        }
+      }
+      
+      .confirm-btn {
+        background: $dark-primary-button-bg;
+        color: $dark-primary-button-text;
+        border: 1px solid $dark-primary-button-border;
+        
+        &:active {
+          background: $dark-primary-button-hover-bg;
+          border-color: $dark-primary-button-hover-border;
+        }
+      }
+    }
+  }
+  
+  /* 删除确认弹窗 */
+  .delete-confirm-popup {
+    background-color: $dark-card-bg;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+    border: 1px solid $dark-card-border;
+    
+    .popup-header {
+      background-color: $dark-element-bg;
+      border-bottom: 1px solid $dark-card-border;
+      
+      .title {
+        color: $dark-text-primary;
+      }
+      
+      .close-btn {
+        color: $dark-text-secondary;
+        
+        &:active {
+          background-color: $dark-element-active-bg;
+        }
+      }
+    }
+    
+    .popup-content {
+      .confirm-message {
+        color: $dark-text-primary;
+      }
+      
+      .warning-text {
+        color: #f47575; // 警告文字使用红色
+      }
+    }
+    
+    .popup-footer {
+      background-color: $dark-element-bg;
+      border-top: 1px solid $dark-card-border;
+      
+      .cancel-btn {
+        background-color: $dark-secondary-button-bg;
+        color: $dark-secondary-button-text;
+        border: 1px solid $dark-secondary-button-border;
+        
+        &:active {
+          background-color: $dark-secondary-button-hover-bg;
+          border-color: $dark-secondary-button-hover-border;
+        }
+      }
+      
+      .confirm-btn {
+        background-color: rgba(239, 68, 68, 0.8); // 红色按钮
+        color: $dark-primary-button-text;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        
+        &:active {
+          background-color: rgba(239, 68, 68, 0.9);
+          border-color: rgba(239, 68, 68, 0.7);
+        }
+      }
+    }
+  }
+  
+  /* 分页控件深色模式样式 */
+  .pagination {
+    margin-top: 30rpx;
+    margin-bottom: 30rpx;
+    
+    .pagination-btn {
+      background-color: $dark-element-bg;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+      
+      &.disabled {
+        opacity: 0.3;
+      }
+      
+      .pagination-icon {
+        color: #6366f1;
+      }
+    }
+    
+    .pagination-pages {
+      .page-item {
+        background-color: $dark-element-bg;
+        color: $dark-text-primary;
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+        
+        &.active {
+          background-color: #6366f1;
+          color: $dark-text-primary;
+        }
+      }
+    }
+  }
+}
+ 
+  
