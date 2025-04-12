@@ -226,7 +226,7 @@ const completionThresholdIndex = ref(4); // 默认选择不筛选
 
 // 分页相关变量
 const currentPage = ref(1);
-const pageSize = ref(10); // 每页显示10条记录
+const pageSize = ref(5); // 每页显示5条记录
 
 // 计算属性：根据当前选中的标签返回对应的推荐列表
 const activeRecommendations = computed(() => {
@@ -812,10 +812,9 @@ watch(userRating, (newRating) => {
 	background-color: white;
 	border-radius: 16rpx;
 	overflow: hidden;
-	margin-bottom: 20rpx;
-	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+	margin-bottom: 12rpx;
+	box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.05);
 	border: 1px solid #f1f5f9;
-	
 }
 
 .chart-rank {
@@ -919,16 +918,16 @@ watch(userRating, (newRating) => {
 
 .chart-info {
 	flex: 1;
-	padding: 24rpx 24rpx;
+	padding: 16rpx 20rpx;
 	overflow: hidden;
-	margin-bottom: 20rpx;
+	margin-bottom: 0;
 }
 
 .song-title {
 	font-size: 28rpx;
 	font-weight: 600;
 	color: #1e293b;
-	margin-bottom: 12rpx;
+	margin-bottom: 8rpx;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -937,16 +936,16 @@ watch(userRating, (newRating) => {
 .chart-details {
 	display: flex;
 	flex-direction: column;
-	gap: 8rpx;
+	gap: 4rpx;
 }
 
 /* 美化统计项目，使用不同背景色 */
 .stat-item {
 	display: flex;
 	align-items: center;
-	padding: 6rpx 8rpx;
-	border-radius: 8rpx;
-	font-size: 23rpx;
+	padding: 4rpx 6rpx;
+	border-radius: 6rpx;
+	font-size: 22rpx;
 }
 
 .stat-label {

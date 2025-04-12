@@ -876,12 +876,378 @@ $g-color: #ff66cc;
 $gd-color: #33cc33;
 $m-color: #999999;
 
+// 深色模式颜色变量
+$dark-background-color: #1a1c2a;
+$dark-card-bg: #252736;
+$dark-element-bg: #2d2f3f;
+$dark-border-color: #3a3c4c;
+$dark-text-color: #e0e0e0;
+$dark-text-color-light: #b0b0b0;
+$dark-primary-color: #6366f1;
+$dark-primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+
 .calculator-container {
   padding: $mobile-padding;
   padding-top: 30rpx;
   background-color: $background-color;
   border-radius: $mobile-border-radius;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+  
+  // 深色模式
+  &.dark-mode {
+    background-color: $dark-background-color;
+    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.3);
+    
+    .title {
+      color: $dark-text-color;
+    }
+    
+    .global-auto-calculate {
+      background-color: $dark-element-bg;
+      border-color: $dark-border-color;
+      
+      text {
+        color: $dark-primary-color;
+      }
+    }
+    
+    .section-title {
+      color: $dark-primary-color;
+      border-bottom-color: $dark-border-color;
+    }
+    
+    // 表格样式深色模式适配
+    .table-section {
+      border-color: $dark-border-color;
+      background-color: $dark-card-bg;
+      box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+    }
+    
+    .note-table {
+      border-color: $dark-border-color;
+      box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.2);
+    }
+    
+    .table-row {
+      border-bottom-color: $dark-border-color;
+      
+      &.header {
+        background: linear-gradient(135deg, #2d2f3f, #252736);
+      }
+      
+      &.totals-row {
+        background-color: $dark-element-bg;
+      }
+    }
+    
+    .table-cell {
+      border-right-color: $dark-border-color;
+    }
+    
+    .first-cell {
+      background-color: #2d2f3f;
+      color: $dark-primary-color;
+    }
+    
+    .note-type-cell {
+      background-color: #2d2f3f;
+    }
+    
+    .note-type-label {
+      color: $dark-primary-color;
+    }
+    
+    .cp-cell { background: linear-gradient(135deg, rgba(255, 204, 0, 0.1), rgba(255, 165, 0, 0.1)); }
+    .p-cell { background: linear-gradient(135deg, rgba(255, 153, 0, 0.1), rgba(255, 102, 0, 0.1)); }
+    .g-cell { background: linear-gradient(135deg, rgba(255, 102, 204, 0.1), rgba(255, 51, 153, 0.1)); }
+    .gd-cell { background: linear-gradient(135deg, rgba(51, 204, 51, 0.1), rgba(0, 153, 0, 0.1)); }
+    .m-cell { background: linear-gradient(135deg, rgba(153, 153, 153, 0.1), rgba(102, 102, 102, 0.1)); }
+    
+    .table-input {
+      border-color: $dark-border-color;
+      background-color: $dark-element-bg;
+      color: $dark-text-color;
+      
+      &:focus {
+        box-shadow: 0 0 0 2rpx rgba(99, 102, 241, 0.3);
+      }
+      
+      &:disabled {
+        background-color: rgba(0, 0, 0, 0.2);
+        color: $dark-text-color-light;
+      }
+    }
+    
+    // BREAK音符部分深色模式适配
+    .input-section {
+      border-color: $dark-border-color;
+      background-color: $dark-card-bg;
+      
+      &.break-section {
+        border-color: rgba(255, 102, 102, 0.3);
+        background-color: rgba(42, 30, 36, 0.5);
+        box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.2);
+      }
+    }
+    
+    .break-table-section {
+      &:nth-child(2) {
+        .break-table-title {
+          background: linear-gradient(135deg, rgba(255, 248, 225, 0.1), rgba(255, 236, 179, 0.1));
+          color: #ffb74d;
+        }
+        
+        .break-table {
+          border-color: rgba(255, 224, 178, 0.3);
+        }
+        
+        .break-label-cell {
+          background-color: rgba(255, 248, 225, 0.1);
+          color: #ffb74d;
+        }
+      }
+      
+      &:nth-child(3) {
+        .break-table-title {
+          background: linear-gradient(135deg, rgba(243, 229, 245, 0.1), rgba(225, 190, 231, 0.1));
+          color: #ce93d8;
+        }
+        
+        .break-table {
+          border-color: rgba(225, 190, 231, 0.3);
+        }
+        
+        .break-label-cell {
+          background-color: rgba(243, 229, 245, 0.1);
+          color: #ce93d8;
+        }
+      }
+    }
+    
+    .break-table-title {
+      background: linear-gradient(135deg, rgba(232, 234, 246, 0.1), rgba(197, 202, 233, 0.1));
+      color: $dark-primary-color;
+    }
+    
+    .break-table {
+      border-color: rgba(197, 202, 233, 0.3);
+      background-color: $dark-card-bg;
+      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+    }
+    
+    .break-table-row {
+      border-bottom-color: $dark-border-color;
+    }
+    
+    .break-item-container {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .break-input-container {
+      background-color: $dark-element-bg;
+    }
+    
+    .break-label-cell {
+      border-right-color: $dark-border-color;
+      
+      &.good-label {
+        background-color: rgba(232, 245, 233, 0.1) !important;
+        color: #81c784 !important;
+      }
+      
+      &.miss-label {
+        background-color: rgba(250, 250, 250, 0.1) !important;
+        color: #bdbdbd !important;
+      }
+    }
+    
+    .break-input {
+      border-color: $dark-border-color;
+      background-color: $dark-element-bg;
+      color: $dark-text-color;
+      
+      &:focus {
+        border-color: $dark-primary-color;
+        box-shadow: 0 0 0 4rpx rgba(99, 102, 241, 0.2);
+      }
+      
+      &.critical-perfect-input {
+        color: #ffb74d;
+        background-color: rgba(255, 152, 0, 0.1);
+      }
+      
+      &.perfect-high-input, &.perfect-low-input {
+        color: #ffb74d;
+        background-color: rgba(255, 152, 0, 0.1);
+      }
+      
+      &.great-high-input, &.great-mid-input, &.great-low-input {
+        color: #ce93d8;
+        background-color: rgba(156, 39, 176, 0.1);
+      }
+      
+      &.good-input {
+        color: #81c784;
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+      
+      &.miss-input {
+        color: #bdbdbd;
+        background-color: rgba(117, 117, 117, 0.1);
+      }
+    }
+    
+    .total-group {
+      background-color: rgba(232, 234, 246, 0.1);
+      box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+      
+      .label {
+        color: $dark-primary-color;
+      }
+      
+      .input {
+        border-color: rgba(197, 202, 233, 0.3);
+        background-color: $dark-element-bg;
+        color: $dark-primary-color;
+        
+        &:focus {
+          border-color: $dark-primary-color;
+          box-shadow: 0 0 0 4rpx rgba(99, 102, 241, 0.2);
+        }
+      }
+    }
+    
+    // 计算按钮深色模式适配
+    .calculate-btn {
+      background: $dark-primary-gradient;
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.3);
+    }
+    
+    // 结果显示部分深色模式适配
+    .results {
+      border-color: $dark-border-color;
+      background-color: $dark-card-bg;
+      
+      .section-title {
+        border-bottom-color: $dark-primary-color;
+        color: $dark-primary-color;
+      }
+    }
+    
+    .result-item {
+      background-color: $dark-element-bg;
+      box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+      
+      &:hover {
+        background-color: lighten($dark-element-bg, 5%);
+      }
+      
+      .result-label {
+        color: $dark-primary-color;
+      }
+      
+      .result-value {
+        color: #90caf9;
+        background-color: rgba(41, 98, 255, 0.1);
+      }
+      
+      &:last-child .result-value {
+        color: #81c784;
+        background-color: rgba(76, 175, 80, 0.1);
+      }
+    }
+    
+    .loss-details {
+      border-top-color: $dark-border-color;
+      
+      text {
+        background-color: $dark-element-bg;
+        color: $dark-text-color-light;
+        border-color: $dark-border-color;
+        
+        &:nth-child(1) {
+          color: #f48fb1;
+          border-color: rgba(244, 143, 177, 0.2);
+        }
+        
+        &:nth-child(2) {
+          color: #81c784;
+          border-color: rgba(129, 199, 132, 0.2);
+        }
+        
+        &:nth-child(3) {
+          color: #bdbdbd;
+          border-color: rgba(189, 189, 189, 0.2);
+        }
+      }
+    }
+    
+    .note-details {
+      border-color: $dark-border-color;
+      background-color: $dark-card-bg;
+      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+    }
+    
+    .note-detail-header {
+      border-bottom-color: $dark-border-color;
+    }
+    
+    .note-name {
+      color: $dark-primary-color;
+    }
+    
+    .note-achievement {
+      color: #90caf9;
+      background-color: rgba(41, 98, 255, 0.1);
+    }
+    
+    .note-detail-row {
+      background-color: $dark-element-bg;
+      color: $dark-text-color-light;
+      
+      &:hover {
+        background-color: lighten($dark-element-bg, 5%);
+      }
+    }
+    
+    .break-details {
+      background-color: $dark-element-bg !important;
+    }
+    
+    .break-detail-group {
+      background-color: $dark-card-bg;
+      border-color: $dark-border-color;
+      
+      .break-label {
+        color: $dark-primary-color;
+        border-bottom-color: $dark-border-color;
+      }
+      
+      text:not(.break-label) {
+        background-color: $dark-element-bg;
+        color: $dark-text-color-light;
+        border-color: $dark-border-color;
+      }
+      
+      &:nth-child(1) text:not(.break-label) {
+        color: #ffb74d;
+        background-color: rgba(255, 152, 0, 0.1);
+        border-color: rgba(255, 183, 77, 0.3);
+      }
+      
+      &:nth-child(2) text:not(.break-label) {
+        color: #ce93d8;
+        background-color: rgba(156, 39, 176, 0.1);
+        border-color: rgba(206, 147, 216, 0.3);
+      }
+      
+      &:nth-child(3) text:not(.break-label) {
+        color: #bdbdbd;
+        background-color: rgba(117, 117, 117, 0.1);
+        border-color: rgba(189, 189, 189, 0.3);
+      }
+    }
+  }
 }
 
 .title {

@@ -17,8 +17,11 @@
               disabled
               class="form-input readonly"
             />
+            <button class="refresh-btn" @click="copyImportToken">
+              <uni-icons type="paperclip" size="24" color="#64748b"></uni-icons>
+            </button>
             <button class="refresh-btn" @click="refreshImportToken">
-              <text class="btn-icon">🔄</text>
+              <uni-icons type="reload" size="24" color="#64748b"></uni-icons>
             </button>
           </view>
         </view>
@@ -69,6 +72,7 @@
 
 <script setup>
 import { ref, reactive, watch, inject, onBeforeMount } from 'vue';
+
 
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
 
@@ -149,6 +153,36 @@ function showHelp(type) {
 // 刷新导入令牌
 function refreshImportToken() {
   emit('refresh-token');
+}
+
+// 复制导入令牌
+function copyImportToken() {
+  if (!settingsForm.importToken) {
+    uni.showToast({
+      title: '令牌为空，无法复制',
+      icon: 'none',
+      duration: 2000
+    });
+    return;
+  }
+  
+  uni.setClipboardData({
+    data: settingsForm.importToken,
+    success: () => {
+      uni.showToast({
+        title: '已复制到剪贴板',
+        icon: 'success',
+        duration: 2000
+      });
+    },
+    fail: () => {
+      uni.showToast({
+        title: '复制失败，请重试',
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  });
 }
 
 // 取消操作
@@ -281,7 +315,7 @@ function handleConfirm() {
             flex: 1;
           }
           
-          .refresh-btn {
+          .refresh-btn, .copy-btn {
             width: 80rpx;
             height: 80rpx;
             border-radius: 12rpx;
@@ -301,6 +335,22 @@ function handleConfirm() {
               
               .btn-icon {
                 color: #475569;
+              }
+            }
+          }
+          
+          .copy-btn {
+            background: #e6f7ff;
+            
+            .btn-icon {
+              color: #1890ff;
+            }
+            
+            &:active {
+              background: #bae7ff;
+              
+              .btn-icon {
+                color: #096dd9;
               }
             }
           }

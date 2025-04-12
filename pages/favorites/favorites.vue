@@ -124,35 +124,16 @@
       <text class="loading-text">加载中...</text>
     </view>
     
-    <!-- 新建收藏夹弹窗 -->
-    <uni-popup ref="newFolderPopupRef" type="center">
-      <view class="folder-popup">
-        <view class="popup-header">
-          <text class="title">新建收藏夹</text>
-          <text class="close-btn" @click="closeNewFolderDialog">×</text>
-        </view>
-        <view class="popup-content">
-          <input 
-            type="text" 
-            v-model="newFolderName" 
-            placeholder="输入收藏夹名称" 
-            class="folder-input"
-            maxlength="20"
-          />
-        </view>
-        <view class="popup-footer">
-          <button class="cancel-btn" @click="closeNewFolderDialog">取消</button>
-          <button class="confirm-btn" @click="createNewFolder">创建</button>
-        </view>
-      </view>
-    </uni-popup>
+
     
     <!-- 收藏夹管理弹窗 -->
     <uni-popup ref="folderManagePopupRef" type="bottom">
       <view class="folder-manage-popup">
         <view class="popup-header">
           <text class="title">管理收藏夹</text>
-          <text class="close-btn" @click="closeFolderManageDialog">×</text>
+          <view class="close-btn" @click="closeFolderManageDialog">
+            <text class="close-icon">×</text>
+          </view>
         </view>
         <view class="folder-list">
           <view 
@@ -160,16 +141,52 @@
             :key="index"
             class="folder-item"
           >
-            <text class="folder-name">{{ folder.name }}</text>
+            <view class="folder-info">
+      
+              <view class="folder-details">
+                <text class="folder-name">{{ folder.name }}</text>
+                <text class="folder-songcount">{{ folder.count || 0 }}首歌曲</text>
+              </view>
+            </view>
             <view class="folder-actions">
-              <text class="edit-btn" @click="showEditFolderDialog(folder)">编辑</text>
-              <text class="delete-btn" @click="deleteFolder(folder.id)">删除</text>
+              <view class="edit-btn" @click="showEditFolderDialog(folder)">
+                <text class="action-text">编辑</text>
+              </view>
+              <view class="delete-btn" @click="deleteFolder(folder.id)">
+                <text class="action-text">删除</text>
+              </view>
             </view>
           </view>
+        </view>
+        <view class="popup-footer">
+          <button class="new-folder-btn" @click="showNewFolderDialog">新建收藏夹</button>
         </view>
       </view>
     </uni-popup>
     
+	    <!-- 新建收藏夹弹窗 -->
+	    <uni-popup ref="newFolderPopupRef" type="center">
+	      <view class="folder-popup">
+	        <view class="popup-header">
+	          <text class="title">新建收藏夹</text>
+	          <text class="close-btn" @click="closeNewFolderDialog">×</text>
+	        </view>
+	        <view class="popup-content">
+	          <input 
+	            type="text" 
+	            v-model="newFolderName" 
+	            placeholder="输入收藏夹名称" 
+	            class="folder-input"
+	            maxlength="20"
+	          />
+	        </view>
+	        <view class="popup-footer">
+	          <button class="cancel-btn" @click="closeNewFolderDialog">取消</button>
+	          <button class="confirm-btn" @click="createNewFolder">创建</button>
+	        </view>
+	      </view>
+	    </uni-popup>
+	
     <!-- 随机选歌弹窗 -->
     <uni-popup ref="randomSongPopupRef" type="center">
       <view class="random-song-popup">
@@ -240,36 +257,48 @@
     
     <!-- 导出收藏夹弹窗 -->
     <uni-popup ref="exportPopupRef" type="center">
-      <view class="custom-popup">
+      <view class="export-popup">
         <view class="popup-header">
           <text class="title">导出收藏夹</text>
-          <text class="close-btn" @click="closeExportPopup">×</text>
+          <view class="close-btn" @click="closeExportPopup">
+            <text class="close-icon">×</text>
+          </view>
         </view>
         <view class="popup-content">
           <view class="export-info">
-            <text class="folder-title">{{ getCurrentFolderName() }}</text>
-            <text class="folder-desc">共 {{ currentSongs.length }} 首歌曲</text>
+       
+            <view class="folder-details">
+              <text class="folder-title">{{ getCurrentFolderName() }}</text>
+              <text class="folder-desc">共 {{ currentSongs.length }} 首歌曲</text>
+            </view>
           </view>
-          <text class="export-tip">点击下方按钮，将收藏夹数据复制到剪贴板</text>
+          <view class="divider"></view>
+          <text class="export-tip">导出后可分享给好友或备份您的收藏</text>
           <view class="export-data-preview" v-if="exportDataString">
             <text class="preview-text">{{ exportDataString.slice(0, 50) + (exportDataString.length > 50 ? '...' : '') }}</text>
           </view>
         </view>
         <view class="popup-footer">
-          <button class="action-btn export-btn" @click="copyExportData">复制数据</button>
+          <button class="action-btn export-btn" @click="copyExportData">
+           
+            <text class="btn-text">复制到剪贴板</text>
+          </button>
         </view>
       </view>
     </uni-popup>
 
     <!-- 导入收藏夹弹窗 -->
     <uni-popup ref="importPopupRef" type="center">
-      <view class="custom-popup">
+      <view class="import-popup">
         <view class="popup-header">
           <text class="title">导入收藏夹</text>
-          <text class="close-btn" @click="closeImportPopup">×</text>
+          <view class="close-btn" @click="closeImportPopup">
+            <text class="close-icon">×</text>
+          </view>
         </view>
         <view class="popup-content">
-          <text class="import-tip">请粘贴之前导出的收藏夹数据：</text>
+      
+          <text class="import-tip">请粘贴之前导出的收藏夹数据</text>
           <textarea 
             class="import-textarea" 
             v-model="importDataString" 
@@ -278,7 +307,7 @@
             maxlength="-1"
           />
         </view>
-        <view class="popup-footer">
+        <view class="popup-footer import-footer">
           <button class="action-btn cancel-btn" @click="closeImportPopup">取消</button>
           <button class="action-btn import-btn" @click="confirmImport" :disabled="!importDataString">导入</button>
         </view>
@@ -1597,7 +1626,7 @@ const confirmDeleteFolder = () => {
     background: white;
     border-radius: 20rpx;
     overflow: hidden;
-    
+    z-index: 99999;
     .popup-header {
       display: flex;
       justify-content: space-between;
@@ -1737,5 +1766,631 @@ const confirmDeleteFolder = () => {
       }
     }
   }
+
+  /* 收藏夹管理弹窗样式 */
+  .folder-manage-popup {
+    background-color: #fff;
+    border-top-left-radius: 24rpx;
+    border-top-right-radius: 24rpx;
+    overflow: hidden;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx;
+      border-bottom: 1px solid #f1f5f9;
+      position: relative;
+      
+      .title {
+        font-size: 36rpx;
+        font-weight: 600;
+        color: #334155;
+        text-align: center;
+        flex: 1;
+      }
+      
+      .close-btn {
+        position: absolute;
+        right: 30rpx;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60rpx;
+        height: 60rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        
+        &:active {
+          background-color: #f1f5f9;
+        }
+        
+        .close-icon {
+          font-size: 40rpx;
+          color: #64748b;
+        }
+      }
+    }
+    
+    .folder-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20rpx;
+      
+      .folder-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 30rpx;
+        margin-bottom: 20rpx;
+        background-color: #f8fafc;
+        border-radius: 16rpx;
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
+        
+        .folder-info {
+          display: flex;
+          align-items: center;
+          flex: 1;
+          
+          .folder-icon {
+            font-size: 40rpx;
+            margin-right: 20rpx;
+          }
+          
+          .folder-details {
+            display: flex;
+            flex-direction: column;
+            
+            .folder-name {
+              font-size: 32rpx;
+              font-weight: 500;
+              color: #334155;
+              margin-bottom: 8rpx;
+            }
+            
+            .folder-songcount {
+              font-size: 24rpx;
+              color: #64748b;
+            }
+          }
+        }
+        
+        .folder-actions {
+          display: flex;
+          gap: 16rpx;
+          
+          .edit-btn, .delete-btn {
+            padding: 12rpx 24rpx;
+            border-radius: 8rpx;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            .action-text {
+              font-size: 26rpx;
+            }
+          }
+          
+          .edit-btn {
+            background-color: #e0f2fe;
+            
+            .action-text {
+              color: #0284c7;
+            }
+          }
+          
+          .delete-btn {
+            background-color: #fee2e2;
+            
+            .action-text {
+              color: #ef4444;
+            }
+          }
+        }
+      }
+    }
+    
+    .popup-footer {
+      padding: 30rpx 20rpx;
+      border-top: 1px solid #f1f5f9;
+      
+      .new-folder-btn {
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #6366f1;
+        color: white;
+        font-size: 32rpx;
+        font-weight: 500;
+        border-radius: 12rpx;
+        border: none;
+      }
+    }
+  }
+  
+  /* 导出收藏夹弹窗样式 */
+  .export-popup {
+    width: 650rpx;
+    background-color: #fff;
+    border-radius: 24rpx;
+    overflow: hidden;
+    
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx;
+      border-bottom: 1px solid #f1f5f9;
+      position: relative;
+      
+      .title {
+        font-size: 36rpx;
+        font-weight: 600;
+        color: #334155;
+        text-align: center;
+        flex: 1;
+      }
+      
+      .close-btn {
+        position: absolute;
+        right: 30rpx;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60rpx;
+        height: 60rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        
+        &:active {
+          background-color: #f1f5f9;
+        }
+        
+        .close-icon {
+          font-size: 40rpx;
+          color: #64748b;
+        }
+      }
+    }
+    
+    .popup-content {
+      padding: 40rpx 30rpx;
+      
+      .export-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 30rpx;
+        
+        .folder-icon-large {
+          font-size: 80rpx;
+          margin-right: 30rpx;
+        }
+        
+        .folder-details {
+          flex: 1;
+          
+          .folder-title {
+            font-size: 28rpx;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 10rpx;
+            margin-left: 10rpx;
+            margin-right: 10rpx;
+          }
+          
+          .folder-desc {
+            font-size: 28rpx;
+            color: #64748b;
+          }
+        }
+      }
+      
+      .divider {
+        height: 1px;
+        background-color: #f1f5f9;
+        margin: 20rpx 0 30rpx;
+      }
+      
+      .export-tip {
+        display: block;
+        font-size: 28rpx;
+        color: #64748b;
+        text-align: center;
+        margin-bottom: 30rpx;
+      }
+      
+      .export-data-preview {
+        background-color: #f8fafc;
+        padding: 20rpx;
+        border-radius: 12rpx;
+        margin-top: 20rpx;
+        
+        .preview-text {
+          font-size: 24rpx;
+          color: #64748b;
+          font-family: monospace;
+          word-break: break-all;
+        }
+      }
+    }
+    
+    .popup-footer {
+      padding: 20rpx 30rpx 40rpx;
+      
+      .export-btn {
+        width: 100%;
+        height: 90rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #6366f1;
+        border: none;
+        border-radius: 12rpx;
+        box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.3);
+        
+        .btn-icon {
+          font-size: 32rpx;
+          color: white;
+          margin-right: 10rpx;
+        }
+        
+        .btn-text {
+          font-size: 32rpx;
+          font-weight: 500;
+          color: white;
+        }
+      }
+    }
+  }
+  
+  /* 导入收藏夹弹窗样式 */
+  .import-popup {
+    width: 650rpx;
+    background-color: #fff;
+    border-radius: 24rpx;
+    overflow: hidden;
+    
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx;
+      border-bottom: 1px solid #f1f5f9;
+      position: relative;
+      
+      .title {
+        font-size: 36rpx;
+        font-weight: 600;
+        color: #334155;
+        text-align: center;
+        flex: 1;
+      }
+      
+      .close-btn {
+        position: absolute;
+        right: 30rpx;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60rpx;
+        height: 60rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        
+        &:active {
+          background-color: #f1f5f9;
+        }
+        
+        .close-icon {
+          font-size: 40rpx;
+          color: #64748b;
+        }
+      }
+    }
+    
+    .popup-content {
+      padding: 40rpx 30rpx;
+      
+      .import-icon-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30rpx;
+        
+        .import-icon {
+          font-size: 80rpx;
+        }
+      }
+      
+      .import-tip {
+        display: block;
+        font-size: 28rpx;
+        color: #334155;
+        text-align: center;
+        margin-bottom: 30rpx;
+      }
+      
+      .import-textarea {
+        width: 100%;
+        min-height: 200rpx;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12rpx;
+        padding: 20rpx;
+        font-size: 28rpx;
+        color: #334155;
+        box-sizing: border-box;
+      }
+    }
+    
+    .import-footer {
+      display: flex;
+      padding: 20rpx 30rpx 40rpx;
+      gap: 20rpx;
+      
+      .action-btn {
+        flex: 1;
+        height: 90rpx;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 12rpx;
+        font-size: 32rpx;
+        font-weight: 500;
+      }
+      
+      .cancel-btn {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border: none;
+      }
+      
+      .import-btn {
+        background-color: #6366f1;
+        color: white;
+        border: none;
+        box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.3);
+        
+        &:disabled {
+          opacity: 0.5;
+          background-color: #a5a6f6;
+          box-shadow: none;
+        }
+      }
+    }
+  }
+  .random-song-popup {
+  width: 600rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx 30rpx;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #f9f9f9;
+    
+    .title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .close-btn {
+      font-size: 40rpx;
+      color: #999;
+      padding: 0 10rpx;
+    }
+  }
+  
+  .popup-content {
+    padding: 30rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .cover-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20rpx;
+      
+      .cover-container {
+        width: 300rpx;
+        height: 300rpx;
+        border-radius: 12rpx;
+        overflow: hidden;
+        box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+        border: 4rpx solid #f0f0f0;
+        margin-bottom: 10rpx; /* 减少封面与难度标识的间距 */
+        
+        &.clickable {
+          cursor: pointer;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.2s;
+          }
+          
+          &:hover::after {
+            opacity: 1;
+          }
+        }
+        
+        .rolling-cover, .selected-cover {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .placeholder-cover {
+          width: 100%;
+          height: 100%;
+          background-color: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #999;
+        }
+      }
+      
+      .difficulty-badge {
+        width: 260rpx; /* 固定宽度，接近封面宽度 */
+        padding: 10rpx 0; /* 增加高度 */
+        border-radius: 10rpx; /* 减小圆角 */
+        font-size: 28rpx; /* 增大字体 */
+        font-weight: bold;
+        text-align: center;
+        color: white;
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+        
+        &.basic {
+          background-color: rgb(83, 206, 134);
+        }
+        
+        &.advanced {
+          background-color: rgb(227, 206, 42);
+          color: #333;
+        }
+        
+        &.expert {
+          background-color: rgba(225, 71, 87, 1);
+        }
+        
+        &.master {
+          background-color: rgba(156, 136, 255, 1);
+        }
+        
+        &.remaster {
+          background-color: rgb(236, 199, 254);
+        
+        }
+      }
+    }
+    
+    .song-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background-color: #f9f9f9;
+      padding: 16rpx;
+      border-radius: 12rpx;
+      
+      .song-title {
+        font-size: 36rpx; /* 增大标题字体 */
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8rpx;
+        text-align: center;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-bottom: 12rpx; /* 为分隔线留出空间 */
+        position: relative; /* 为伪元素定位 */
+        
+        &::after { /* 添加标题下方分隔线 */
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 80%;
+          height: 1px;
+          background-color: #e0e0e0;
+        }
+      }
+      
+      .song-artist {
+        font-size: 24rpx;
+        color: #666;
+        margin-top: 8rpx; /* 添加与分隔线的间距 */
+        margin-bottom: 12rpx;
+        text-align: center;
+        width: 100%;
+      }
+      
+      /* 添加BPM和谱师信息样式 */
+      .song-details {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10rpx;
+        margin-top: 4rpx;
+        width: 100%;
+        
+        .bpm-info, .charter-info {
+          font-size: 22rpx;
+          color: #666;
+          background-color: #ffffff;
+          padding: 4rpx 12rpx;
+          border-radius: 6rpx;
+          border: 1px solid #eaeaea;
+        }
+      }
+    }
+    
+    .rolling-tip {
+      margin-top: 20rpx;
+      font-size: 28rpx;
+      color: #666;
+      background-color: #f5f5f5;
+      padding: 8rpx 16rpx;
+      border-radius: 8rpx;
+    }
+  }
+  
+  .popup-footer {
+    display: flex;
+    justify-content: center;
+    padding: 24rpx 30rpx;
+    border-top: 1px solid #f0f0f0;
+    gap: 20rpx;
+    background-color: #f9f9f9;
+    
+    .action-btn {
+      flex: 1;
+      height: 80rpx;
+      line-height: 80rpx;
+      text-align: center;
+      border-radius: 40rpx;
+      font-size: 28rpx;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+      
+      &.stop-btn {
+        background-color: #ff6b6b;
+        color: white;
+      }
+      
+      &.play-btn {
+        background-color: #6366f1;
+        color: white;
+      }
+    }
+  }
+}
 }
 </style> 

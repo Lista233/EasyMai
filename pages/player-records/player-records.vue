@@ -1540,7 +1540,7 @@ const updateGridSize = (size) => {
 	flex-direction: column;
 	background: #fff;
 	border-radius: 16rpx;
-	margin-bottom: 20rpx;
+	margin-bottom: 3rpx;
 	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 	
 	.view-mode {
@@ -1619,7 +1619,7 @@ const updateGridSize = (size) => {
 		display: flex;  
 		flex-wrap: wrap;  
 		gap: 1rpx; // 保持水平间距
-		row-gap: 2rpx; // 特别设置垂直间距更小
+		row-gap: 1rpx; // 特别设置垂直间距更小
 		padding: 8rpx; // 保持内边距
 		padding-bottom: 120rpx;
 		justify-content:  center;
@@ -1662,7 +1662,7 @@ const updateGridSize = (size) => {
 				width: 100%;
 				height: 100%;
 				border-radius: 6px;
-				border: 4px solid transparent;
+				border: 5rpx solid transparent;
 				box-sizing: border-box;
 				
 				&.level-0 {
@@ -2328,7 +2328,7 @@ const updateGridSize = (size) => {
   position: relative;
   overflow: hidden;
   border-radius: 8px;
-  border: 3px solid transparent;
+  border: 2px solid transparent;
   box-sizing: border-box;
 }
 

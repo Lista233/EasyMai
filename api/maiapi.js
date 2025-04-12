@@ -146,7 +146,7 @@ export async function divingFishLogin(username, password) {
 		
 		// #ifndef H5 || MP
 		// 非H5和小程序环境，需要判断是否为iOS设备
-		const isIOS = false;//systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		console.log('在条件编译后的系统信息', systemInfo)
 		if (isIOS) {
 			// iOS设备使用代理
@@ -218,7 +218,7 @@ export async function divingFishGetProfile(jwt_token) {
 		// 非H5和小程序环境，需要判断是否为iOS设备
 		const systemInfo = uni.getSystemInfoSync();
 		console.log('获取用户资料系统信息:', systemInfo)
-		const isIOS =false;// systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		
 		if (isIOS) {
 			// iOS设备使用代理
@@ -288,7 +288,7 @@ export async function divingFishGetRecords(jwt_token) {
 		// #ifndef H5 || MP
 		// 非H5和小程序环境，需要判断是否为iOS设备
 		const systemInfo = uni.getSystemInfoSync();
-		const isIOS =false;// systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		console.log('获取用户记录系统信息:', systemInfo)
 		
 		if (isIOS) {
@@ -440,7 +440,7 @@ export async function divingFishSetProfile(nickname, bind_qq, qq_channel_uid, jw
 		// 非H5和小程序环境，需要判断是否为iOS设备
 		const systemInfo = uni.getSystemInfoSync();
 		console.log('设置用户资料系统信息:', systemInfo)
-		const isIOS = false;//systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		if (isIOS) {
 			// iOS设备使用代理
 			console.log('iOS设备：通过代理设置用户资料');
@@ -542,7 +542,7 @@ export async function divingFishRefreshImportToken(jwt_token) {
 		// 非H5和小程序环境，需要判断是否为iOS设备
 		const systemInfo = uni.getSystemInfoSync();
 		console.log('刷新导入token系统信息:', systemInfo)
-		const isIOS =false;// systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		if (isIOS) {
 			// iOS设备使用代理
 			console.log('iOS设备：通过代理刷新导入token');
@@ -636,7 +636,7 @@ export async function divingFishAgrement(jwt_token) {
 		// #ifndef H5 || MP
 		// 非H5和小程序环境，需要判断是否为iOS设备
 		const systemInfo = uni.getSystemInfoSync();
-		const isIOS = false;//systemInfo.osName === 'ios';
+		const isIOS = systemInfo.osName === 'ios';
 		console.log('接受协议系统信息:', systemInfo)
 		console.log(isIOS)
 		if (isIOS) {

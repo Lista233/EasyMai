@@ -1,0 +1,106 @@
+/* 深色模式样式 - RankCalculator页面 */
+@import '@/uni.scss';
+
+.calculator-container.dark-mode {
+  background: $dark-gradient-bg;
+  
+  .header {
+    .title {
+      color: #818cf8; // 浅紫色标题
+    }
+    
+    .subtitle {
+      color: $dark-text-secondary;
+    }
+  }
+  
+  .calculator-section {
+    background: $dark-card-bg;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.3);
+    
+    .input-group {
+      .input-label {
+        color: #818cf8; // 保持与标题一致的浅紫色
+      }
+      
+      .input-field {
+        background: $dark-element-bg;
+        border: 2rpx solid $dark-card-border;
+        color: $dark-text-primary;
+        
+        &::placeholder {
+          color: $dark-text-hint;
+        }
+      }
+    }
+    
+    .result-container {
+      background: linear-gradient(135deg, #4f46e5, #6366f1); // 深色梯度背景
+      box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+      
+      .error-overlay {
+        background: rgba(79, 70, 229, 0.9); // 半透明的紫色
+        
+        .error-text {
+          color: #ffffff;
+        }
+      }
+      
+      .result-item {
+        .result-label {
+          color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .result-value {
+          color: #ffffff;
+        }
+      }
+    }
+  }
+  
+  .rank-table-section {
+    background: $dark-card-bg;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.3);
+    
+    .section-title {
+      color: #818cf8; // 保持与标题一致的浅紫色
+    }
+    
+    .rank-formula {
+      background: $dark-element-bg;
+      
+      text {
+        color: $dark-text-secondary;
+      }
+    }
+  }
+  
+  .rank-table {
+    border: 2rpx solid $dark-card-border;
+    
+    .table-header {
+      background: #4f46e5; // 深紫色表头
+      
+      .table-cell {
+        color: #ffffff;
+      }
+    }
+    
+    .table-row {
+      border-bottom: 2rpx solid $dark-card-border;
+      
+      .table-cell {
+        color: $dark-text-secondary;
+        
+        &.highlight {
+          background-color: rgba(99, 102, 241, 0.2); // 半透明紫色高亮
+          color: #818cf8;
+        }
+      }
+      
+      .rank-cell {
+        color: $dark-text-primary;
+      }
+    }
+  }
+} 

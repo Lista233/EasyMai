@@ -1,0 +1,129 @@
+/* 深色模式样式 - ChartStats页面 */
+@import '@/uni.scss';
+
+.container.dark-mode {
+  background: $dark-gradient-bg;
+  padding-bottom: 200rpx;
+  
+  .header {
+    .title {
+      color: $dark-text-primary;
+    }
+  }
+  
+  .stats-section {
+    background-color: $dark-card-bg;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    
+    .section-title {
+      color: $dark-text-primary;
+    }
+  }
+  
+  .loading-indicator {
+    color: $dark-text-secondary;
+  }
+  
+  .chart-list {
+    .chart-item {
+      border-bottom: 1rpx solid $dark-card-border;
+      
+      &:hover {
+        background-color: $dark-element-active-bg;
+      }
+      
+      .chart-rank {
+        background-color: $dark-element-bg;
+        color: $dark-text-primary;
+      }
+      
+      .chart-info {
+        .song-title {
+          color: $dark-text-primary;
+        }
+        
+        .chart-details {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+  }
+  
+  .simple-list {
+    .simple-item {
+      border-bottom: 1rpx solid $dark-card-border;
+      color: $dark-text-primary;
+    }
+  }
+  
+  .pagination-container {
+    .pagination-wrapper {
+      background: rgba(30, 30, 40, 0.9);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.2);
+    }
+    
+    .page-controls {
+      .page-input-container {
+        .page-input {
+          border: 1rpx solid $dark-card-border;
+          background-color: $dark-element-bg;
+          color: $dark-text-primary;
+        }
+        
+        .page-total {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+  }
+  
+  .page-btn {
+    background: linear-gradient(135deg, #5253c7 0%, #3f37b3 100%);
+    color: white;
+    
+    &:disabled {
+      background: $dark-button-disabled-bg;
+      color: $dark-button-disabled-text;
+    }
+  }
+}
+
+/* 小屏幕手机适配 - 深色模式 */
+@media screen and (max-width: 375px) {
+  .container.dark-mode {
+    .chart-item {
+      .chart-rank {
+        background-color: $dark-element-bg;
+      }
+      
+      .chart-info {
+        .chart-details {
+          .chart-stats {
+            color: $dark-text-secondary;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* 平板设备适配 - 深色模式 */
+@media screen and (min-width: 768px) {
+  .container.dark-mode {
+    .stats-section {
+      background-color: $dark-card-bg;
+    }
+    
+    .chart-list {
+      .chart-item {
+        border-bottom: 1rpx solid $dark-card-border;
+        
+        &:hover {
+          background-color: $dark-element-active-bg;
+          box-shadow: none;
+        }
+      }
+    }
+  }
+} 

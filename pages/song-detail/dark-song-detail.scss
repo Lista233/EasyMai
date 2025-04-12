@@ -487,4 +487,11 @@
       }
     }
   }
+  
+  .cover-container {
+    .save-tip {
+      background-color: rgba(30, 30, 40, 0.8);
+      color: $dark-text-primary;
+    }
+  }
 } 

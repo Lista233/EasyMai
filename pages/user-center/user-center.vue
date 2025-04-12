@@ -613,8 +613,81 @@ async function handleQrConfirm(qrContent) {
 }
 
 // 处理账号设置
-function handleAccountSettings() {
+async function handleAccountSettings() {
+  // 检查是否登录
+  if (!jwt_token.value) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    });
+    return;
+  }
+    // 如果发现导入令牌为空，则自动刷新一次令牌
+    if (!importToken.value || importToken.value.trim() === '') {
+          console.log('检测到导入令牌为空，自动刷新令牌');
+          try {
+            // 显示小提示
+            uni.showToast({
+              title: '正在生成导入令牌...',
+              icon: 'none',
+              duration: 1500,
+              position: 'bottom'
+            });
+            
+            // 刷新令牌
+            const tokenRes = await maiApi.divingFishRefreshImportToken(jwt_token.value);
+            if (tokenRes && tokenRes.data && tokenRes.data.token) {
+              importToken.value = tokenRes.data.token;
+              uni.setStorageSync('divingFish_importToken', importToken.value);
+              
+              // 显示成功提示
+              setTimeout(() => {
+                uni.showToast({
+                  title: '导入令牌已生成',
+                  icon: 'success',
+                  duration: 1500,
+                  position: 'bottom'
+                });
+              }, 1500); // 延迟显示，避免覆盖前面的提示
+            }
+          } catch (tokenError) {
+            console.error('自动刷新令牌失败:', tokenError);
+            // 不影响用户操作，只在控制台记录错误
+          }
+        }
+  // 先显示设置模态框，提高响应速度
   showSettingsModal.value = true;
+  
+  // 然后异步获取最新的个人信息
+  setTimeout(async () => {
+    try {
+      // 在弹窗已显示的情况下获取个人信息
+      const profile = await maiApi.divingFishGetProfile(jwt_token.value);
+      
+      if (profile && profile.data) {
+        // 更新个人信息
+        nickname.value = profile.data.nickname;
+        qqid.value = profile.data.bind_qq;
+        importToken.value = profile.data.import_token;
+        qq_channel_uid.value = profile.data.qq_channel_uid;
+        
+        // 更新本地存储
+        uni.setStorageSync('divingFish_nickname', nickname.value);
+        uni.setStorageSync('divingFish_qqid', qqid.value);
+        uni.setStorageSync('divingFish_importToken', importToken.value);
+        uni.setStorageSync('qq_channel_uid', qq_channel_uid.value);
+        
+      
+      } else {
+        console.error('获取个人信息失败：返回数据为空');
+        // 不显示错误提示，因为弹窗已经显示，避免干扰用户
+      }
+    } catch (error) {
+      console.error('获取个人信息失败:', error);
+      // 不显示错误提示，因为弹窗已经显示，避免干扰用户
+    }
+  }, 100); // 短暂延迟确保弹窗已渲染
 }
 
 // 处理设置提交

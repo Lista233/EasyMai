@@ -1,0 +1,59 @@
+/* 深色模式样式 - VersionMap页面 */
+@import '@/uni.scss';
+
+.version-map.dark-mode {
+  background: $dark-gradient-bg;
+  
+  .container {
+    background: $dark-card-bg;
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.3);
+  }
+  
+  .header {
+    .title {
+      color: $dark-text-primary;
+      border-bottom: 4rpx solid $dark-card-border;
+    }
+  }
+  
+  .table-container {
+    .table {
+      border: 2rpx solid $dark-card-border;
+      
+      .table-header {
+        background-color: $dark-element-bg;
+        
+        .th {
+          border-right: 2rpx solid $dark-card-border;
+          color: $dark-text-primary;
+        }
+      }
+      
+      .table-row {
+        border-top: 2rpx solid $dark-card-border;
+        
+        &:hover {
+          background-color: $dark-element-active-bg;
+        }
+        
+        .td {
+          color: $dark-text-secondary;
+          border-right: 2rpx solid $dark-card-border;
+        }
+        
+        // 版本样式 - 深色模式
+        &.classic {
+          background-color: rgba(255, 241, 220, 0.1);
+        }
+        
+        &.finale {
+          background-color: rgba(255, 223, 223, 0.1);
+        }
+        
+        &.dx {
+          background-color: rgba(220, 237, 255, 0.1);
+        }
+      }
+    }
+  }
+} 

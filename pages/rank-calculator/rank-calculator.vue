@@ -1,5 +1,5 @@
 <template>
-  <view class="calculator-container">
+  <view class="calculator-container" :class="{'dark-mode': isDarkMode}">
     <view class="header">
       <text class="title">Rating 计算器</text>
       <text class="subtitle">根据定数与达成率计算Rating</text>
@@ -82,7 +82,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, inject, onBeforeMount } from 'vue';
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js';
+
+// 注入全局深色模式状态
+const isDarkMode = inject('isDarkMode', ref(false));
+const applyTheme = inject('applyTheme', () => {});
+
+// 在页面挂载前应用主题
+onBeforeMount(() => {
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value);
+});
 
 // 输入值
 const songLevel = ref('');
@@ -381,4 +392,7 @@ onMounted(() => {
     opacity: 1;
   }
 }
-</style> 
+</style>
+
+<!-- 导入深色模式样式 -->
+<style lang="scss" src="./dark-rank-calculator.scss"></style> 

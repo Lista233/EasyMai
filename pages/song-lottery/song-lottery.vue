@@ -747,7 +747,7 @@ const getDifficultyName = (song) => {
       gap: 30rpx;
       
       .count-selector {
-		  margin-top: 15rpx;
+		margin-top: 15rpx;
         display: flex;
         align-items: center;
         

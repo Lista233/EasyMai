@@ -1,5 +1,5 @@
 <template>
-  <view class="version-map">
+  <view class="version-map" :class="{'dark-mode': isDarkMode}">
     <view class="container">
       <view class="header">
         <text class="title">maimai 版本对照表</text>
@@ -27,7 +27,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, inject, onBeforeMount } from 'vue'
+import { updateNativeTabBar } from '@/utils/updateNativeTabBar.js'
+
+// 注入深色模式状态
+const isDarkMode = inject('isDarkMode', ref(false))
+const applyTheme = inject('applyTheme', () => {})
+
+// 在页面挂载前应用主题
+onBeforeMount(() => {
+  applyTheme()
+  updateNativeTabBar(isDarkMode.value)
+})
 
 const versionList = ref([
   { name: 'maimai PLUS', code: '真' },
@@ -166,4 +177,7 @@ const getVersionClass = (versionName) => {
     }
   }
 }
-</style> 
+</style>
+
+<!-- 导入深色模式样式 -->
+<style lang="scss" src="./dark-version-map.scss"></style> 

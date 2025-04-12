@@ -26,7 +26,7 @@
 		
 		<!-- 歌曲信息部分 -->
 		<view class="song-info">
-			<view class="title-row">
+			<view class="title-row" @click.stop="copyTitle">
 				<view class="title-container">
 					<text class="song-title" :style="computedTitleStyle" selectable>{{record.title}}</text>
 				</view>
@@ -88,6 +88,23 @@
 			url: `/pages/song-detail/song-detail?songId=${songId}&difficulty=${difficulty}`,
 			animationType: 'pop-in',
 			animationDuration: 200
+		});
+	}
+
+	// 添加标题复制到剪贴板的功能
+	const copyTitle = () => {
+		if (!record.title) return;
+		
+		uni.setClipboardData({
+			data: record.title,
+			success: () => {
+				uni.showToast({
+					title: '歌名已复制到剪贴板',
+					icon: 'none',
+					position: 'bottom',
+					duration: 2000
+				});
+			}
 		});
 	}
 
@@ -304,9 +321,10 @@
 			}
 
 			.ds-tag {
+		
 				position: absolute;
-				bottom: -10rpx;
-				right: -10rpx;
+				bottom: -20rpx;
+				right: 55rpx;
 				padding: 8rpx 16rpx;
 				border-radius: 10rpx;
 				font-size: 28rpx;
@@ -490,7 +508,7 @@
 	.rate-badge {
 		position: absolute;
 		bottom: 24rpx;
-		right: 24rpx;
+		right: 38rpx;
 		font-size: 32rpx;
 		font-weight: 600;
 		padding: 6rpx 16rpx;

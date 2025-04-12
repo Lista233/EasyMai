@@ -2,34 +2,54 @@
 @import '@/uni.scss';
 
 #index.dark-mode {
-
 	background: $dark-gradient-bg !important;
+
+.loading-container{.loading-spinner{} .loading-text{color:$dark-text-primary;}}
 
 	.content-container {
      background: $dark-gradient-bg !important;
 	}
 	
 	.button-group {
+		.share-import-btn {
+	background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 	
-		.nav-btn {
-
-			color: white;
+	&:hover {
+		box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+	}
 	
+	.btn-text {
+		color: white;
+	}
+		}
+		.history-btn {
+			background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+			box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 			
-			&::before {
-		
-				background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0));
-
+			&:hover {
+				box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
 			}
 			
-			&:hover::before {
-				opacity: 1;
-			}
-			
-			&:active {
-	
+			.btn-text {
+				color: white;
 			}
 		}
+		
+			
+			.save-image-btn {
+		background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+		box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+		
+		&:hover {
+			box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+		}
+		
+		.btn-text {
+			color: white;
+		}
+		}
+		
 
 		.refresh-btn {
 			background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -57,25 +77,39 @@
 				box-shadow: 0 6px 16px rgba(67, 56, 202, 0.4);
 			}
 		}
+		
+
 	}
 	
 	.b50box {
+		.b50-user-info {
+		  width: 100%;
+		  text-align: center;
+		  margin-bottom: -10rpx;
+		  padding: 10rpx 0;
+		    background-color: $dark-card-bg;
+		  .user-nickname {
+			  width: 100%;
+		    font-size: 36rpx;
+		    font-weight: 600;
+		    color: $dark-text-primary;
+		    display: inline-block;
+		    padding: 16rpx 0rpx;
+		    border-radius: 10rpx;
+		    background-color: $dark-card-bg;
+		    box-shadow: none; 
+		  }
+		}
 		background: $dark-gradient-bg !important;
 
 		.section-title {
-	
 			color: $dark-text-primary !important;
-	
 			
 			.title-content {
-			
-			
 				&::before,
 				&::after {
 					content: '';
-					
 					background: linear-gradient(to bottom, #4f46e5, #6366f1);
-				
 				}
 				
 				&::before {
@@ -88,28 +122,24 @@
 			}
 			
 			&.has-data {
-		
 				background: linear-gradient(135deg, rgba(30, 30, 40, 0.9), rgba(40, 40, 50, 0.4));
 				box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
-			
 				
 				.title-content {
 					transform: translateX(0);
 					
 					&::before,
 					&::after {
-						
 						opacity: 1;
 					}
 				}
 			}
 			
 			&::after {
-			
 				background: linear-gradient(to right, 
 					rgba(79, 70, 229, 0.5), 
 					rgba(99, 102, 241, 0.5),
-					rgba(79, 70, 229, 0)
+					rgba(79, 70, 229, 0.5)
 				);
 				transform: scaleX(0);
 				transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -124,21 +154,16 @@
 		.rating-container {
 		    background: rgba(30, 30, 40, 0.95);
 			border: 1px solid $dark-card-border;
-	
 		    
 		    .rating-title {
-	
 		        color: $dark-text-secondary;
 		    }
 		    
 		    .rating-value {
-		
 		        color: $dark-text-primary;
-				
 		    }
 		    
 		    .rating-subtitle {
-	
 		        color: $dark-text-secondary;
 		    }
 		    
@@ -203,13 +228,11 @@
 					background: $dark-card-bg;
 		        }
 				
-		        
 		        .rating-title, .rating-subtitle { 
 		            color: $dark-text-primary;
 		        }
 		        
 				.rating-value {
-				
 		            background: linear-gradient(
 		                90deg,
 		                #ff3232,
@@ -238,22 +261,13 @@
 		}
 		
 		.b35box, .b15box {
-		
-			
 			.song-card {
-		
 				background: $dark-element-bg;
-		
 				box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
-			
 				
 				.song-cover {
-			
-					
 					.cover-image {
-			
 						background-color: rgba(0, 0, 0, 0.3);
-					
 						
 						&.level-0 {
 							border-color: rgba(46, 204, 113, 1);
@@ -283,17 +297,11 @@
 				}
 				
 				.song-info {
-	
-					
 					.song-title {
-				
 						color: $dark-text-primary;
-			
 					}
 					
 					.song-stats {
-				
-						
 						.stat-item {
 							background-color: rgba(0, 0, 0, 0.2);
 							color: $dark-text-secondary;
@@ -348,7 +356,6 @@
 				}
 				
 				.rate-badge {
-			
 					color: $dark-text-secondary;
 					background: rgba(255, 255, 255, 0.05);
 					
@@ -366,14 +373,11 @@
 						);
 						color: transparent;
 						font-weight: 800;
-						
 					}
-					
 					
 					&.rainbowp {
 						background: none;
 						background-clip: text;
-						
 						-webkit-background-clip: text;
 						background-image: linear-gradient(45deg, 
 							#ff4757,
@@ -385,8 +389,8 @@
 						);
 						color: transparent;
 						font-weight: 800;
-						
 					}
+					
 					&.gold {
 						background: none;
 						background-clip: text;
@@ -398,7 +402,6 @@
 						);
 						color: transparent;
 						font-weight: 800;
-						
 					}
 				}
 			}
@@ -407,11 +410,8 @@
 	
 	.qr-modal {
 		.qr-form {
-		
-			
 			.form-item {
 				.form-textarea {
-			
 					color: $dark-text-primary;
 					
 					&:focus {
@@ -432,9 +432,7 @@
 				}
 				
 				.import-btn {
-			
 					background: rgba(0, 0, 0, 0.2);
-				
 					
 					.btn-icon {
 						font-size: 36rpx;
@@ -460,8 +458,6 @@
 		}
 		
 		.modal-buttons {
-
-			
 			.modal-btn {
 				&.confirm {
 					background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -469,6 +465,370 @@
 					&:active {
 						background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
 					}
+				}
+			}
+		}
+	}
+
+	/* 历史B50按钮样式 */
+
+	
+	/* 历史记录弹窗样式 */
+	.history-modal {
+		background-color: $dark-card-bg;
+		border: 1px solid $dark-card-border;
+		
+		.modal-title {
+			color: $dark-text-primary;
+			border-bottom: 1px solid $dark-card-border;
+		}
+		
+		.history-item {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			
+			&:hover {
+				background-color: rgba(255, 255, 255, 0.05);
+			}
+			
+			.history-date {
+				color: $dark-text-primary;
+			}
+			
+			.history-rating {
+				color: $dark-text-secondary;
+			}
+			
+			.view-btn {
+				background-color: #4f46e5;
+				color: white;
+				
+				&:active {
+					background-color: #4338ca;
+				}
+			}
+			
+			.delete-btn {
+				background-color: rgba(239, 68, 68, 0.2);
+				color: #f87171;
+				
+				&:active {
+					background-color: rgba(239, 68, 68, 0.3);
+				}
+			}
+		}
+		
+		.empty-history {
+			.empty-text {
+				color: $dark-text-secondary;
+			}
+		}
+		
+		.modal-buttons {
+			border-top: 1px solid $dark-card-border;
+			
+			.modal-btn {
+				&.cancel {
+					background-color: rgba(255, 255, 255, 0.1);
+					color: $dark-text-primary;
+					
+					&:active {
+						background-color: rgba(255, 255, 255, 0.15);
+					}
+				}
+			}
+		}
+	}
+	
+	/* 历史记录详情弹窗样式 */
+	.history-detail-modal {
+		background-color: $dark-card-bg;
+		border: 1px solid $dark-card-border;
+		
+		.modal-title {
+			color: $dark-text-primary;
+			border-bottom: 1px solid $dark-card-border;
+		}
+		
+		.history-detail-content {
+			background-color: $dark-card-bg;
+		}
+		
+		.modal-buttons {
+			border-top: 1px solid $dark-card-border;
+			
+			.modal-btn {
+				&.cancel {
+					background-color: rgba(255, 255, 255, 0.1);
+					color: $dark-text-primary;
+					
+					&:active {
+						background-color: rgba(255, 255, 255, 0.15);
+					}
+				}
+			}
+		}
+	}
+	
+	/* 历史记录列表样式 */
+	.history-list-container {
+		background: $dark-gradient-bg !important;
+	}
+	
+	.history-header {
+		.history-title {
+			color: $dark-text-primary;
+		}
+		
+		.save-current-btn {
+			background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+			box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+			
+			&:hover {
+				box-shadow: 0 6px 16px rgba(79, 70, 229, 0.4);
+			}
+			
+			.save-btn-text {
+				color: white;
+			}
+		}
+		
+		.history-action-btn {
+			background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+			&:active {
+				background: #312e81;
+			}
+			
+			.btn-text {
+				color: white;
+			}
+		}
+	}
+	
+	.history-list {
+		.history-item {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			
+			&:hover {
+				background-color: rgba(255, 255, 255, 0.05);
+			}
+			
+			.history-info {
+				.history-date {
+					color: $dark-text-primary;
+				}
+				
+				.history-rating {
+					color: $dark-text-secondary;
+				}
+				
+				.history-nickname {
+					color: #818cf8;
+				}
+			}
+			
+			.history-actions {
+				.view-btn {
+					background-color: #4f46e5;
+					color: white;
+					
+					&:active {
+						background-color: #4338ca;
+					}
+				}
+				
+				.edit-btn {
+					background-color: #0284c7;
+					color: white;
+					
+					&:active {
+						background-color: #0369a1;
+					}
+				}
+				
+				.delete-btn {
+					background-color: rgb(208, 83, 83);
+					color: #ffffff;
+					
+					&:active {
+						background-color: rgba(239, 68, 68, 1.0);
+					}
+				}
+			}
+		}
+	}
+	
+	.empty-history {
+		.empty-text {
+			color: $dark-text-secondary;
+		}
+	}
+	/* 历史记录查看状态提示 */
+	.history-view-indicator {
+		background-color: rgba(99, 102, 241, 0.2);
+		
+		.history-view-text {
+			color: #818cf8;
+		}
+		
+		.return-to-current-btn {
+			background-color: #4f46e5;
+			
+			&:active {
+				background-color: #4338ca;
+			}
+			
+			.return-btn-text {
+				color: white;
+			}
+		}
+	}
+	
+	/* 分享/导入选项弹窗 */
+	.share-import-modal {
+		background-color: $dark-card-bg;
+		
+		.modal-title {
+			color: $dark-text-primary;
+		}
+		
+		.option-btn {
+		background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+		}
+		
+		.modal-btn {
+			&.cancel {
+				background-color: rgba(255, 255, 255, 0.1);
+				color: $dark-text-primary;
+				
+				&:active {
+					background-color: rgba(255, 255, 255, 0.15);
+				}
+			}
+		}
+	}
+	
+	/* 导入B50弹窗 */
+	.modal-content.import-modal {
+		background-color: $dark-card-bg;
+		
+		.modal-title {
+			color: $dark-text-primary;
+		}
+		
+		.form-label {
+			color: $dark-text-primary;
+		}
+		
+		.form-textarea {
+			background-color: $dark-element-bg;
+			color: $dark-text-primary;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			
+			&:focus {
+				border-color: rgba(99, 102, 241, 0.5);
+			}
+		}
+		
+		.modal-btn {
+			&.cancel {
+				background-color: rgba(255, 255, 255, 0.1);
+				color: $dark-text-primary;
+				
+				&:active {
+					background-color: rgba(255, 255, 255, 0.15);
+				}
+			}
+			
+			&.confirm {
+				background-color: #4f46e5;
+				color: white;
+				
+				&:active {
+					background-color: #4338ca;
+				}
+			}
+		}
+	}
+	
+	/* 分享B50弹窗 */
+	.modal-content.share-modal {
+		background-color: $dark-card-bg;
+		
+		.modal-title {
+			color: $dark-text-primary;
+		}
+		
+		.form-label {
+			color: $dark-text-primary;
+		}
+		
+		.share-code-container {
+			.form-input {
+				background-color: $dark-element-bg;
+				color: $dark-text-primary;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+			}
+			
+			.copy-btn {
+				background-color: #4f46e5;
+				color: white;
+				
+				&:active {
+					background-color: #4338ca;
+				}
+			}
+		}
+		
+		.modal-btn {
+			&.cancel {
+				background-color: rgba(255, 255, 255, 0.1);
+				color: $dark-text-primary;
+				
+				&:active {
+					background-color: rgba(255, 255, 255, 0.15);
+				}
+			}
+		}
+	}
+	
+	/* 保存/编辑历史记录名称弹窗 */
+	.modal-content:not(.share-modal):not(.import-modal) {
+		background-color: $dark-card-bg;
+		
+		.modal-title {
+			color: $dark-text-primary;
+		}
+		
+		.form-label {
+			color: $dark-text-primary;
+		}
+		
+		.form-input {
+			background-color: $dark-element-bg;
+			color: $dark-text-primary;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			
+			&:focus {
+				border-color: rgba(99, 102, 241, 0.5);
+			}
+		}
+		
+		.modal-btn {
+			&.cancel {
+				background-color: rgba(255, 255, 255, 0.1);
+				color: $dark-text-primary;
+				
+				&:active {
+					background-color: rgba(255, 255, 255, 0.15);
+				}
+			}
+			
+			&.confirm {
+				background-color: #4f46e5;
+				color: white;
+				
+				&:active {
+					background-color: #4338ca;
 				}
 			}
 		}
@@ -484,4 +844,7 @@
 		opacity: 1;
 		transform: scale(1);
 	}
-} 
+}
+#index .history-list-container .history-header .return-btn{color:$dark-text-primary;}
+// 导入优化的黑夜模式弹窗样式
+@import './dark-share-modal.scss'; 

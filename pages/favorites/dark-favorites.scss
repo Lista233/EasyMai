@@ -529,7 +529,7 @@
       background-color: $dark-card-bg;
       border: 1px solid $dark-card-border;
       box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.2);
-      
+      z-index: 99999;
       .popup-header {
         border-bottom: 1px solid $dark-card-border;
         background-color: rgba(0, 0, 0, 0.2);
@@ -568,9 +568,8 @@
   }
   
   .folder-manage-popup {
-    background: $dark-card-bg;
-    border-top-left-radius: 20rpx;
-    border-top-right-radius: 20rpx;
+    background-color: $dark-card-bg;
+    border-top: 1px solid $dark-card-border;
     
     .popup-header {
       border-bottom: 1px solid $dark-card-border;
@@ -580,43 +579,70 @@
       }
       
       .close-btn {
-        color: $dark-text-secondary;
-        
         &:active {
-          background-color: $dark-element-active-bg;
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .close-icon {
+          color: $dark-text-secondary;
         }
       }
     }
     
     .folder-list {
       .folder-item {
-        border-bottom: 1px solid $dark-card-border;
+        background-color: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.2);
+        border: 1px solid $dark-card-border;
         
-        .folder-name {
-          color: $dark-text-primary;
-        }
-        
-        .folder-actions {
-          .edit-btn, .delete-btn {
+        .folder-info {
+          .folder-icon {
             color: $dark-text-primary;
           }
           
+          .folder-details {
+            .folder-name {
+              color: $dark-text-primary;
+            }
+            
+            .folder-songcount {
+              color: $dark-text-secondary;
+            }
+          }
+        }
+        
+        .folder-actions {
           .edit-btn {
-            color: #8183f4; // 稍微亮一点的紫色
-            background-color: rgba(99, 102, 241, 0.2); // 紫色半透明背景
+            background-color: rgba(56, 189, 248, 0.2);
+            
+            .action-text {
+              color: #38bdf8;
+            }
           }
           
           .delete-btn {
-            color: #f47575; // 稍微亮一点的红色
-            background-color: rgba(239, 68, 68, 0.2); // 红色半透明背景
+            background-color: rgba(248, 113, 113, 0.2);
+            
+            .action-text {
+              color: #f87171;
+            }
           }
         }
+      }
+    }
+    
+    .popup-footer {
+      border-top: 1px solid $dark-card-border;
+      
+      .new-folder-btn {
+        background-color: #6366f1;
+        color: $dark-text-primary;
       }
     }
   }
   
   /* 编辑收藏夹弹窗 */
-  .edit-folder-popup {
+  .edit-folder-popup,.folder-popup {
     background-color: $dark-card-bg;
     box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
     border: 1px solid $dark-card-border;
@@ -640,18 +666,9 @@
     
     .popup-content {
       .folder-input {
-        background-color: $dark-element-bg;
-        color: $dark-text-primary;
+        background-color: rgba(0, 0, 0, 0.3);
         border: 1px solid $dark-card-border;
-        
-        &::placeholder {
-          color: $dark-text-hint;
-        }
-        
-        &:focus {
-          border-color: $dark-primary-button-border;
-          background-color: $dark-element-active-bg;
-        }
+        color: $dark-text-primary;
       }
     }
     
@@ -660,25 +677,13 @@
       border-top: 1px solid $dark-card-border;
       
       .cancel-btn {
-        background-color: $dark-secondary-button-bg;
-        color: $dark-secondary-button-text;
-        border: 1px solid $dark-secondary-button-border;
-        
-        &:active {
-          background-color: $dark-secondary-button-hover-bg;
-          border-color: $dark-secondary-button-hover-border;
-        }
+        background-color: rgba(100, 116, 139, 0.2);
+        color: $dark-text-secondary;
       }
       
       .confirm-btn {
-        background: $dark-primary-button-bg;
-        color: $dark-primary-button-text;
-        border: 1px solid $dark-primary-button-border;
-        
-        &:active {
-          background: $dark-primary-button-hover-bg;
-          border-color: $dark-primary-button-hover-border;
-        }
+        background-color: #6366f1;
+        color: $dark-text-primary;
       }
     }
   }
@@ -712,7 +717,7 @@
       }
       
       .warning-text {
-        color: #f47575; // 警告文字使用红色
+        color: #f87171;
       }
     }
     
@@ -721,25 +726,13 @@
       border-top: 1px solid $dark-card-border;
       
       .cancel-btn {
-        background-color: $dark-secondary-button-bg;
-        color: $dark-secondary-button-text;
-        border: 1px solid $dark-secondary-button-border;
-        
-        &:active {
-          background-color: $dark-secondary-button-hover-bg;
-          border-color: $dark-secondary-button-hover-border;
-        }
+        background-color: rgba(100, 116, 139, 0.2);
+        color: $dark-text-secondary;
       }
       
       .confirm-btn {
-        background-color: rgba(239, 68, 68, 0.8); // 红色按钮
-        color: $dark-primary-button-text;
-        border: 1px solid rgba(239, 68, 68, 0.5);
-        
-        &:active {
-          background-color: rgba(239, 68, 68, 0.9);
-          border-color: rgba(239, 68, 68, 0.7);
-        }
+        background-color: #6366f1;
+        color: $dark-text-primary;
       }
     }
   }
@@ -771,6 +764,142 @@
         &.active {
           background-color: #6366f1;
           color: $dark-text-primary;
+        }
+      }
+    }
+  }
+  
+  /* 导出收藏夹弹窗样式 - 深色模式 */
+  .export-popup {
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    
+    .popup-header {
+      border-bottom: 1px solid $dark-card-border;
+      
+      .title {
+        color: $dark-text-primary;
+      }
+      
+      .close-btn {
+        &:active {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .close-icon {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+    
+    .popup-content {
+      .export-info {
+        .folder-icon-large {
+          color: $dark-text-primary;
+        }
+        
+        .folder-details {
+          .folder-title {
+            color: $dark-text-primary;
+          }
+          
+          .folder-desc {
+            color: $dark-text-secondary;
+          }
+        }
+      }
+      
+      .divider {
+        background-color: $dark-card-border;
+      }
+      
+      .export-tip {
+        color: $dark-text-secondary;
+      }
+      
+      .export-data-preview {
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid $dark-card-border;
+        
+        .preview-text {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+    
+    .popup-footer {
+      .export-btn {
+        background-color: #6366f1;
+        box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.5);
+        
+        .btn-icon, .btn-text {
+          color: $dark-text-primary;
+        }
+      }
+    }
+  }
+  
+  /* 导入收藏夹弹窗样式 - 深色模式 */
+  .import-popup {
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    
+    .popup-header {
+      border-bottom: 1px solid $dark-card-border;
+      
+      .title {
+        color: $dark-text-primary;
+      }
+      
+      .close-btn {
+        &:active {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .close-icon {
+          color: $dark-text-secondary;
+        }
+      }
+    }
+    
+    .popup-content {
+      .import-icon-container {
+        .import-icon {
+          color: $dark-text-primary;
+        }
+      }
+      
+      .import-tip {
+        color: $dark-text-secondary;
+      }
+      
+      .import-textarea {
+        background-color: rgba(0, 0, 0, 0.3);
+        border: 1px solid $dark-card-border;
+        color: $dark-text-primary;
+        
+        &::placeholder {
+          color: $dark-text-hint;
+        }
+      }
+    }
+    
+    .import-footer {
+      .cancel-btn {
+        background-color: rgba(100, 116, 139, 0.2);
+        color: $dark-text-secondary;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .import-btn {
+        background-color: #6366f1;
+        color: $dark-text-primary;
+        box-shadow: 0 4rpx 10rpx rgba(99, 102, 241, 0.5);
+        
+        &:disabled {
+          opacity: 0.5;
+          background-color: rgba(99, 102, 241, 0.4);
+          box-shadow: none;
         }
       }
     }

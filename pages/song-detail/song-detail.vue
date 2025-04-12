@@ -10,8 +10,10 @@
             :src="getCoverUrl(songData?.id)"
             mode="aspectFill"
             @error="handleImageError"
+            @longpress="saveCoverToAlbum"
             lazy-load
           />
+        
           <view class="loading-overlay" v-if="isLoading(songData?.id) || dataLoading">
             <text>加载中...</text>
           </view>
@@ -20,7 +22,9 @@
         <view class="song-info">
           <view class="title-row">
             <view class="title-decoration"></view>
-            <text class="song-title" @click="copyTitle">{{ songData?.title }}</text>
+            <view class="song-title-container">
+              <text class="song-title" :class="{'scrolling-title': isTitleOverflow}" ref="titleElement" @click="copyTitle">{{ songData?.title }}</text>
+            </view>
             <text class="song-id" @click="copyId">#{{ songData?.id }}</text>
           </view>
           
@@ -1457,6 +1461,136 @@ const hasReMaster = computed(() => {
   const reMasterLevel = songData.value.level[4];
   return reMasterLevel !== "-" && reMasterLevel !== undefined && reMasterLevel !== null;
 });
+
+
+
+// 保存封面到相册的函数
+const saveCoverToAlbum = () => {
+  const coverUrl = getCoverUrl(songData.value.id);
+  if (!coverUrl) {
+    uni.showToast({
+      title: '封面图片不存在',
+      icon: 'none'
+    });
+    return;
+  }
+  
+  // 显示加载提示，设置超时自动关闭
+  uni.showLoading({
+    title: '正在保存...',
+    mask: true
+  });
+  
+  // 设置超时自动关闭加载提示（3秒）
+  const loadingTimer = setTimeout(() => {
+    uni.hideLoading();
+    uni.showToast({
+      title: '保存超时，请重试',
+      icon: 'none'
+    });
+  }, 3000);
+  
+  // 直接保存图片到相册，无需下载
+  uni.saveImageToPhotosAlbum({
+    filePath: coverUrl,
+    success: () => {
+      clearTimeout(loadingTimer); // 清除超时定时器
+      uni.hideLoading();
+      uni.showToast({
+        title: '保存成功',
+        icon: 'success'
+      });
+    },
+    fail: (err) => {
+      clearTimeout(loadingTimer); // 清除超时定时器
+      uni.hideLoading();
+      console.error('保存图片失败:', err);
+      
+      // 提示用户可能是权限问题
+      uni.showToast({
+        title: '保存失败，请检查权限',
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  });
+};
+
+// 显示授权提示对话框
+const showAuthModal = () => {
+  uni.showModal({
+    title: '提示',
+    content: '保存图片需要授权访问相册权限',
+    confirmText: '去设置',
+    success: (res) => {
+      if (res.confirm) {
+        // 打开设置页
+        uni.openSetting({
+          success(settingRes) {
+            console.log('设置页面返回：', settingRes);
+          }
+        });
+      }
+    }
+  });
+};
+
+// 添加标题溢出检测
+const titleElement = ref(null);
+const isTitleOverflow = ref(false);
+
+// 检测标题是否溢出
+const checkTitleOverflow = () => {
+  if (titleElement.value) {
+    // 使用多个延迟尝试检测，确保DOM完全渲染和测量准确
+    setTimeout(() => {
+      try {
+        // 使用普通DOM API进行更可靠的测量
+        const element = uni.createSelectorQuery()
+          .select('.song-title')
+          .boundingClientRect();
+          
+        element.exec((res) => {
+          if (res && res[0]) {
+            // 判断文本宽度是否超过容器宽度
+            const textWidth = res[0].width;
+            const containerWidth = 200; // 与CSS中设置的一致
+            
+            isTitleOverflow.value = textWidth > containerWidth;
+            console.log('标题宽度:', textWidth, '容器宽度:', containerWidth, '是否溢出:', isTitleOverflow.value);
+          }
+        });
+      } catch (error) {
+        console.error('检查标题溢出失败:', error);
+      }
+    }, 300);
+  }
+};
+
+// 监听歌曲数据变化
+watch(() => songData.value?.title, (newTitle) => {
+  if (newTitle) {
+    // 延迟检查，确保DOM已更新
+    setTimeout(checkTitleOverflow, 300);
+  }
+}, { immediate: true });
+
+// 在页面挂载后检查标题溢出，并在页面尺寸变化时重新检查
+onMounted(() => {
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value);
+  
+  // 多次检测以提高成功率
+  setTimeout(checkTitleOverflow, 300);
+  setTimeout(checkTitleOverflow, 800);
+});
+
+// 监听songData对象本身，确保数据加载后重新检测
+watch(() => songData.value, () => {
+  if (songData.value?.title) {
+    setTimeout(checkTitleOverflow, 300);
+  }
+});
 </script>
 
 <style lang="scss">
@@ -1983,23 +2117,54 @@ const hasReMaster = computed(() => {
       align-items: center;
       margin-bottom: 10rpx;
       max-width: 370rpx;
+      position: relative;
+      
+      .song-title-container {
+        flex: 1;
+        overflow: hidden;
+        max-width: 290rpx;
+        white-space: nowrap;
+      }
+      
       .song-title {
         font-size: 36rpx;
         font-weight: bold;
         margin-right: 16rpx;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 100%; /* 限制最大宽度 */
-		display: inline-block; /* 确保省略号生效 */
-	
+        white-space: nowrap;
+        display: inline-block;
+        padding-right: 10rpx;
+      }
+      
+      .scrolling-title {
+        animation: scrollText 8s linear infinite;
+        display: inline-block;
+        padding-right: 50rpx; /* 添加右侧空白，使滚动看起来更自然 */
       }
       
       .song-id {
         font-size: 28rpx;
         color: #666;
+        margin-left: 5rpx;
       }
     }
+  }
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  5% { /* 开始时停留更长时间 */
+    transform: translateX(0);
+  }
+  50% { /* 慢慢滚动到最左边 */
+    transform: translateX(calc(-50% + 10rpx));
+  }
+  55% { /* 在最左边停留更长时间 */
+    transform: translateX(calc(-50% + 10rpx));
+  }
+  100% { /* 更平滑地回到起始位置 */
+    transform: translateX(0);
   }
 }
 
@@ -2939,5 +3104,31 @@ const hasReMaster = computed(() => {
   font-size: 40rpx;
   color: #666;
   padding: 10rpx;
+}
+
+.cover-container {
+  position: relative;
+  // 其他样式...
+  
+  .save-tip {
+    position: absolute;
+    bottom: 20rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8rpx 20rpx;
+    border-radius: 30rpx;
+    font-size: 24rpx;
+    animation: fadeInOut 3s ease-in-out forwards;
+    white-space: nowrap;
+  }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 </style> 

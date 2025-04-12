@@ -1,5 +1,5 @@
 <template>
-	<view class="container">
+	<view class="container" :class="{'dark-mode': isDarkMode}">
 		<view class="header">
 			<text class="title">热门乐曲排行榜</text>
 		</view>
@@ -60,9 +60,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, inject, onBeforeMount } from 'vue';
 import { sortChartStatsByPlayCount, getSortedChartList } from '@/utils/chartStatsUtils';
 import SongService from '@/utils/SongService';
+
+import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js';
+const applyTheme=inject('applyTheme',false);
+// 注入深色模式变量
+const isDarkMode = inject('isDarkMode', false);
+onBeforeMount(()=>{
+  applyTheme();
+  updateNativeTabBar(isDarkMode.value);
+})
 
 // 状态变量
 const loading = ref(true);
@@ -192,7 +201,7 @@ watch(currentPage, (newPage) => {
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 // 响应式变量定义 - 只针对尺寸和布局
 $padding-base: 20rpx;
 $padding-lg: 40rpx;
@@ -539,3 +548,6 @@ $font-size-lg: 40rpx;
 	}
 }
 </style> 
+
+<!-- 导入深色模式样式 -->
+<style lang="scss" src="./dark-chart-stats.scss"></style> 
