@@ -183,7 +183,7 @@ const selectedGenre = ref('');
 // 版本选项
 const versionOptions = ['全部版本', 'maimai', 'maimai PLUS', 'maimai GreeN', 'maimai GreeN PLUS', 
                         'maimai ORANGE', 'maimai ORANGE PLUS', 'maimai PiNK', 'maimai PiNK PLUS', 
-                        'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'maimai MiLK PLUS', 
+                        'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'MiLK PLUS', 
                         'maimai FiNALE', 'maimai でらっくす', 'maimai でらっくす Splash', 
                         'maimai でらっくす UNiVERSE', 'maimai でらっくす FESTiVAL', 
                         'maimai でらっくす BUDDiES'];
@@ -708,14 +708,7 @@ const getDifficultyName = (song) => {
           }
         }
         
-        &:hover .song-info {
-          white-space: normal;
-          max-height: none;
-          overflow: visible;
-          z-index: 5;
-          background: rgba(0, 0, 0, 0.85);
-          position: relative;
-        }
+   
         
         &.empty {
           background-color: #e8eaf6;

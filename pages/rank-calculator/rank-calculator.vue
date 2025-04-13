@@ -185,7 +185,7 @@ const isCurrentRank = (rankName) => {
 onMounted(() => {
   // 页面加载时的初始化逻辑
   uni.setNavigationBarTitle({
-    title: 'RANK 计算器'
+    title: 'Rating 计算器'
   });
 });
 </script>

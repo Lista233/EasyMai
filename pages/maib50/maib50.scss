@@ -11,7 +11,9 @@
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	box-sizing: border-box;
 	width: 100%;
+	max-width: 100%;
 	overflow-x: hidden;
+	
 	.loading-container{
 		display: inline-flex;
 		
@@ -181,12 +183,22 @@
 	}
 	
 	.b50box {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		width: 100%;
+		margin: 0 auto;
+		max-width: 100%;
+		overflow-x: hidden;
 		.b50-user-info {
 		  width: 100%;
 		  text-align: center;
 		  margin-bottom: -10rpx;
 		  padding: 10rpx 0;
-		  	    background-color: rgba(255, 255, 255, 1);
+		  background-color: rgba(255, 255, 255, 1);
+		  box-sizing: border-box;
 		  .user-nickname {
 			width: 100%;
 		    font-size: 36rpx;
@@ -197,39 +209,30 @@
 		    border-radius: 10rpx;
 		    background-color: rgba(255, 255, 255, 1);
 		    box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+			box-sizing: border-box;
 		  }
 		}
 		.history-view-indicator{
 			margin-top: 20rpx;
-			width: 100%;	
-			background-color:#e2d5f7;
+			width: 87%;
+			background-color: #e2d5f7;
 			display: flex;
 			justify-content: center;
-			align-content: center;
-			padding: 20rpx 10rpx;
+			align-items: center;
+			padding: 20rpx;
+			margin: 20rpx auto;
+			border-radius: 12rpx;
 		 .history-view-text{
 			 color: #8f6af6;
 			 font-size: 30rpx;
 			 font-weight: 400;
 		 }
 		}
-		width: calc(100% - 40rpx);
-		margin: 0 15rpx;
-		margin-left: 22rpx;
-		margin-right: 10rpx;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		box-sizing: border-box;
-
+		
 		.section-title {
-
-			width: calc(89% - 20rpx);
-			text-align: center;
 			font-size: 36rpx;
 			font-weight: 800;
-			margin: 3rpx 10rpx;
+			margin: 10rpx 10rpx;
 			color: #333;
 			padding: 20rpx 20rpx;
 			border-radius: 12rpx;
@@ -241,15 +244,13 @@
 			text-align: left;
 			background: transparent;
 			box-shadow: none;
-		
 			opacity: 0.7;
-			justify-self: center;
 			.title-content {
 				position: relative;
 				display: inline-block;
 				padding: 0 30rpx;
 				transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-				transform: translateX(0);
+			
 				
 				&::before,
 				&::after {
@@ -275,21 +276,15 @@
 			}
 		
 			&.has-data {
-				display: flex;
-				text-align: center;
-				margin-top: 3rpx;
-				margin-bottom: 3rpx;
-				width: calc(88% - 20rpx);
-				background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
-				box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
-				backdrop-filter: blur(10px);
-				transform: translateX(-3rpx);
-				opacity: 1;
-				justify-self: center;
-				justify-content: center;
+	display: block;
+	text-align: center;
+	width: calc(95% - 20rpx);
+	background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+	box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+	backdrop-filter: blur(10px);
+	transform: translateX(0);
+	opacity: 1;
 				.title-content {
-					transform: translateX(0);
-					
 					&::before,
 					&::after {
 						width: 8rpx;
@@ -321,27 +316,15 @@
 		}
 		
 		.rating-container {
-			display: flex;
-		
-			flex-direction:column;
-			justify-self: center;
-			align-self: center;
-			justify-content: center;
-			align-content: center;
-			width: 80%;
-		    background: rgba(255, 255, 255, 0.95);
-		    backdrop-filter: blur(10px);
-		    border-radius: 20rpx;
-		    padding: 32rpx 40rpx;
-			margin-top: 5rpx;
-			margin-bottom: 10rpx;
-		   transform: translateX(-3rpx);
-		    //box-sizing: border-box;
-		    text-align: center;
-		    transition: all 0.3s ease;
-		  //  border: 1px solid rgba(255, 255, 255, 0.7);
-		    position: relative;
-		    overflow: hidden;
+		background: rgba(255, 255, 255, 0.95);
+		border-radius: 40rpx;
+		padding: 32rpx 40rpx;
+		margin: 5rpx 10rpx 10rpx 10rpx;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+		text-align: center;
+		transition: all 0.3s ease;
+		position: relative;
+		overflow: hidden;
 		    
 		    .rating-title {
 		        font-size: 24rpx;
@@ -481,21 +464,24 @@
 		    100% { background-position: 300% 50%; }
 		}
 		
-	
+
 		.b35box, .b15box {
-			width: 90%;
-			padding: 0;
-			margin: 0 auto;
 			display: flex;
 			flex-wrap: wrap;
+			width: 82%;
+			padding: 0;
+			margin: 0 auto;
+			
 			gap: 2rpx;
 			row-gap: 4rpx;
-			justify-content:flex-start;
-			align-content:flex-start;
-			transform: translateX(-1rpx);
+			justify-content: space-between;
+			align-items: center;
+			box-sizing: border-box;
+			
+		
 			.song-card {
 				position: relative;
-				width: calc(50% - 1rpx);
+				width: calc(50% - 2rpx);
 				margin: 0;
 				background: white;
 				border-radius: 16rpx;
@@ -838,7 +824,7 @@
 							color: #64748b;
 							font-weight: 500;
 							letter-spacing: 0.3px;
-							transform: translateX(0);
+					
 							/* transition: all 0.3s ease; */
 						}
 						
@@ -1136,19 +1122,18 @@
 	.history-view-indicator {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		padding: 10rpx 16rpx;
+		justify-content: center;
+		padding: 16rpx;
 		background-color: rgba(79, 70, 229, 0.1);
-		border-radius: 8rpx;
-		margin-top: 8rpx;
-		margin-bottom: 0rpx;
+		border-radius: 12rpx;
+		margin: 8rpx auto;
+		width: 87%;
 		.history-view-text {
-			font-size: 14px;
+			font-size: 28rpx;
 			font-weight: 500;
 			color: #4f46e5;
 		}
-
-}
+	}
 
 
 }
@@ -1258,14 +1243,12 @@
 }
 
 	.logout-btn {
-	
-		padding: 0,0,0,0;
+		padding: 0;
 		position: fixed;
 		width: 60rpx;
-		/* margin: 15rpx auto; */
 		height: 60rpx;
-		letf:10rpx;
-		top:20rpx;
+		left: 10rpx;
+		top: 20rpx;
 		border: 2rpx solid #fca5a5;
 		border-radius: 50%;
 		background: #fee2e2;
@@ -1273,6 +1256,7 @@
 		display: flex;
 		font-size: 28rpx;
 		justify-content: center;
+		align-items: center;
 		font-weight: 500;
 		transition: all 0.3s ease;
 		box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.1);
@@ -1412,6 +1396,9 @@
 	align-items: center;
 	justify-content: center;
 	z-index: 9999;
+	box-sizing: border-box;
+	max-width: 100vw;
+	overflow-x: hidden;
 	.modal-overlay {
 		position: fixed;
 		top: 0;
@@ -1421,6 +1408,8 @@
 		background-color: rgba(0, 0, 0, 0.5);
 		z-index: 9998;
 		.modal-content{
+			box-sizing: border-box;
+			max-width: 90vw;
 			.import-modal{
 				.import-form{
 					.form-item{

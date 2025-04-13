@@ -16,7 +16,7 @@
 			</button>
 			
 			<!-- 保存B50图片按钮 -->
-			<button class="save-image-btn" @click="saveB50AsImage">
+			<button class="save-image-btn" @click="saveB50AsImage" v-if="!isIOS">
 				<text class="btn-text">保存图片</text>
 			</button>
 			
@@ -595,7 +595,8 @@ import SpHtml2canvasRender from '@/uni_modules/sp-html2canvas-render/components/
 // 注入深色模式变量
 const isDarkMode = inject('isDarkMode');
 const applyTheme = inject('applyTheme');
-
+const systemInfo = uni.getSystemInfoSync();
+const isIOS = systemInfo.osName === 'ios';
 // const ossroute='https://lista233.oss-cn-beijing.aliyuncs.com/maicover/'
 // const localroute= 'maicover';
 // const suffix=ref('.jpg')
