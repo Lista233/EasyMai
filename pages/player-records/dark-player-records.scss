@@ -664,19 +664,20 @@
       }
       
       .fc-fs-tabs {
-        background-color: $dark-element-bg;
-        border: 1px solid $dark-card-border;
+        background-color: $dark-element-bg !important;
+        border: 1px solid $dark-card-border !important;
         
         .tab-item {
-          color: $dark-button-text;
+		  background-color: $dark-button-bg;
+          color: $dark-button-text !important;
           
           &:active, &:hover {
-            background-color: $dark-button-hover-bg;
+            background-color:$dark-element-bg !important;
           }
           
           &.active {
-            background-color: $dark-primary-button-active-bg;
-            color: $dark-primary-button-text;
+            background-color: $dark-element-bg !important;
+            color: $dark-primary-button-text !important;
           }
         }
       }

@@ -1,102 +1,140 @@
 @import "@/uni.scss";
 
 .modal-container.dark-mode {
-  .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.7) !important;
-  }
+   
+   .modal-overlay {
+     position: absolute;
+     background-color: rgba(0, 0, 0, 0.5);
+   }
+   
+   .modal-content {
+
+     max-width: 600rpx;
+	 background:$dark-card-bg;
+
+     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+     animation: modalShow 0.2s ease;
+     
+     .modal-title {
+ 
+       color:$dark-text-primary;
+     }
+     
+     &.qr-modal {
+       .qr-form {
+
+         
+         .form-item {
+           .label-with-help {
+           
+             
+             .help-icon {
+               color: #94a3b8;
+          
+               
+               &:active {
+                 color: #6366f1;
+                 background: rgba(99, 102, 241, 0.1);
+               }
+             }
+             
+             .form-label {
+               color: #64748b;
+               font-size: 28rpx;
+               font-weight: 500;
+             }
+           }
+           
+           .form-textarea {
+           
+             border: $dark-card-border;
   
-  .modal-content {
-    background: $dark-card-bg !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2) !important;
-    
-    .modal-title {
-      color: $dark-text-primary !important;
-    }
-    
-    &.qr-modal {
-      .qr-form {
-        .form-item {
-          .label-with-help {
-            .help-icon {
-              color: $dark-text-secondary !important;
-              
-              &:active {
-                color: #8c84ff !important;
-                background: rgba(99, 102, 241, 0.2) !important;
-              }
-            }
-            
-            .form-label {
-              color: $dark-text-secondary !important;
-            }
-          }
+             background: $dark-element-bg;
+  
+             
+             &:focus {
+               border-color: #818cf8;
+               box-shadow: 0 0 0 4rpx rgba(129, 140, 248, 0.1);
+               background:$dark-element-active-bg;
           
-          .form-textarea {
-            border: 2rpx solid $dark-card-border !important;
-            background: $dark-element-bg !important;
-            color: $dark-text-primary !important;
+             }
+             
+             &:hover {
+               border-color: #818cf8;
+               background:$dark-element-active-bg;
+             }
+             
+             &::placeholder {
+               color: #94a3b8;
+             }
+           }
+           
+           .import-btn {
             
-            &:focus {
-              border-color: #6366f1 !important;
-              box-shadow: 0 0 0 4rpx rgba(129, 140, 248, 0.15) !important;
-              background: $dark-element-active-bg !important;
-            }
-            
-            &:hover {
-              border-color: #6366f1 !important;
-              background: $dark-element-active-bg !important;
-            }
-            
-            &::placeholder {
-              color: $dark-text-hint !important;
-            }
-          }
-          
-          .import-btn {
-            border: 2rpx dashed $dark-card-border !important;
-            background: $dark-element-bg !important;
-            
-            .btn-icon {
-              color: $dark-text-secondary !important;
-            }
-            
-            .btn-text {
-              color: $dark-text-secondary !important;
-            }
-            
-            &:active {
-              background: $dark-element-active-bg !important;
-              border-color: #6366f1 !important;
-              
-              .btn-icon, .btn-text {
-                color: #8c84ff !important;
-              }
-            }
-          }
-        }
-      }
-      
-      .modal-buttons {
-        .modal-btn {
-          &.cancel {
-            background: $dark-secondary-button-bg !important;
-            color: $dark-secondary-button-text !important;
-            
-            &:active {
-              background: $dark-secondary-button-hover-bg !important;
-            }
-          }
-          
-          &.confirm {
-            background: $dark-primary-button-bg !important;
-            color: $dark-primary-button-text !important;
-            
-            &:active {
-              background: $dark-primary-button-hover-bg !important;
-            }
-          }
-        }
-      }
-    }
-  }
+             border: 2rpx dashed #e2e8f0;
+     
+             background: #f8fafc;
+       
+             
+             .btn-icon {
+ 
+               color: #64748b;
+             }
+             
+             .btn-text {
+ 
+               color: #64748b;
+           
+             }
+             
+             &:active {
+               background: #f1f5f9;
+               border-color: #818cf8;
+               
+               .btn-icon, .btn-text {
+                 color: #6366f1;
+               }
+             }
+           }
+         }
+       }
+       
+       .modal-buttons {
+       
+         
+         .modal-btn {
+        
+           
+           &.cancel {
+             background: $dark-element-bg;
+             color: $dark-text-primary;
+           }
+           
+           &.confirm {
+             background: $dark-primary-button-bg;
+             color: white;
+             
+             &:active {
+               background:$dark-primary-button-bg;
+             }
+           }
+           
+           &:active {
+             transform: scale(0.98);
+           }
+         }
+       }
+     }
+   }
+ }
+ 
+ @keyframes modalShow {
+   from {
+     opacity: 0;
+     transform: scale(0.95);
+   }
+   to {
+     opacity: 1;
+     transform: scale(1);
+   }
 } 

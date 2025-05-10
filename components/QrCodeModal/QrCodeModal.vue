@@ -1,5 +1,5 @@
 <template>
-  <view class="modal-container" :class="{ 'dark-mode': darkMode }" v-if="visible">
+  <view class="modal-container" :class="{ 'dark-mode': isDarkMode }" v-if="visible">
     <view class="modal-overlay" @click="handleCancel"></view>
     <view class="modal-content qr-modal">
       <view class="modal-title">绑定二维码获取UID</view>
@@ -33,7 +33,7 @@
 <script setup>
 import { ref, inject } from 'vue';
 import './dark-mode.scss';
-
+const isDarkMode = inject('isDarkMode');
 const qrCodeInput = ref('');
 // 定义props
 const props = defineProps({
@@ -90,6 +90,7 @@ function handleConfirm() {
 </script>
 
 <style lang="scss" scoped>
+@import "dark-mode.scss";
 .modal-container {
   position: fixed;
   top: 0;

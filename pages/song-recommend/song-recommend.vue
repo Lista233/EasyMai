@@ -49,7 +49,7 @@
 						<label class="ds-label">最小定数</label>
 						<input 
 							class="ds-input" 
-							type="number" 
+							type="digit"
 							v-model="customDsRange.min" 
 							placeholder="最小值"
 						/>
@@ -59,7 +59,7 @@
 						<label class="ds-label">最大定数</label>
 						<input 
 							class="ds-input" 
-							type="number" 
+							type="digit"
 							v-model="customDsRange.max" 
 							placeholder="最大值"
 						/>

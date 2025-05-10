@@ -15,8 +15,8 @@
        </view>
        <view class="user-details">
          <view class="username">{{ nickname || username || '请先登录' }}</view>
-         <!-- <view class="user-id" v-if="(uid !== -1)&& isLoggedIn">绑定账号: {{ mainame }}</view> -->
-         <!-- <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined) && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view> -->
+         <view class="user-id" v-if="(mainame !== '')&& isLoggedIn">绑定账号: {{ mainame }}</view>
+         <view v-show="(uid == '' || uid == -1 || uid == null||uid==undefined||mainame == '') && isLoggedIn" class="user-id hint-text" v-else @click="handleQrCode">绑定二维码关联舞萌账号</view>
        </view>
        <view class="rating-wrapper">
          <RatingDisplay 
@@ -116,6 +116,7 @@
          <view class="function-desc">管理个人账号</view>
        </view>
        
+	   
        <view class="function-item refresh-api" @click="handleRefreshAPI">
          <view class="function-icon">
               <image class="icon-image" src="/static/icons/refresh.png"></image>
@@ -132,9 +133,26 @@
          <view class="function-name">检查更新</view>
          <view class="function-desc">检查应用是否有新版本</view>
        </view>
-     </view>
+	   <!-- 更新成绩按钮 -->
+	   <view class="function-item update-scores" @click="divingFishUpdate">
+	   	  <view class="function-icon">
+	   	    <image class="icon-image" src="/static/icons/upload.png"></image>
+	   	  </view>
+	   	  <view class="function-name">更新成绩</view>
+	   	  <view class="function-desc">更新水鱼查分器成绩</view>
+	   	</view>
+	   	<view class="function-item qr-code" @click="handleQrCode">
+	   	    <view class="function-icon">
+	   	        <image class="icon-image" src="/static/icons/qrcode.png"></image>
+	   	    </view>
+	   	         <view class="function-name">绑定二维码</view>
+	   	        <view class="function-desc">关联舞萌DX账号</view>
+	   	   </view>
+        </view>
    </view>
     
+			
+
     <!-- 登录/登出按钮 -->
     <view class="login-button" @click="isLoggedIn ? handleLogout() : navigateToLogin()">
       <view class="login-text">{{ isLoggedIn ? '退出登录' : '点击登录' }}</view>
@@ -390,8 +408,12 @@ onLoad(async () => {
 	
 	// 加载头像列表
 	loadAvatarList();
-	
-	await getb50local();
+	if(nickname.value=='')
+	{
+		nickname.value=username.value;
+		await maiApi.divingFishSetProfileRegister(nickname.value,jwt_token.value);
+		uni.setStorageSync('divingFish_nickname',nickname.value);
+	}
 });
 
 // 在页面显示时应用主题到导航栏
@@ -583,6 +605,10 @@ async function handleQrConfirm(qrContent) {
 	  console.log('二维码'+qrContent)
     // 这里应该有处理二维码的逻辑
     // 假设getUidFromQrCode方法已经存在
+	uni.showLoading({
+		title: '上传二维码中...',
+		mask: true
+	});
     const uidResult = await maiApi.maiGetUid(qrContent);
     console.log(uidResult)
 	if(uidResult.data.userID==-1)
@@ -591,11 +617,18 @@ async function handleQrConfirm(qrContent) {
 		  title: '您输入的有误或已过期',
 		  icon: 'none'
 		});
+		uni.hideLoading();
 	}
    else if (uidResult && (uidResult.data.userID!=-1)) {
       uid.value = uidResult.data.userID;
       uni.setStorageSync('uid', uidResult.data.userID);
+	  uni.hideLoading();
+	  uni.showLoading({
+	  	title: '获取用户资料中...',
+	  	mask: true
+	  });
 	  mainame.value=(await maiApi.maiGetUserPreview(uid.value)).data.userName;
+	  uni.hideLoading();
 	  uni.setStorageSync('mainame', mainame.value);
       await divingFishUpdate();
       uni.showToast({
@@ -623,6 +656,7 @@ async function handleAccountSettings() {
     });
     return;
   }
+  importToken.value = uni.getStorageSync('divingFish_importToken');
     // 如果发现导入令牌为空，则自动刷新一次令牌
     if (!importToken.value || importToken.value.trim() === '') {
           console.log('检测到导入令牌为空，自动刷新令牌');
@@ -862,7 +896,7 @@ const handleRefreshAPI = async () => {
 	async function getUserMusicData(){
 		let resp=await maiApi.maiGetUserMusicData(uid.value)
 		console.log(resp)
-		uni.setStorageSync('',resp.data)
+		//uni.setStorageSync('',resp.data)
 		if(resp.data.userId==null)
 		 {
 			return null;
@@ -873,8 +907,30 @@ const handleRefreshAPI = async () => {
 		
 	}
 	async function updateMusicData(musicScoreList){
-		
+		let profile = (await maiApi.divingFishGetProfile(jwt_token.value)).data;
+		nickname.value=profile.nickname;
+		qqid.value=profile.bind_qq;
+		importToken.value=profile.import_token;
+		qq_channel_uid.value=profile.qq_channel_uid;
+		uni.setStorageSync('divingFish_nickname',nickname.value)
+		uni.setStorageSync('divingFish_qqid',qqid.value)
+		uni.setStorageSync('divingFish_importToken',importToken.value)
+		uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
+		if (!importToken.value || importToken.value.trim() === '') {
+		      console.log('检测到导入令牌为空，自动刷新令牌');
+		      try {        
+		        const tokenRes = await maiApi.divingFishRefreshImportToken(jwt_token.value);
+		        if (tokenRes && tokenRes.data && tokenRes.data.token) {
+		          importToken.value = tokenRes.data.token;
+		          uni.setStorageSync('divingFish_importToken', importToken.value);
+		        }
+		      } catch (tokenError) {
+		        console.error('自动刷新令牌失败:', tokenError);
+		      }
+		    }
+		console.log("导入token：",importToken.value)
 		let res = await maiApi.divingFishUpdateData(musicScoreList, importToken.value);
+
 		console.log(res)
 		return res;
 	}
@@ -923,7 +979,7 @@ async function divingFishUpdate()
 			if(uid.value<=0)
 			{
 				uni.showToast({
-					title:"您还未绑定二维码获取UID",
+					title:"您还未绑定二维码关联账号",
 					icon:"none",
 					position:"center"
 				})
@@ -1335,6 +1391,7 @@ const updateTabBarStyle = () => {
           display: block;
           width: 100%;
           margin-top: 4rpx;
+		  margin-bottom: 15rpx;
         }
         
         .hint-text {
@@ -1345,6 +1402,7 @@ const updateTabBarStyle = () => {
           display: block;
           width: 100%;
           margin-top: 4rpx;
+		  margin-bottom: 15rpx;
         }
       }
       

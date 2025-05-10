@@ -1077,7 +1077,7 @@ onMounted(async () => {
 		try {
 			const musicList = uni.getStorageSync('musicData')
 			const playerData = uni.getStorageSync('divingFish_records')
-			
+			console.log(playerData)
 			songService.value = new SongService(musicList)
 			playerRecordService.initPlayerData(playerData.data)
 			

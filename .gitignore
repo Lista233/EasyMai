@@ -3,3 +3,4 @@
 .cursorignore
 /api/
 /uni_modules/
+/static/apiconfig.js

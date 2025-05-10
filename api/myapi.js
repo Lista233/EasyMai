@@ -1,4 +1,4 @@
-import {remoteRoute,aliasRoute} from '@/static/apiconfig.js'
+import {remoteRoute,aliasRoute,statsRoute} from '@/static/apiconfig.js'
 import {request} from './customRequest.js'
 
 
@@ -6,7 +6,7 @@ export async function getVersion() {
 	try {
 		console.log("我在更新");
 		let res= await request({
-			url: `${remoteRoute}/version`,
+			url: `${statsRoute}/version`,
 			method: "GET",
 			
 		});
@@ -21,7 +21,7 @@ export async function getVersion() {
 export async function addAPICount(apiName) {
 	try {
 		return uni.request({
-			url: `${remoteRoute}/stats/record`,
+			url: `${statsRoute}/stats/record`,
 			method: "POST",
 			data:{"api_name":apiName}
 		});

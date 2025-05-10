@@ -517,6 +517,7 @@
 						v-model="customHistoryName"
 						placeholder="为这个B50记录添加名称"
 						class="form-input"
+						style="padding: 30rpx;"
 					/>
 				</view>
 				<view class="modal-buttons">
@@ -538,6 +539,7 @@
 						v-model="editingHistoryName"
 						placeholder="为这个B50记录添加名称"
 						class="form-input"
+						style="padding: 30rpx;"
 					/>
 				</view>
 				<view class="modal-buttons">

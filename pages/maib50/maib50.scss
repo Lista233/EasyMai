@@ -1137,6 +1137,7 @@
 
 
 }
+
 }
 
 .song-cover {
@@ -1410,6 +1411,13 @@
 		.modal-content{
 			box-sizing: border-box;
 			max-width: 90vw;
+			.form-item{
+				padding: 50rpx;
+				.form-input{
+					padding: 50rpx;
+				}
+			}
+			
 			.import-modal{
 				.import-form{
 					.form-item{

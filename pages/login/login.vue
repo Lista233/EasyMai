@@ -318,7 +318,10 @@ const handleLogin = async () => {
   
   try {
     isLoading.value = true;
-    
+        uni.showLoading({
+        	title: '登录中...',
+        	mask: true
+        });
     // 调用登录API
     const res = await maiApi.divingFishLogin(loginForm.username, loginForm.password);
     console.log('登录响应:', res);
@@ -356,10 +359,15 @@ const handleLogin = async () => {
         password: loginForm.password
       }));
     }
-    
+    uni.hideLoading();
     // 获取用户资料
+	
+    uni.showLoading({
+	    title: '获取档案中...',
+	    mask: true
+	});
     await setProfile(jwt_token.value);
-    
+    uni.hideLoading();
     uni.showToast({
       title: '登录成功',
 	  icon:'none',
@@ -387,8 +395,9 @@ const handleLogin = async () => {
 
 async function getb50(){
 	try {
+		uni.hideLoading()
 		uni.showLoading({
-			title: '加载中...',
+			title: '加载B50中...',
 			mask: true
 		});
 		
@@ -461,12 +470,16 @@ const handleRegister = async () => {
   
   try {
     isLoading.value = true;
-    
+    uni.showLoading({
+    	title: '注册中...',
+    	mask: true
+    });
     // 调用注册API
     const response = await maiApi.divingFishRegister(
       registerForm.username,
       registerForm.password
     );
+	uni.hideLoading();
 	console.log(response)
     if (response.statusCode === 200) {
       uni.showToast({
@@ -487,12 +500,14 @@ const handleRegister = async () => {
       // 自动填充登录表单
     
     } else {
+	  uni.hideLoading();
       uni.showToast({
         title: response.data.message || '注册失败，请稍后再试',
         icon: 'none'
       });
     }
   } catch (error) {
+	uni.hideLoading();
     console.error('注册失败:', error);
     const errorMessage = error.response?.data?.message || '注册失败,用户名已存在或网络异常';
     

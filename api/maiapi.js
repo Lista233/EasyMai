@@ -3,7 +3,7 @@
  * @param {Object} options - 请求选项
  * @returns {Promise} - 请求结果
  */
-import {remoteRoute, aliasRoute, divingFishRoute, proxyConfig} from '@/static/apiconfig.js'
+import {remoteRoute, aliasRoute, divingFishRoute, proxyConfig,ProxyDivingFishRoute} from '@/static/apiconfig.js'
 import {request} from '../api/customRequest.js'
 import {addAPICount} from '../api/myapi.js'
 export async function maiGetUid(qrcode) {
@@ -11,7 +11,7 @@ export async function maiGetUid(qrcode) {
 		addAPICount('getuid')
 		console.log('获取UID请求开始:', qrcode)
 		const result = await request({
-			url: `${remoteRoute}/apiqr/?qr_code=${qrcode}`,
+			url: `${remoteRoute}/apiqr?qr_code=${qrcode}`,
 			method: "GET"
 		});
 		console.log('获取UID请求成功:', result)
@@ -26,7 +26,7 @@ export async function maiGetUserMusicData(userID) {
 	try {
 		console.log('获取用户音乐数据请求开始:', userID)
 		const result = await request({
-			url: `${remoteRoute}/getUserMusic/?userID=${userID}`,
+			url: `${remoteRoute}/getUserMusic?userID=${userID}`,
 			method: "GET"
 		});
 		console.log('获取用户音乐数据请求成功:', result)
@@ -40,7 +40,7 @@ export async function maiGetUserPreview(userID) {
 	try {
 		console.log('获取用户预览数据请求开始:', userID)
 		const result = await request({
-			url: `${remoteRoute}/getUserPreview/?userID=${userID}`,
+			url: `${remoteRoute}/getUserPreview?userID=${userID}`,
 			method: "GET"
 		});
 		console.log('获取用户预览数据请求成功:', result)
@@ -54,17 +54,56 @@ export async function maiGetUserPreview(userID) {
 export async function divingFishUpdateData(musicdata, importToken) {
 	try {
 		addAPICount('updatedata')
-		console.log('更新数据请求开始:', { importToken, musicDataLength: musicdata.length })
-		const result = await request({
-			url: `${divingFishRoute}/api/maimaidxprober/player/update_records`,
+		// #ifdef H5
+		console.log('H5环境：通过代理更新');
+		const h5Result = await request({
+			url: `${ProxyDivingFishRoute}/api/maimaidxprober/player/update_records`,
 			header: {
 				'import-token': importToken
 			},
 			method: "POST",
 			data: musicdata
 		});
-		console.log('更新数据请求成功:', result)
-		return result;
+		console.log('H5环境刷新导入token请求成功:', h5Result)
+		return h5Result;
+		// #endif
+		// 非H5和小程序环境，需要判断是否为iOS设备
+		// #ifndef H5 || MP
+		const systemInfo = uni.getSystemInfoSync();
+		const isIOS = systemInfo.osName === 'ios';
+		console.log('在条件编译后的系统信息', systemInfo)
+		if (isIOS) {
+			// iOS设备使用代理
+			console.log('iOS设备：使用代理进行更新');
+			const iosResult = await request({
+			url: `${ProxyDivingFishRoute}/api/maimaidxprober/player/update_records`,
+			header: {
+				'import-token': importToken
+			},
+			method: "POST",
+			data: musicdata
+		   });
+			console.log('iOS设备更新成功:', iosResult)
+			return iosResult;
+		} else {
+			// 其他设备直接请求
+			console.log('非iOS设备：直接更新');
+			const otherResult = await request({
+			url: `${divingFishRoute}/api/maimaidxprober/player/update_records`,
+			header: {
+				'import-token': importToken
+			},
+			method: "POST",
+			data: musicdata
+		   });
+			console.log('非iOS设备更新成功:', otherResult)
+			return otherResult;
+		}
+		// #endif
+		
+		
+		
+		
 	} catch (error) {
 		console.error('更新数据失败:', error);
 		return { error };
@@ -364,6 +403,158 @@ export async function divingFishGetJwtToken(username, password) {
 	}
 }
 
+
+export async function divingFishSetProfileRegister(nickname,jwt_token) {
+	try {
+		console.log('设置注册用户资料请求开始:')
+		
+		// #ifdef H5
+		console.log('H5环境：通过代理设置用户资料');
+		try {
+			const h5Result = request({
+				url: `${proxyConfig.getApiUrl('/api/profile')}`,
+				method: "POST",
+				header: {
+					"Authorization": `Bearer ${jwt_token}`
+				},
+				data: {
+			
+					"nickname": nickname,
+					"privacy": false,
+					"mask": false,
+					"accept_agreement":true
+				}
+			});
+			console.log('H5环境设置用户资料请求成功:', h5Result)
+			return h5Result;
+		} catch (h5Error) {
+			console.error('H5环境设置用户资料请求失败:', h5Error);
+			throw h5Error;
+		}
+		// #endif
+		
+		// #ifdef MP
+		// 小程序环境
+		console.log('小程序环境：直接设置用户资料');
+		try {
+			// 尝试使用完整请求数据打印
+			console.log('小程序环境设置用户资料请求详情:', {
+				url: `${divingFishRoute}/api/maimaidxprober/player/profile`,
+				method: "POST",
+				header: {
+					"Cookie": `jwt_token=${jwt_token}`
+				},
+				data: {	
+					"nickname": nickname,
+					"privacy": false,
+					"mask": false,
+					"accept_agreement":true
+				}
+			});
+			
+			const mpResult = request({
+				url: `${divingFishRoute}/api/maimaidxprober/player/profile`,
+				method: "POST",
+				header: {
+					"Cookie": `jwt_token=${jwt_token}`
+				},
+				data: {
+							
+					"nickname": nickname,
+					"privacy": false,
+					"mask": false,
+					"accept_agreement":true
+				}
+			});
+			console.log('小程序环境设置用户资料请求成功:', mpResult)
+			return mpResult;
+		} catch (mpError) {
+			console.error('小程序环境设置用户资料请求失败:', mpError);
+			// 尝试获取更多错误信息
+			if (mpError.statusCode) {
+				console.error(`状态码: ${mpError.statusCode}`);
+			}
+			if (mpError.data) {
+				console.error('错误响应数据:', mpError.data);
+			}
+			throw mpError;
+		}
+		// #endif
+		
+		// #ifndef H5 || MP
+		// 非H5和小程序环境，需要判断是否为iOS设备
+		const systemInfo = uni.getSystemInfoSync();
+		console.log('设置用户资料系统信息:', systemInfo)
+		const isIOS = systemInfo.osName === 'ios';
+		if (isIOS) {
+			// iOS设备使用代理
+			console.log('iOS设备：通过代理设置用户资料');
+			try {
+				const iosResult = await request({
+					url: `${proxyConfig.getApiUrl('/api/profile')}`,
+					method: "POST",
+					header: {
+						"Authorization": `Bearer ${jwt_token}`
+					},
+				data: {							
+					"nickname": nickname,
+					"privacy": false,
+					"mask": false,
+					"accept_agreement":true
+				}
+				});
+				console.log('iOS设备设置用户资料请求成功:', iosResult)
+				return iosResult;
+			} catch (iosError) {
+				console.error('iOS设备设置用户资料请求失败:', iosError);
+				throw iosError;
+			}
+		} else {
+			// 其他设备直接请求
+			console.log('非iOS设备：直接设置用户资料');
+			try {
+				const otherResult = await request({
+					url: `${divingFishRoute}/api/maimaidxprober/player/profile`,
+					method: "POST",
+					header: {
+						"Cookie": `jwt_token=${jwt_token}`
+					},
+				data: {						
+					"nickname": nickname,
+					"privacy": false,
+					"mask": false,
+					"accept_agreement":true
+				}
+				});
+				console.log('非iOS设备设置用户资料请求成功:', otherResult)
+				return otherResult;
+			} catch (otherError) {
+				console.error('非iOS设备设置用户资料请求失败:', otherError);
+				throw otherError;
+			}
+		}
+		// #endif
+	} catch (error) {
+		console.error('设置用户资料失败:', error);
+		// 尝试提取更多错误信息
+		if (error.response) {
+			console.error('错误响应:', error.response);
+		}
+		if (error.data) {
+			console.error('错误数据:', error.data);
+		}
+		return { 
+			error,
+			errorDetail: {
+				message: error.message,
+				statusCode: error.statusCode || '未知',
+				data: error.data || '无数据'
+			}
+		};
+	}
+}
+
+
 export async function divingFishSetProfile(nickname, bind_qq, qq_channel_uid, jwt_token) {
 	try {
 		console.log('设置用户资料请求开始:', { nickname, bind_qq, qq_channel_uid, tokenLength: jwt_token.length })
@@ -602,7 +793,7 @@ export async function divingFishAgrement(jwt_token) {
 		
 		// #ifdef H5
 		console.log('H5环境：通过代理接受协议');
-		const h5Result = await request({
+		const h5Result = request({
 			url: `${proxyConfig.getApiUrl('/api/agreement')}`,
 			method: "POST",
 			data: {
@@ -619,7 +810,7 @@ export async function divingFishAgrement(jwt_token) {
 		// #ifdef MP
 		// 小程序环境
 		console.log('小程序环境：直接接受协议');
-		const mpResult = await request({
+		const mpResult = request({
 			url: `${divingFishRoute}/api/maimaidxprober/player/agreement`,
 			method: "POST",
 			data: {
@@ -642,7 +833,7 @@ export async function divingFishAgrement(jwt_token) {
 		if (isIOS) {
 			// iOS设备使用代理
 			console.log('iOS设备：通过代理接受协议');
-			const iosResult = await request({
+			const iosResult = request({
 				url: `${proxyConfig.getApiUrl('/api/agreement')}`,
 				method: "POST",
 				data: {
@@ -657,7 +848,7 @@ export async function divingFishAgrement(jwt_token) {
 		} else {
 			// 其他设备直接请求
 			console.log('非iOS设备：直接接受协议');
-			const otherResult = await request({
+			const otherResult = request({
 				url: `${divingFishRoute}/api/maimaidxprober/player/agreement`,
 				method: "POST",
 				data: {

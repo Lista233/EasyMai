@@ -2,18 +2,16 @@ export const remoteRoute='https://mai.lista233.cn';
 export const aliasRoute='https://api.yuzuchan.moe/maimaidx/maimaidxalias'
 export const divingFishRoute = 'https://www.diving-fish.com';
 export const h5ProxyRoute = '/h5api';
-export const version = '20250409';
-export const apiversion = '20250409';
-export const ProxyRoute = 'http://localhost:3000';
-
+export const version = '20250410';
+export const apiversion = '20250410';
+export const ProxyRoute = 'https://proxy.lista233.cn';
+export const statsRoute ='https://mai.lista233.cn';
+export const ProxyDivingFishRoute='https://test-proxy.lista233.cn';
 export const proxyConfig = {
   baseUrl: 'https://proxy.lista233.cn',//远程地址
   
   getProxyUrl() {
     return (
-      (typeof process !== 'undefined' && process.env && process.env.VUE_APP_PROXY_URL) ||
-      (getApp() && getApp().globalData && getApp().globalData.proxyUrl) ||
-      uni.getStorageSync('proxyUrl') ||
       this.baseUrl
     );
   },
