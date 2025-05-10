@@ -5,6 +5,7 @@
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "html2canvas": "^1.4.1",
     "unplugin-auto-import": "^19.1.1"
   }
 }

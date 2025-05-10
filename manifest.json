@@ -2,8 +2,8 @@
     "name" : "EasyMai",
     "appid" : "__UNI__9441491",
     "description" : "",
-    "versionName" : "1.2.0",
-    "versionCode" : 120,
+    "versionName" : "1.2.2",
+    "versionCode" : 122,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -88,7 +88,7 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wx83c2d2ba2de1aaf2",
         "setting" : {
             "urlCheck" : false
         },

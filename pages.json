@@ -121,13 +121,6 @@
 			}
 		},
 		{
-			"path" : "pages/bilibili/bilibili",
-			"style" : 
-			{
-				"navigationBarTitleText" : ""
-			}
-		},
-		{
 			"path" : "pages/toolbox/toolbox",
 			"style" : 
 			{
@@ -179,8 +172,8 @@
 	"globalStyle": {
 		
 		"app-plus":{
-		"bounce":"none" // 将回弹属性关掉
-	
+		"bounce":"none" ,// 将回弹属性关掉
+	    "scrollIndicator":"none"
 		}
 	},
 	"condition" : { //模式配置，仅开发期间生效
