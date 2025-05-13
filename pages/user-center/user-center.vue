@@ -296,72 +296,9 @@ async function updateRecord(){
 	}
 }
 
-// 从本地获取b50数据并计算rating
-function calculateRatingFromLocalB50() {
-  try {
-    // 尝试从本地存储获取b50数据
-    const b50Data = uni.getStorageSync('b50Data');
-    
-    if (!b50Data) {
-      console.log('本地无b50数据');
-      return null;
-    }
-    
-    // 解析b50数据
-    const musicData = JSON.parse(b50Data);
-    
-    if (!musicData || !musicData.charts || !musicData.charts.length) {
-      console.log('b50数据格式无效');
-      return null;
-    }
-    
-    // 获取新旧曲目的成绩并计算rating
-    const newChartsWithRating = [];
-    const oldChartsWithRating = [];
-    
-    musicData.charts.forEach(chart => {
-      if (chart && chart.ds && chart.ra && chart.achievements) {
-        const chartWithRating = {
-          ds: chart.ds,
-          ra: chart.ra,
-          achievements: chart.achievements
-        };
-        
-        if (chart.is_new) {
-          newChartsWithRating.push(chartWithRating);
-        } else {
-          oldChartsWithRating.push(chartWithRating);
-        }
-      }
-    });
-    
-    // 按照rating排序
-    newChartsWithRating.sort((a, b) => b.ra - a.ra);
-    oldChartsWithRating.sort((a, b) => b.ra - a.ra);
-    
-    // 取新曲最好的10首和旧曲最好的40首
-    const newChartsRating = newChartsWithRating.slice(0, 10).reduce((sum, chart) => sum + chart.ra, 0);
-    const oldChartsRating = oldChartsWithRating.slice(0, 40).reduce((sum, chart) => sum + chart.ra, 0);
-    
-    // 计算总rating
-    const totalRating = newChartsRating + oldChartsRating;
-    
-    return {
-      rating: totalRating,
-      lastUpdate: new Date(musicData.updateTime || Date.now()).toLocaleString('zh-CN', {
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    };
-  } catch (error) {
-    console.error('计算本地b50 rating失败:', error);
-    return null;
-  }
-}
 
-// 从API获取b50数据并计算rating
+
+
 
 // 加载用户资料 - 与maib50完全相同
 async function setProfile(jwt_token)
