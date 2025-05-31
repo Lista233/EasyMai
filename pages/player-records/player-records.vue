@@ -101,6 +101,11 @@
 						</text>
 					</view>
 				</button>
+				<button class="filter-btn" @click="navigatorToProess">
+					<view class="btn-content">
+						<text class="btn-title">牌子进度</text>
+					</view>
+				</button>
 			</view>
 			
 			<!-- 添加视图控制栏 -->
@@ -150,7 +155,13 @@
 							:class="{ active: iconDisplay === 'fs' }"
 							@click="setIconDisplay('fs')"
 						>FS</text>
-						
+						<view
+						class="pagesize"
+						>每页<input 
+                              :value="pageSize" 
+                              type="number" 
+                              @confirm="changePageSize"
+                          ></input>条</view>
 					</view>
 				</view>
 			</view>
@@ -248,7 +259,7 @@
 									<view class="song-stats">
 										<view class="stat-item achievements">{{ (record.achievements).toFixed(4) }}%</view>
 										<view class="stat-item ra">RA: {{ record.ra }}</view>
-										<view v-if="record.fc" class="stat-item fc-fs">{{ record.fc.replace('app', 'ap+').replace('ap', 'ap').replace('fcp', 'fc+').toUpperCase() }}丨{{ record.fs.replace('p', '+').toUpperCase() }}</view>
+										<view v-if="record.fc||record.fs" class="stat-item fc-fs">{{ record.fc.replace('app', 'ap+').replace('ap', 'ap').replace('fcp', 'fc+').toUpperCase() }}{{record.fc&&record.fs?" | ":""}}{{record.fs.replace('p', '+').toUpperCase() }}</view>
 									</view>
 								</view>
 								<view class="rate-badge" :class="record.rate.toLowerCase()">{{ record.rate.replace('p','+').toUpperCase() }}</view>
@@ -601,9 +612,9 @@ const dsFilter = ref({
 const dsRanges = [
 	{ label: '全部', min: 1, max: 15 },
 	{ label: '13', min: 13.0, max: 13.6 },
-	{ label: '13+', min: 13.7, max: 13.9 },
+	{ label: '13+', min: 13.6, max: 13.9 },
 	{ label: '14', min: 14.0, max: 14.6 },
-	{ label: '14+', min: 14.7, max: 14.9 },
+	{ label: '14+', min: 14.6, max: 14.9 },
 ]
 
 // 添加简化的版本映射
@@ -679,21 +690,8 @@ const currentStats = ref(null)
 
 // 添加分页相关的响应式变量
 const currentPage = ref(1)
-const pageSize = computed(() => {
-	// 根据网格大小调整每页显示的元素数量
-	switch (gridSize.value) {
-		case 2:
-			return 10; // 2列显示10个元素(5行)
-		case 3:
-			return 15; // 3列显示15个元素(5行)
-		case 4:
-			return 20; // 4列显示20个元素(5行)
-		case 5:
-			return 35; // 5列显示35个元素(7行)
-		default:
-			return 20;
-	}
-})
+// 将pageSize从计算属性改为响应式变量
+const pageSize = ref(20) // 默认每页20条
 
 // 添加难度相关的常量和响应式变量
 const difficultyLabels = ['Basic', 'Advanced', 'Expert', 'Master', 'Re:Master']
@@ -731,19 +729,19 @@ const tempFsType = ref(null)
 // FC类型映射
 const fcTypes = {
 	'none': '未FC',
-	'fc': 'FC',
-	'fcp': 'FC+',
-	'ap': 'AP',
-	'app': 'AP+'
+	'fc': 'FC/FC+',
+	'fcp': '仅FC+',
+	'ap': 'AP/AP+',
+	'app': '仅AP+'
 }
 
 // FS类型映射
 const fsTypes = {
 	'none': '未FS',
-	'fs': 'FS',
-	'fsp': 'FS+',
-	'fsd': 'FSD',
-	'fsdp': 'FSD+'
+	'fs': 'FS/FS+',
+	'fsp': '仅FS+',
+	'fsd': 'FSD/FSD+',
+	'fsdp': '仅FSD+'
 }
 
 // 预定义的达成率范围
@@ -758,6 +756,14 @@ const achievementRanges = [
 	{ label: 'AAA', min: 94, max: 96.99 },
 	{ label: '未SSS', min: 0, max: 99.99 }
 ]
+
+const navigatorToProess = ()=>{
+	
+	  uni.navigateTo({
+	    url: '/pages/achievement-progress/achievement-progress'
+	  });
+}
+
 
 // 检查是否选中了快速选择达成率范围
 const isQuickAchievementRangeSelected = (range) => {
@@ -788,6 +794,20 @@ const showAchievementFilter = () => {
 		max: achievementFilter.value.max
 	}
 	achievementPopup.value.open()
+}
+
+// 修改changePageSize函数，直接修改pageSize值
+const changePageSize = (e) => {
+    let size = parseInt(e.detail.value)
+    // 限制最小和最大值
+    if (isNaN(size) || size < 5) {
+        size = 5
+    } else if (size > 5000) {
+        size = 5000
+    }
+    pageSize.value = size
+    // 重置到第一页
+    currentPage.value = 1
 }
 
 // 关闭达成率筛选弹窗
@@ -1014,7 +1034,7 @@ const filteredRecords = computed(() => {
 			records = records.filter(record => !record.fc || record.fc === 'none');
 		} else {
 			// 筛选特定FC类型的记录
-			records = records.filter(record => record.fc === selectedFcType.value);
+			records = records.filter(record => record.fc === selectedFcType.value || record.fc === selectedFcType.value+"p");
 		}
 	}
 	
@@ -1025,7 +1045,7 @@ const filteredRecords = computed(() => {
 			records = records.filter(record => !record.fs || record.fs === 'none' || record.fs === 'sync');
 		} else {
 			// 筛选特定FS类型的记录
-			records = records.filter(record => record.fs === selectedFsType.value);
+			records = records.filter(record => record.fs === selectedFsType.value || record.fs === selectedFsType.value+"p");
 		}
 	}
 	
@@ -1038,14 +1058,14 @@ const filteredRecords = computed(() => {
 
 // 计算分页后的记录
 const paginatedRecords = computed(() => {
-	const start = (currentPage.value - 1) * pageSize.value;
-	const end = start + pageSize.value;
-	return filteredRecords.value.slice(start, end);
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return filteredRecords.value.slice(start, end);
 })
 
 // 计算总页数
 const totalPages = computed(() => {
-	return Math.ceil(filteredRecords.value.length / pageSize.value);
+    return Math.ceil(filteredRecords.value.length / pageSize.value);
 })
 
 // 格式化版本文本
@@ -1077,7 +1097,23 @@ onMounted(async () => {
 		try {
 			const musicList = uni.getStorageSync('musicData')
 			const playerData = uni.getStorageSync('divingFish_records')
-			console.log(playerData)
+			
+			// 检查是否有错误信息
+			if (playerData && playerData.error) {
+				
+				// 显示错误提示
+				uni.showModal({
+					title: '成绩信息获取异常',
+					content: '请返回主页,在联网状态下更新成绩或点击Rating卡片获取成绩',
+					showCancel: false,
+					success: () => {
+						// 关闭当前页面，返回上一级
+					
+					}
+				});
+				return; // 退出当前方法
+			}
+
 			songService.value = new SongService(musicList)
 			playerRecordService.initPlayerData(playerData.data)
 			
@@ -1091,6 +1127,16 @@ onMounted(async () => {
 			isDataReady.value = true
 		} catch (error) {
 			console.error('加载数据出错:', error)
+			// 显示错误提示
+			uni.showModal({
+				title: '提示',
+				content: '成绩获取错误',
+				showCancel: false,
+				success: () => {
+					// 关闭当前页面，返回上一级
+					
+				}
+			});
 		} finally {
 			// 无论成功失败都关闭加载状态
 			isLoading.value = false
@@ -1349,6 +1395,29 @@ const updateGridSize = (size) => {
 	currentPage.value = 1;
 };
 
+// 添加watch监听gridSize变化，自动调整pageSize
+watch(gridSize, (newGridSize) => {
+    // 根据网格大小调整每页显示的元素数量
+    switch (newGridSize) {
+        case 2:
+            pageSize.value = 10; // 2列显示10个元素(5行)
+            break;
+        case 3:
+            pageSize.value = 15; // 3列显示15个元素(5行)
+            break;
+        case 4:
+            pageSize.value = 20; // 4列显示20个元素(5行)
+            break;
+        case 5:
+            pageSize.value = 35; // 5列显示35个元素(7行)
+            break;
+        default:
+            pageSize.value = 20;
+    }
+    // 重置到第一页
+    currentPage.value = 1;
+}, { immediate: true }) // 立即执行一次，初始化pageSize
+
 
 </script>
 
@@ -1413,8 +1482,8 @@ const updateGridSize = (size) => {
 	
 	.stats-row {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 16rpx;
+		flex-wrap: wrap; // 添加换行支持
+		gap: 16rpx; // 增加间距
 		margin-top: 16rpx;
 		
 		&.fc-row {
@@ -1591,6 +1660,10 @@ const updateGridSize = (size) => {
 		.icon-toggle {
 			display: flex;
 			gap: 20rpx;
+			flex-wrap: nowrap; // 确保不换行
+			align-items: center; // 垂直居中
+			justify-content: flex-start; // 左对齐开始
+			width: 100%; // 占满宽度
 			
 			.toggle-btn {
 				padding: 10rpx 24rpx;
@@ -1599,6 +1672,38 @@ const updateGridSize = (size) => {
 				color: #64748b;
 				background: #f1f5f9;
 				transition: all 0.3s ease;
+				flex-shrink: 0; // 防止按钮被压缩
+				
+				&.active {
+					color: #fff;
+					background: #6366f1;
+				}
+				
+				&:active {
+					opacity: 0.8;
+				}
+			}
+			
+			.pagesize {
+				margin-left: auto; // 推到最右侧
+				padding: 10rpx 24rpx;
+				border-radius: 8rpx;
+				font-size: 24rpx;
+				color: #64748b;
+				background: #f1f5f9;
+				transition: all 0.3s ease;
+				display: flex;
+				align-items: center;
+				white-space: nowrap; // 防止文本换行
+				
+				input {
+					margin: 0 8rpx;
+					min-width: 60rpx;
+					max-width: 100rpx;
+					text-align: center;
+					background-color: rgba(255,255,255,0.2);
+					border-radius: 4rpx;
+				}
 				
 				&.active {
 					color: #fff;

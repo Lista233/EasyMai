@@ -1,0 +1,229 @@
+/* 深色模式样式 - achievement-progress页面 */
+@import '@/uni.scss';
+
+.achievement-progress.dark-mode {
+  background: $dark-gradient-bg;
+  
+  .header {
+    background: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    
+    .title {
+      color: $dark-text-primary;
+    }
+    
+    .subtitle {
+      color: $dark-text-secondary;
+    }
+    
+    .filter-buttons {
+      .filter-btn {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        color: $dark-text-primary;
+        
+        &:active {
+          transform: scale(0.98) translateY(1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+  
+  .songs-container {
+    .level-group {
+      background: $dark-card-bg;
+      border: 1px solid $dark-card-border;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      
+      .level-header {
+        background: $dark-element-bg;
+        
+        .level-label {
+          color: $dark-text-primary;
+        }
+        
+        .song-count {
+          color: $dark-text-secondary;
+        }
+      }
+      
+      .level-songs {
+        .song-cover-container {
+          box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.2);
+          
+          .cover-image {
+            border: 8rpx solid transparent;
+            
+            &.diff-0 {
+              border-color: #1EA15D;
+            }
+            
+            &.diff-1 {
+              border-color: #F6B40C;
+            }
+            
+            &.diff-2 {
+              border-color: #E9485D;
+            }
+            
+            &.diff-3 {
+              border-color: #9E45E2;
+            }
+            
+            &.diff-4 {
+              border-color: rgb(253, 159, 255);
+            }
+          }
+          
+          .score-info {
+            background: rgba(0, 0, 0, 0.7);
+            
+            .rate-image, .fc-fs-image {
+              filter: brightness(1.2);
+            }
+          }
+        }
+      }
+    }
+    
+    .divider {
+      background-color: $dark-card-border;
+    }
+    
+    .no-results {
+      background: $dark-card-bg;
+      border: 1px solid $dark-card-border;
+      
+      text {
+        color: $dark-text-secondary;
+      }
+    }
+  }
+  
+  .filter-popup {
+    background-color: $dark-card-bg;
+    border: 1px solid $dark-card-border;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
+    
+    .popup-header {
+      background:$dark-card-bg;
+      border-bottom: 1px solid $dark-card-border;
+      
+      .popup-title {
+        color: $dark-text-primary;
+      }
+      
+      .close-btn {
+        color: $dark-text-secondary;
+        
+        &:active {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+    
+    .popup-content {
+      .filter-item {
+        color: $dark-text-primary;
+        border-left: 8rpx solid transparent;
+        
+        &.no-border {
+          border-left: none;
+        }
+        
+        &.active {
+          background-color: rgba(99, 102, 241, 0.2);
+          font-weight: bold;
+        }
+        
+        &:active {
+          background-color: rgba(99, 102, 241, 0.1);
+        }
+        
+        &.diff-color-1 {
+          
+          &.active {
+            background-color: rgba(30, 161, 93, 0.2);
+            color: #1EA15D;
+          }
+        }
+        
+        &.diff-color-2 {
+          
+          &.active {
+            background-color: rgba(246, 180, 12, 0.2);
+            color: #F6B40C;
+          }
+        }
+        
+        &.diff-color-3 {
+          
+          &.active {
+            background-color: rgba(233, 72, 93, 0.2);
+            color: #E9485D;
+          }
+        }
+        
+        &.diff-color-4 {
+          
+          &.active {
+            background-color: rgba(158, 69, 226, 0.2);
+            color: #9E45E2;
+          }
+        }
+        
+        &.diff-color-5 {
+          
+          &.active {
+            background-color: rgba(253, 159, 255, 0.2);
+            color: rgb(253, 159, 255);
+          }
+        }
+      }
+    }
+  }
+  
+  .filter-section {
+    border-bottom: 1px solid $dark-card-border;
+    
+    .section-title {
+      color: $dark-text-secondary;
+    }
+    
+    .checkbox-group {
+      .checkbox-item {
+        .checkbox {
+          border-color: $dark-card-border;
+          
+          &.checked {
+            background-color: #6366f1;
+            border-color: #6366f1;
+            color: $dark-text-primary;
+          }
+        }
+        
+        text {
+          color: $dark-text-primary;
+        }
+      }
+    }
+  }
+  
+  .display-options {
+    .display-option {
+      background: rgba(0, 0, 0, 0.2);
+      color: $dark-text-secondary;
+      
+      &.active {
+        background: #6366f1;
+        color: $dark-text-primary;
+      }
+      
+      &:active {
+        opacity: 0.8;
+      }
+    }
+  }
+} 

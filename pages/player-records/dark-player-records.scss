@@ -88,6 +88,29 @@
             background: $dark-button-hover-bg !important;
           }
         }
+        
+        .pagesize {
+          color: $dark-button-text !important;
+          background: $dark-button-bg !important;
+          border: 1px solid $dark-button-border;
+          
+          input {
+            background-color: rgba(0, 0, 0, 0.2) !important;
+            color: $dark-text-primary !important;
+            border: 1px solid $dark-card-border !important;
+          }
+          
+          &.active {
+            color: $dark-primary-button-text !important;
+            background: $dark-primary-button-bg !important;
+            border-color: $dark-primary-button-border;
+          }
+          
+          &:active {
+            opacity: 0.8;
+            background: $dark-button-hover-bg !important;
+          }
+        }
       }
     }
   }

@@ -17,6 +17,7 @@ import { reactive, ref } from 'vue';
 		'/pages/maiupdate/maib50',
 		//'/pages/song-detail/song-detail',
 		'/pages/song-search/song-search',
+		'/pages/song-gallery/song-gallery',
 		'/pages/Test/Test',
 		'/pages/user-center/user-center',
 		'/pages/login/login',
