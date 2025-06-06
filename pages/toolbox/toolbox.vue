@@ -30,9 +30,19 @@
           <view class="tool-name">音游地图</view>
           <view class="tool-desc">查查你地区的机台</view>
         </view>
+		
+		
+		<view class="tool-card" @click="navigateToFindMaiMai">
+		  <view class="tool-icon">🗺️</view>
+		  <view class="tool-name">FindMaiMai</view>
+		  <view class="tool-desc">超级酷炫的机厅位置可视化工具</view>
+		</view>
+		
       </view>
     </view>
     
+
+	
     <!-- 数据工具 -->
     <view class="tool-section">
       <view class="section-header">
@@ -61,6 +71,12 @@
           <view class="tool-name">热门乐曲排行</view>
           <view class="tool-desc">震惊!最火爆的谱面竟然是...</view>
         </view>
+		<view class="tool-card" @click="navigateTo('/pages/find-maimai/find-maimai')">
+		  <view class="tool-icon">🕹️</view>
+		  <view class="tool-name">附近的机台</view>
+		  <view class="tool-desc">点击卡片可以跳转到高德地图搜索呦~</view>
+		</view>
+		
  <!--       <view class="tool-card" @click="navigateTo('/pages/PlayerRecords/PlayerRecords')">
           <view class="tool-icon">🏆</view>
           <view class="tool-name">成绩查询</view>
@@ -125,6 +141,26 @@ const navigateTo = (url) => {
     animationDuration: 300
   });
 };
+
+
+const navigateToFindMaiMai = ()=>{
+	
+	uni.getLocation({
+		type: 'gcj02', //返回可以用于uni.openLocation的经纬度
+		success: function (res) {
+			const latitude = res.latitude;
+			const longitude = res.longitude;
+			let url = `https://www.godserver.cn/earth?lo=${longitude}&la=${latitude}`
+			console.log(latitude,longitude)
+			navigateToWebview(url,'FindMaiMaiDX')
+			
+		
+		}
+	});
+	
+
+	
+}
 
 // 添加专门跳转到 webview 的函数
 const navigateToWebview = (targetUrl, title) => {

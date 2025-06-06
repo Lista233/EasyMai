@@ -66,12 +66,10 @@
       
       .icon-toggle {
         display: flex;
-        gap: 20rpx;
+  
         
         .toggle-btn {
-          padding: 10rpx 24rpx;
-          border-radius: 8rpx;
-          font-size: 24rpx;
+       
           color: $dark-button-text !important;
           background: $dark-button-bg !important;
           border: 1px solid $dark-button-border;

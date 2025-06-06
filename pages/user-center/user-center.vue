@@ -609,7 +609,7 @@ async function handleQrConfirm(qrContent) {
 		title: '上传二维码中...',
 		mask: true
 	});
-    const uidResult = await maiApi.maiGetUid(qrContent);
+    const uidResult = await maiApi.maiGetUid(qrContent,jwt_token.value);
     console.log(uidResult)
 	if(uidResult.data.userID==-1)
 	{
@@ -627,7 +627,7 @@ async function handleQrConfirm(qrContent) {
 	  	title: '获取用户资料中...',
 	  	mask: true
 	  });
-	  mainame.value=(await maiApi.maiGetUserPreview(uid.value)).data.userName;
+	  mainame.value=(await maiApi.maiGetUserPreview(uid.value,jwt_token.value)).data.userName;
 	  uni.hideLoading();
 	  uni.setStorageSync('mainame', mainame.value);
       await divingFishUpdate();
@@ -894,7 +894,7 @@ const handleRefreshAPI = async () => {
 };
 
 	async function getUserMusicData(){
-		let resp=await maiApi.maiGetUserMusicData(uid.value)
+		let resp=await maiApi.maiGetUserMusicData(uid.value,jwt_token.value)
 		console.log(resp)
 		//uni.setStorageSync('',resp.data)
 		if(resp.data.userId==null)

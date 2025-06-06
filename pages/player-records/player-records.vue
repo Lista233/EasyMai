@@ -14,6 +14,7 @@
 				<view class="player-info" v-if="currentStats">
 					<text class="nickname">{{ playerRecordService.getPlayerInfo()?.nickname || playerRecordService.getPlayerInfo()?.username || '未知玩家' }}</text>
 					<text class="rating">Rating: {{ playerRecordService.getPlayerInfo()?.rating || 0 }}</text>
+					<text class="best-ra" v-if="iconDisplay === 'ra' && sortBy === 'ra'">Total{{ pageSize }}:{{ calculateTotalRa }}</text>
 				</view>
 				
 				<!-- 统计信息 - 第一行 -->
@@ -155,6 +156,11 @@
 							:class="{ active: iconDisplay === 'fs' }"
 							@click="setIconDisplay('fs')"
 						>FS</text>
+						<text 
+							class="toggle-btn"
+							:class="{ active: iconDisplay === 'ra' }"
+							@click="setIconDisplay('ra')"
+						>RA</text>
 						<view
 						class="pagesize"
 						>每页<input 
@@ -216,6 +222,12 @@
 									class="icon-badge icon-rate"
 									:src="`../../static/maiFCFS/${record.rate}.png`"
 								/>
+								
+								<!-- RA数值显示 -->
+								<text 
+									v-if="iconDisplay === 'ra'" 
+									class="ra-value"
+								>{{ record.ra }}</text>
 							</view>
 						</view>
 					</view>
@@ -1381,6 +1393,9 @@ const shouldShowIcon = (record) => {
 	if (iconDisplay.value === 'rate' && record.rate && ['sssp', 'sss'].includes(record.rate.toLowerCase())) {
 		return true;
 	}
+	if (iconDisplay.value === 'ra' && record.ra) {
+		return true;
+	}
 	return false;
 }
 
@@ -1406,7 +1421,7 @@ watch(gridSize, (newGridSize) => {
             pageSize.value = 15; // 3列显示15个元素(5行)
             break;
         case 4:
-            pageSize.value = 20; // 4列显示20个元素(5行)
+            pageSize.value = 24; // 4列显示20个元素(5行)
             break;
         case 5:
             pageSize.value = 35; // 5列显示35个元素(7行)
@@ -1417,6 +1432,15 @@ watch(gridSize, (newGridSize) => {
     // 重置到第一页
     currentPage.value = 1;
 }, { immediate: true }) // 立即执行一次，初始化pageSize
+
+// 添加计算属性计算当前页面记录的RA总和
+const calculateTotalRa = computed(() => {
+	// 获取当前页面的记录
+	const currentRecords = paginatedRecords.value;
+	// 计算RA总和
+	const totalRa = currentRecords.reduce((sum, record) => sum + (record.ra || 0), 0);
+	return totalRa;
+});
 
 
 </script>
@@ -1477,6 +1501,16 @@ watch(gridSize, (newGridSize) => {
 			padding: 6rpx 16rpx;
 			border-radius: 30rpx;
 			font-weight: bold;
+		}
+		
+		.best-ra {
+			font-size: 28rpx;
+			color: #ff6b81;
+			background-color: rgba(255, 107, 129, 0.1);
+			padding: 6rpx 16rpx;
+			border-radius: 30rpx;
+			font-weight: bold;
+			margin-left: 16rpx;
 		}
 	}
 	
@@ -1659,7 +1693,7 @@ watch(gridSize, (newGridSize) => {
 		
 		.icon-toggle {
 			display: flex;
-			gap: 20rpx;
+			gap: 15rpx;
 			flex-wrap: nowrap; // 确保不换行
 			align-items: center; // 垂直居中
 			justify-content: flex-start; // 左对齐开始
@@ -1668,7 +1702,7 @@ watch(gridSize, (newGridSize) => {
 			.toggle-btn {
 				padding: 10rpx 24rpx;
 				border-radius: 8rpx;
-				font-size: 24rpx;
+				font-size: 25rpx;
 				color: #64748b;
 				background: #f1f5f9;
 				transition: all 0.3s ease;
@@ -1845,6 +1879,18 @@ watch(gridSize, (newGridSize) => {
 				.icon-rate {
 					width: 120rpx;
 					height: 56rpx;
+				}
+				
+				// RA值样式
+				.ra-value {
+					font-size: 40rpx;
+					font-weight: bold;
+					color: #ffffff;
+					background-color: rgba(0, 0, 0, 0.6);
+					padding: 8rpx 16rpx;
+					border-radius: 8rpx;
+					text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.5);
+					box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.3);
 				}
 			}
 		}

@@ -1,0 +1,200 @@
+@import '@/uni.scss';
+
+.container.dark-mode {
+	background: $dark-gradient-bg;
+	
+	.header {
+		.title {
+			color: $dark-text-primary;
+			text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.3);
+		}
+	}
+	
+	.search-box {
+		background-color: $dark-card-bg;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+		
+		.search-input-wrapper {
+			background-color: $dark-element-bg;
+			border-color: transparent;
+			
+			&:focus-within {
+				background-color: rgba(255, 255, 255, 0.05);
+				border-color: rgba(99, 102, 241, 0.4);
+			}
+			
+			.search-icon {
+				color: $dark-text-secondary;
+			}
+			
+			.search-input {
+				color: $dark-text-primary;
+				
+				&::placeholder {
+					color: $dark-text-secondary;
+				}
+			}
+			
+			.search-btn {
+				background: linear-gradient(135deg, #5253c7 0%, #3f37b3 100%);
+				color: white;
+			}
+		}
+	}
+	
+	.status-bar {
+		background-color: rgba(24, 144, 255, 0.15);
+		color: #4493ba;
+	}
+	
+	.location-info {
+		background-color: rgba(82, 196, 26, 0.15);
+		color: #72a554;
+		
+		&.clickable {
+			&:active {
+				background-color: rgba(82, 196, 26, 0.2);
+			}
+		}
+		
+		.refresh-hint {
+			color: $dark-text-secondary;
+		}
+	}
+	
+	.error-msg {
+		background-color: rgba(245, 34, 45, 0.15);
+		color: #ff7875;
+		
+		&.clickable {
+			&:active {
+				background-color: rgba(245, 34, 45, 0.2);
+			}
+		}
+	}
+	
+	.refresh-hint {
+		color: $dark-text-secondary;
+	}
+	
+	.result-list {
+		.result-item {
+			background-color: $dark-card-bg;
+			
+			&:active {
+				&::after {
+					background: linear-gradient(to bottom, #5253c7, #3f37b3);
+				}
+			}
+			
+			&::after {
+				background: linear-gradient(to bottom, #5253c7, #3f37b3);
+			}
+			
+			.machine-info {
+				.machine-name {
+					color: $dark-text-primary;
+				}
+				
+				.machine-location {
+					color: $dark-text-secondary;
+				}
+				
+				.machine-address {
+					color: $dark-text-secondary;
+				}
+			}
+			
+			.machine-footer {
+				.machine-distance {
+					color: #818cf8;
+				}
+				
+				.vote-actions {
+					.vote-btn {
+						border-color: rgba(255, 255, 255, 0.1);
+						background-color: transparent;
+						
+						.vote-icon, .vote-count {
+							
+							color: $dark-text-secondary;
+						}
+						
+						&:active {
+							background-color: rgba(255, 255, 255, 0.05);
+						}
+						
+						&.like-btn {
+							&.active {
+								background-color: rgba(82, 196, 26, 0.15);
+								border-color: rgba(82, 196, 26, 0.4);
+								
+								.vote-icon, .vote-count {
+									color: #73d13d;
+								}
+							}
+						}
+						
+						&.dislike-btn {
+							&.active {
+								background-color: rgba(255, 77, 79, 0.15);
+								border-color: rgba(255, 77, 79, 0.4);
+								
+								.vote-icon, .vote-count {
+									color: #ff7875;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	.no-data {
+		color: $dark-text-secondary;
+		background-color: $dark-card-bg;
+	}
+}
+
+/* 小屏幕手机适配 - 深色模式 */
+@media screen and (max-width: 375px) {
+	.container.dark-mode {
+		.result-item {
+			.machine-info {
+				.machine-name {
+					color: $dark-text-primary;
+				}
+				
+				.machine-location, .machine-address {
+					color: $dark-text-secondary;
+				}
+			}
+			
+			.machine-footer {
+				.vote-actions {
+					.vote-btn {
+						.vote-icon, .vote-count {
+							color: $dark-text-secondary;
+						}
+					}
+				}
+				
+				.machine-distance {
+					color: #818cf8;
+				}
+			}
+		}
+	}
+}
+
+/* 平板设备适配 - 深色模式 */
+@media screen and (min-width: 768px) {
+	.container.dark-mode {
+		.result-list {
+			.result-item {
+				background-color: $dark-card-bg;
+			}
+		}
+	}
+}
