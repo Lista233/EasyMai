@@ -1,5 +1,18 @@
 <template>
 <view class="user-center" :class="{'dark-mode': isDarkMode}">
+    <!-- 添加公告组件 -->
+    <AnnouncementPopup 
+      v-if="currentAnnouncement && isLoggedIn"
+      ref="announcementRef"
+      :id="currentAnnouncement.id"
+      :title="currentAnnouncement.title"
+      :content="currentAnnouncement.content"
+      :confirm="currentAnnouncement.confirmText"
+      :autoShow="true"
+	  :imageUrl="currentAnnouncement.imageUrl"
+      @confirm="onAnnouncementConfirm"
+    />
+    
     <!-- 顶部用户信息区域 -->
    <view class="user-info-container">
      <!-- 添加黑夜模式切换按钮 -->
@@ -224,6 +237,10 @@ import {addAPICount,getVersion} from '@/api/myapi.js';
 import uniPopup from '@/uni_modules/uni-popup/components/uni-popup/uni-popup.vue'
 import { remoteRoute, version } from '@/static/apiconfig.js'
 import {updateNativeTabBar} from '@/utils/updateNativeTabBar.js'
+import AnnouncementPopup from '@/components/AnnouncementPopup/AnnouncementPopup.vue';
+import {encryptString} from "@/static/apiconfig.js"
+import {getToken,isTokenValid} from '@/utils/JwtTokenUtils.js'
+
 
 const isDarkMode = inject('isDarkMode');
 const toggleDarkMode = inject('toggleDarkMode');
@@ -257,7 +274,21 @@ let mainame=ref('')
 
 
 
-
+const handleTokenTest = async ()=>{
+	if(!isTokenValid())
+	{
+		const tempToken =await getToken()
+		if(tempToken == null){
+			removeAll()
+			return false
+		}
+		else{
+			jwt_token.value = tempToken; 
+			return true
+		}
+	}
+	return true
+}
 
 // 计算属性：根据rating值返回对应的样式类名
 const ratingClass = computed(() => {
@@ -281,9 +312,12 @@ async function updateRecord(){
 		return;
 	}
 	else{
+		
 	uni.showLoading({
 	  title: '获取成绩中...'
 	});
+	if(! await handleTokenTest()){return}
+	
 	records.value = await maiApi.divingFishGetRecords(jwt_token.value);
 	console.log(records.value);
 	uni.setStorageSync('divingFish_records', records.value);
@@ -296,76 +330,15 @@ async function updateRecord(){
 	}
 }
 
-// 从本地获取b50数据并计算rating
-function calculateRatingFromLocalB50() {
-  try {
-    // 尝试从本地存储获取b50数据
-    const b50Data = uni.getStorageSync('b50Data');
-    
-    if (!b50Data) {
-      console.log('本地无b50数据');
-      return null;
-    }
-    
-    // 解析b50数据
-    const musicData = JSON.parse(b50Data);
-    
-    if (!musicData || !musicData.charts || !musicData.charts.length) {
-      console.log('b50数据格式无效');
-      return null;
-    }
-    
-    // 获取新旧曲目的成绩并计算rating
-    const newChartsWithRating = [];
-    const oldChartsWithRating = [];
-    
-    musicData.charts.forEach(chart => {
-      if (chart && chart.ds && chart.ra && chart.achievements) {
-        const chartWithRating = {
-          ds: chart.ds,
-          ra: chart.ra,
-          achievements: chart.achievements
-        };
-        
-        if (chart.is_new) {
-          newChartsWithRating.push(chartWithRating);
-        } else {
-          oldChartsWithRating.push(chartWithRating);
-        }
-      }
-    });
-    
-    // 按照rating排序
-    newChartsWithRating.sort((a, b) => b.ra - a.ra);
-    oldChartsWithRating.sort((a, b) => b.ra - a.ra);
-    
-    // 取新曲最好的10首和旧曲最好的40首
-    const newChartsRating = newChartsWithRating.slice(0, 10).reduce((sum, chart) => sum + chart.ra, 0);
-    const oldChartsRating = oldChartsWithRating.slice(0, 40).reduce((sum, chart) => sum + chart.ra, 0);
-    
-    // 计算总rating
-    const totalRating = newChartsRating + oldChartsRating;
-    
-    return {
-      rating: totalRating,
-      lastUpdate: new Date(musicData.updateTime || Date.now()).toLocaleString('zh-CN', {
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    };
-  } catch (error) {
-    console.error('计算本地b50 rating失败:', error);
-    return null;
-  }
-}
+
 
 // 从API获取b50数据并计算rating
 
 // 加载用户资料 - 与maib50完全相同
 async function setProfile(jwt_token)
 {
+	
+
 	
 	let profile = (await maiApi.divingFishGetProfile(jwt_token)).data;
 	nickname.value=profile.nickname;
@@ -391,8 +364,8 @@ onLoad(async () => {
 	uid.value = uni.getStorageSync('uid');
 	mainame.value=uni.getStorageSync('mainame');
 	// 判断uid是否为数字，如果不是则设置为-1
-	uid.value = typeof uid.value === 'number' ? uid.value : -1;
-	console.log('uid', uid.value)
+	// uid.value = typeof uid.value === 'number' ? uid.value : -1;
+	// console.log('uid', uid.value)
 	username.value = uni.getStorageSync('divingFish_username')
 	qq_channel_uid.value=uni.getStorageSync('qq_channel_uid')
 	jwt_token.value = uni.getStorageSync('divingFish_jwt_token');
@@ -410,9 +383,12 @@ onLoad(async () => {
 	loadAvatarList();
 	if(nickname.value=='')
 	{
+		if(isLoggedIn.value)
+		{
 		nickname.value=username.value;
 		await maiApi.divingFishSetProfileRegister(nickname.value,jwt_token.value);
 		uni.setStorageSync('divingFish_nickname',nickname.value);
+		}
 	}
 });
 
@@ -462,8 +438,47 @@ const handleSongSearch = () => {
   addAPICount('SongSearch')
 };
 
-
+const removeAll = () => {
+	uni.removeStorageSync('divingFish_jwt_token');
+	uni.removeStorageSync('divingFish_nickname');
+	uni.removeStorageSync('divingFish_qqid');
+	uni.removeStorageSync('divingFish_importToken');
+	uni.removeStorageSync('divingFish_qqChannelUid');
+	uni.removeStorageSync('divingFish_records');
+	uni.removeStorageSync('b50');
+	uni.removeStorageSync('uid')
+	uni.removeStorageSync('divingFish_username');
+	uni.removeStorageSync('divingFish_password');
+	uni.removeStorageSync('qq_channel_uid')
+	uni.removeStorageSync('mainame')
+	// 清除 rating 相关数据
+	uni.removeStorageSync('b35rating');
+	uni.removeStorageSync('b15rating');
+	uni.removeStorageSync('totalRating');
+	// 重置响应式变量
+	b35.value = '';
+	b15.value = '';
+	b35rating.value = 0;
+	b15rating.value = 0;
+	username.value = '';
+	password.value = '';
+	nickname.value = '';
+	qqid.value = '';
+	importToken.value = '';
+	qq_channel_uid.value = '';
+	jwt_token.value = '';
+	records.value = '';
+	avatar.value = '../../static/maiicon/UI_Icon_409503.jpg';
+	QrCode.value = '';
+	uid.value = -1;
+	mainame.value='';
+}
 const handleLogout = () => {
+	
+	
+	
+
+
   uni.showModal({
     title: '确认退出',
     content: '确定要退出登录吗？',
@@ -473,45 +488,13 @@ const handleLogout = () => {
 		}
       if (res.confirm) {
         // 清除用户凭证
-        uni.removeStorageSync('divingFish_jwt_token');
-        uni.removeStorageSync('divingFish_nickname');
-        uni.removeStorageSync('divingFish_qqid');
-        uni.removeStorageSync('divingFish_importToken');
-        uni.removeStorageSync('divingFish_qqChannelUid');
-        uni.removeStorageSync('divingFish_records');
-        uni.removeStorageSync('b50');
-        uni.removeStorageSync('uid')
-        uni.removeStorageSync('divingFish_username');
-        uni.removeStorageSync('qq_channel_uid')
-        uni.removeStorageSync('mainame')
-        // 清除 rating 相关数据
-        uni.removeStorageSync('b35rating');
-        uni.removeStorageSync('b15rating');
-        uni.removeStorageSync('totalRating');
-        
-        // 重置响应式变量
-        b35.value = '';
-        b15.value = '';
-        b35rating.value = 0;
-        b15rating.value = 0;
-        username.value = '';
-        password.value = '';
-        nickname.value = '';
-        qqid.value = '';
-        importToken.value = '';
-        qq_channel_uid.value = '';
-        jwt_token.value = '';
-        records.value = '';
-        avatar.value = '../../static/maiicon/UI_Icon_409503.jpg';
-        QrCode.value = '';
-        uid.value = -1;
-        mainame.value='';
+       removeAll();
+	   
         uni.showToast({
           title: '已退出登录',
           icon: 'none',
           position:'center'
         });
-        
         // setTimeout(() => {
         //   uni.navigateTo({
         //     url: '/pages/login/login'
@@ -606,37 +589,90 @@ async function handleQrConfirm(qrContent) {
     // 这里应该有处理二维码的逻辑
     // 假设getUidFromQrCode方法已经存在
 	uni.showLoading({
-		title: '上传二维码中...',
+		title: '绑定二维码中,请耐心等待..',
 		mask: true
 	});
-    const uidResult = await maiApi.maiGetUid(qrContent,jwt_token.value);
-    console.log(uidResult)
-	if(uidResult.data.userID==-1)
+	
+	if(!await handleTokenTest()){return}
+	
+	const encode_jwt = encryptString(jwt_token.value)
+	
+	console.log("====原始token====\n"+jwt_token.value);
+	console.log("====加密token====\n"+encode_jwt);
+	
+	const bindQrResult = await maiApi.maiGetBindQRCode(qrContent,encode_jwt)
+	
+	console.log("上传二维码结果"+bindQrResult)
+	
+	console.log(bindQrResult)
+	
+	if (bindQrResult.statusCode === 403)
 	{
+		uni.hideLoading();
 		uni.showToast({
-		  title: '您输入的有误或已过期',
+		  title: bindQrResult.data.message,
 		  icon: 'none'
 		});
-		uni.hideLoading();
 	}
-   else if (uidResult && (uidResult.data.userID!=-1)) {
-      uid.value = uidResult.data.userID;
-      uni.setStorageSync('uid', uidResult.data.userID);
-	  uni.hideLoading();
-	  uni.showLoading({
-	  	title: '获取用户资料中...',
-	  	mask: true
-	  });
-	  mainame.value=(await maiApi.maiGetUserPreview(uid.value,jwt_token.value)).data.userName;
-	  uni.hideLoading();
-	  uni.setStorageSync('mainame', mainame.value);
-      await divingFishUpdate();
-      uni.showToast({
-        title: '二维码绑定成功',
-        icon: 'success'
-      });
+	else if(bindQrResult.statusCode === 200 && bindQrResult.data.message=='成绩已获取'){
+		// await divingFishUpdateByQR(bindQrResult.data.userMusic);
+				
+		records.value = await maiApi.divingFishGetRecords(jwt_token.value);
+		console.log(records.value);
+		uni.setStorageSync('divingFish_records', records.value);
+		await getb50();
+		console.log(uid.value)
+		mainame.value=bindQrResult.data.preview.userName
+		uid.value=bindQrResult.data.preview.userId
+		uni.setStorageSync('uid', uid.value);
+		uni.setStorageSync('mainame', mainame.value);
+		
+		
+		uni.hideLoading();
+		uni.showToast({
+		  title: '二维码绑定成功',
+		  icon: 'success'
+		});
+		
+	}
+	else{
+		uni.hideLoading();
+		uni.showToast({
+		  title: "系统异常",
+		  icon: 'none'
+		});
+	}
+
+	
+
+	
+	
+ //    const uidResult = await maiApi.maiGetUid(qrContent,jwt_token.value);
+ //    console.log(uidResult)
+	// if(uidResult.data.userID==-1)
+	// {
+	// 	uni.showToast({
+	// 	  title: '您输入的有误或已过期',
+	// 	  icon: 'none'
+	// 	});
+	// 	uni.hideLoading();
+	// }
+ //   else if (uidResult && (uidResult.data.userID!=-1)) {
+ //      uid.value = uidResult.data.userID;
+      
+	//   uni.hideLoading();
+	//   uni.showLoading({
+	//   	title: '获取用户资料中...',
+	//   	mask: true
+	//   });
+	//   mainame.value=(await maiApi.maiGetUserPreview(uid.value,jwt_token.value)).data.userName;
+	  
+	  // uni.setStorageSync('uid', uid.value);
+	  // uni.setStorageSync('mainame', mainame.value);
+      
+    
     }
-  } catch (error) {
+   catch (error) {
     console.error('二维码绑定失败:', error);
     uni.showToast({
       title: '绑定失败，请重试',
@@ -656,6 +692,10 @@ async function handleAccountSettings() {
     });
     return;
   }
+  
+ if(!await handleTokenTest()){return}
+  
+  console.log('存储到本地的token',uni.getStorageSync('divingFish_jwt_token'))
   importToken.value = uni.getStorageSync('divingFish_importToken');
     // 如果发现导入令牌为空，则自动刷新一次令牌
     if (!importToken.value || importToken.value.trim() === '') {
@@ -879,7 +919,7 @@ const handleRefreshAPI = async () => {
       ].filter(Boolean).length;
       
       uni.showToast({
-        title: `部分数据更新成功(${successCount}/3)`,
+        title: `更新失败,请在联网的状态下重新尝试`,
         icon: 'none'
       });
     }
@@ -894,55 +934,67 @@ const handleRefreshAPI = async () => {
 };
 
 	async function getUserMusicData(){
-		let resp=await maiApi.maiGetUserMusicData(uid.value,jwt_token.value)
+		
+		
+		const encode_jwt = encryptString(jwt_token.value) 
+		console.log("====原始token====\n"+jwt_token.value);
+		console.log("====加密token====\n"+encode_jwt);
+		
+		let resp=await maiApi.maiGetUserMusicData(uid.value,encode_jwt)
+		console.log(resp)
+		return resp
+		
+	}
+	
+	async function getUserMusicDataByQR(resp){
+		
 		console.log(resp)
 		//uni.setStorageSync('',resp.data)
-		if(resp.data.userId==null)
-		 {
-			return null;
-		 }
-		let a=await b50adapter(resp.data)
+		// if(resp.userId==null)
+		//  {
+		// 	return null;
+		//  }
+		let a=await b50adapter(resp)
 	
 		return a
 		
 	}
-	async function updateMusicData(musicScoreList){
-		let profile = (await maiApi.divingFishGetProfile(jwt_token.value)).data;
-		nickname.value=profile.nickname;
-		qqid.value=profile.bind_qq;
-		importToken.value=profile.import_token;
-		qq_channel_uid.value=profile.qq_channel_uid;
-		uni.setStorageSync('divingFish_nickname',nickname.value)
-		uni.setStorageSync('divingFish_qqid',qqid.value)
-		uni.setStorageSync('divingFish_importToken',importToken.value)
-		uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
-		if (!importToken.value || importToken.value.trim() === '') {
-		      console.log('检测到导入令牌为空，自动刷新令牌');
-		      try {        
-		        const tokenRes = await maiApi.divingFishRefreshImportToken(jwt_token.value);
-		        if (tokenRes && tokenRes.data && tokenRes.data.token) {
-		          importToken.value = tokenRes.data.token;
-		          uni.setStorageSync('divingFish_importToken', importToken.value);
-		        }
-		      } catch (tokenError) {
-		        console.error('自动刷新令牌失败:', tokenError);
-		      }
-		    }
-		console.log("导入token：",importToken.value)
-		let res = await maiApi.divingFishUpdateData(musicScoreList, importToken.value);
+	
+	//这有个猪鼻把传分直接放前端了,我不说是谁
+	// async function updateMusicData(musicScoreList){
+	// 	let profile = (await maiApi.divingFishGetProfile(jwt_token.value)).data;
+	// 	nickname.value=profile.nickname;
+	// 	qqid.value=profile.bind_qq;
+	// 	importToken.value=profile.import_token;
+	// 	qq_channel_uid.value=profile.qq_channel_uid;
+	// 	uni.setStorageSync('divingFish_nickname',nickname.value)
+	// 	uni.setStorageSync('divingFish_qqid',qqid.value)
+	// 	uni.setStorageSync('divingFish_importToken',importToken.value)
+	// 	uni.setStorageSync('qq_channel_uid',profile.qq_channel_uid)
+	// 	if (!importToken.value || importToken.value.trim() === '') {
+	// 	      console.log('检测到导入令牌为空，自动刷新令牌');
+	// 	      try {        
+	// 	        const tokenRes = await maiApi.divingFishRefreshImportToken(jwt_token.value);
+	// 	        if (tokenRes && tokenRes.data && tokenRes.data.token) {
+	// 	          importToken.value = tokenRes.data.token;
+	// 	          uni.setStorageSync('divingFish_importToken', importToken.value);
+	// 	        }
+	// 	      } catch (tokenError) {
+	// 	        console.error('自动刷新令牌失败:', tokenError);
+	// 	      }
+	// 	    }
+	// 	console.log("导入token：",importToken.value)
+	// 	let res = await maiApi.divingFishUpdateData(musicScoreList, importToken.value);
 
-		console.log(res)
-		return res;
-	}
+	// 	console.log(res)
+	// 	return res;
+	// }
 	async function getb50(){
 		try {
-			uni.showLoading({
-				title: '加载中...',
-				mask: true
-			});
+
 			
 			let res = await maiApi.divingFishgetb50(qqid.value, username.value);
-			uni.hideLoading();
+			
 			setb50Value(res);
 			uni.setStorageSync('b50', res);
 		} catch (error) {
@@ -953,9 +1005,64 @@ const handleRefreshAPI = async () => {
 			});
 		}
 	}
+	
 	const timeCutDown=10000;
 		let cutDownTime=0;
 		let isProcessing=ref(false);
+		
+// async function divingFishUpdateByQR(qrResp)
+// {
+// 	if(isProcessing.value) return;
+// 	isProcessing.value = true;
+	
+// 	let time=new Date().getTime()
+// 	if(cutDownTime-time>0)
+// 	{
+// 		uni.hideToast()
+// 		uni.showToast({
+// 			title:`操作过于频繁，请${Math.floor((cutDownTime-time)/1000)+1}秒后再试`,
+// 			icon:'none'
+// 		})
+// 		isProcessing.value = false;
+// 		return;
+// 	}
+	
+// 	try {
+	
+		
+// 		let muiscList=await getUserMusicDataByQR(qrResp);
+		
+// 		console.log("muiscList:"+muiscList);
+// 		if(!muiscList) {
+// 			uni.hideLoading();
+// 			uni.showToast({
+// 				title:"用户信息错误",
+// 				icon:"fail",
+// 				position:"center"
+// 			})
+// 			return
+// 		}
+			
+// 		let res=await updateMusicData(muiscList)
+// 		console.log(res)
+// 		records.value = await maiApi.divingFishGetRecords(jwt_token.value);
+// 		console.log(records.value);
+// 		uni.setStorageSync('divingFish_records', records.value);
+// 		await getb50();
+// 	} catch (error) {
+// 		uni.showToast({
+// 			title:'网络异常或导入Token失效,请尝试重新登录',
+// 			icon:"fail",
+// 			position:"center"
+// 		})
+// 	} finally {
+// 		isProcessing.value = false;
+// 		cutDownTime=new Date().getTime()+timeCutDown;
+// 	}
+	
+// }
+		
+		
 async function divingFishUpdate()
 	{
 		if(isProcessing.value) return;
@@ -974,9 +1081,10 @@ async function divingFishUpdate()
 		}
 		
 		try {
-
 			
-			if(uid.value<=0)
+			if(! await handleTokenTest()){return}
+
+			if(mainame.value=='')
 			{
 				uni.showToast({
 					title:"您还未绑定二维码关联账号",
@@ -994,38 +1102,37 @@ async function divingFishUpdate()
 				mask:true,
 			})
 			
-			let muiscList=await getUserMusicData();
-		
-			console.log("muiscList:"+muiscList);
-			if(!muiscList) {
-				uni.hideLoading();
+			const resp=await getUserMusicData();
+			
+			console.log("上传成绩结果",resp)
+			
+			if(resp.statusCode===403&&resp.data.message)
+			{
 				uni.showToast({
-					title:"用户信息错误",
-					icon:"fail",
+					title:resp.data.message,
 					position:"center"
 				})
-				return
-			}
+			}else if(resp.statusCode===200){
 				
-			let res=await updateMusicData(muiscList)
-			console.log(res)
 			records.value = await maiApi.divingFishGetRecords(jwt_token.value);
 			console.log(records.value);
 			uni.setStorageSync('divingFish_records', records.value);
 			await getb50();
 			uni.hideLoading();
-			if(res.data.message=="更新成功"){
+			
+			
 				uni.showToast({
 					title:"上传成功",
 					icon:"success"
 				})
-			} else {
+			
+			}else{
 				uni.showToast({
-					title:"上传失败(出BUG了o(╥﹏╥)o)",
-					icon:"none",
-					position:"center"
+					title:"网络或系统错误",
+					icon:"success"
 				})
-			}
+			}	
+			
 		} catch (error) {
 			uni.showToast({
 				title:'网络异常或导入Token失效,请尝试重新登录',
@@ -1037,6 +1144,7 @@ async function divingFishUpdate()
 			cutDownTime=new Date().getTime()+timeCutDown;
 		}
 	}
+
 
 // 添加头像选择器相关变量
 const avatarPopup = ref(null);
@@ -1127,6 +1235,9 @@ onMounted(() => {
       console.warn('弹窗组件未初始化');
     }
   }, 500);
+  
+  // 获取公告数据
+  fetchAnnouncements();
 });
 
 // 添加当前版本号和更新检查器引用
@@ -1213,8 +1324,116 @@ const updateTabBarStyle = () => {
   }
 };
 
+// 公告相关
+const announcementRef = ref(null);
+const currentAnnouncement = ref(null);
 
+// 获取公告数据
+const fetchAnnouncements = async () => {
+  try {
+    // 获取已隐藏的公告ID列表
+    const hiddenAnnouncements = uni.getStorageSync('hidden_announcements') || [];
+    console.log('已隐藏的公告:', hiddenAnnouncements);
+    
+    // 发起网络请求获取公告数据
+    const response = await uni.request({
+      url: 'https://oss.lista233.cn/announcements.json',
+      method: 'GET'
+    });
+    
+    console.log('公告数据响应:', response);
+    
+    if (response.statusCode === 200 && response.data) {
+      // 获取公告列表
+      const announcements = response.data.announcements;
+      
+      if (announcements && Array.isArray(announcements) && announcements.length > 0) {
+        console.log('原始公告列表:', announcements);
+        
+        // 根据优先级排序
+        announcements.sort((a, b) => b.priority - a.priority);
+        
+        // 过滤出当前时间内有效的公告
+        const now = new Date().toISOString();
+        const validAnnouncements = announcements.filter(item => {
+          return item.startTime <= now && item.endTime >= now;
+        });
+        
+        console.log('有效时间内的公告:', validAnnouncements);
+        
+        if (validAnnouncements.length > 0) {
+          // 过滤掉用户已选择"不再提示"的公告，无论是否强制显示
+          const filteredAnnouncements = validAnnouncements.filter(item => {
+            // 检查公告ID是否在隐藏列表中
+            const isHidden = hiddenAnnouncements.includes(item.id);
+            console.log(`公告 ${item.id} ${isHidden ? '在隐藏列表中' : '不在隐藏列表中'}`);
+            return !isHidden; // 不在隐藏列表中的才显示，即使是强制显示的公告
+          });
+          
+          console.log('过滤后的公告列表:', filteredAnnouncements);
+          
+          // 如果有可显示的公告，显示第一个
+          if (filteredAnnouncements.length > 0) {
+            const firstAnnouncement = filteredAnnouncements[0];
+            console.log('将显示公告:', firstAnnouncement);
+            
+            // 设置当前公告
+            currentAnnouncement.value = firstAnnouncement;
+            
+            // 显示公告
+            nextTick(() => {
+              if (announcementRef.value) {
+                console.log('调用公告组件显示方法');
+                announcementRef.value.showAnnouncement();
+              } else {
+                console.warn('公告组件引用不存在');
+              }
+            });
+          } else {
+            console.log('没有需要显示的公告');
+          }
+        } else {
+          console.log('没有在有效时间内的公告');
+        }
+      } else {
+        console.log('没有公告数据或格式不正确');
+      }
+    } else {
+      console.warn('获取公告数据失败:', response);
+    }
+  } catch (error) {
+    console.error('获取公告数据失败:', error);
+    // 出现异常不显示任何弹窗，只在控制台记录错误
+  }
+};
 
+// 公告确认回调
+const onAnnouncementConfirm = (data) => {
+  console.log('公告确认回调:', data);
+  
+  if(currentAnnouncement.value.title) {
+    if(currentAnnouncement.value.title.includes('乐曲更新') || 
+       currentAnnouncement.value.title.includes('歌曲更新')) {
+  	 handleRefreshAPI();
+      const hiddenAnnouncements = uni.getStorageSync('hidden_announcements') || [];
+      if (!hiddenAnnouncements.includes(currentAnnouncement.value.id)) {
+       hiddenAnnouncements.push(currentAnnouncement.value.id);
+       uni.setStorageSync('hidden_announcements', hiddenAnnouncements);
+       console.log('已将公告添加到隐藏列表:', currentAnnouncement.value.id);
+     }
+    }
+  }
+  // 检查是否选择了"不再提示"
+  else if (data && data.dontShowAgain && currentAnnouncement.value) {
+    // 将当前公告ID添加到隐藏列表
+    const hiddenAnnouncements = uni.getStorageSync('hidden_announcements') || [];
+     if (!hiddenAnnouncements.includes(currentAnnouncement.value.id)) {
+      hiddenAnnouncements.push(currentAnnouncement.value.id);
+      uni.setStorageSync('hidden_announcements', hiddenAnnouncements);
+      console.log('已将公告添加到隐藏列表:', currentAnnouncement.value.id);
+    }
+  }
+};
 
 </script>
 

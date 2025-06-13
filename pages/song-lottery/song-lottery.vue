@@ -186,7 +186,7 @@ const versionOptions = ['全部版本', 'maimai', 'maimai PLUS', 'maimai GreeN',
                         'maimai MURASAKi', 'maimai MURASAKi PLUS', 'maimai MiLK', 'MiLK PLUS', 
                         'maimai FiNALE', 'maimai でらっくす', 'maimai でらっくす Splash', 
                         'maimai でらっくす UNiVERSE', 'maimai でらっくす FESTiVAL', 
-                        'maimai でらっくす BUDDiES'];
+                        'maimai でらっくす BUDDiES','maimai でらっくす PRiSM'];
 
 // 类型选项
 const genreOptions = ['任意类别',
@@ -216,7 +216,8 @@ const versionMap = {
   'maimai でらっくす Splash': '舞萌DX2021',
   'maimai でらっくす UNiVERSE': '舞萌DX2022',
   'maimai でらっくす FESTiVAL': '舞萌DX2023',
-  'maimai でらっくす BUDDiES': '舞萌DX2024'
+  'maimai でらっくす BUDDiES': '舞萌DX2024',
+  'maimai でらっくす PRiSM':'舞萌DX2025'
 };
 
 // 添加一个计算属性用于显示

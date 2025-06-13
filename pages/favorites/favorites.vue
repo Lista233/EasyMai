@@ -477,7 +477,8 @@ const versionMap = {
   'maimai でらっくす Splash': 'DX2021',
   'maimai でらっくす UNiVERSE': 'DX2022',
   'maimai でらっくす FESTiVAL': 'DX2023',
-  'maimai でらっくす BUDDiES': 'DX2024'
+  'maimai でらっくす BUDDiES': 'DX2024',
+  'maimai でらっくす PRiSM':'DX2025'
 };
 
 // 格式化版本显示

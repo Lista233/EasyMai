@@ -362,7 +362,8 @@ const fetchMaimaiData = (city = '') => {
 		method: 'GET',
 		success: (res) => {
 			if (res.statusCode === 200 && res.data) {
-				machines.value = res.data
+				// 过滤掉 isUse 为 0 的机台
+				machines.value = res.data.filter(machine => machine.isUse !== 0)
 				calculateDistances()
 				if (machines.value.length === 0) {
 					errorMsg.value = '未找到相关机台数据'
@@ -385,8 +386,8 @@ const fetchMaimaiData = (city = '') => {
 // 计算距离并排序
 const calculateDistances = () => {
 	if (!currentLocation.value) {
-		// 如果没有位置信息，直接显示原始数据
-		sortedMachines.value = [...machines.value]
+		// 如果没有位置信息，直接显示原始数据，但限制为前20个
+		sortedMachines.value = [...machines.value].slice(0, 20)
 		return
 	}
 	
@@ -405,6 +406,9 @@ const calculateDistances = () => {
 	
 	// 按距离排序
 	sortedMachines.value.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance))
+	
+	// 只保留前20个结果
+	sortedMachines.value = sortedMachines.value.slice(0, 20)
 }
 
 // 计算两点间的距离（使用Haversine公式）

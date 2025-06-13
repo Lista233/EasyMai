@@ -1,0 +1,40 @@
+@import "@/uni.scss";
+
+.announcement-container.dark-mode {
+  background-color: $dark-card-bg;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.25);
+  
+  .announcement-header {
+    background: linear-gradient(135deg, #3c3599, #4F46E5);
+    
+    &::after {
+      background: inherit;
+    }
+  }
+  
+  .announcement-content {
+    color: $dark-text-primary;
+  }
+  
+  .announcement-footer {
+    border-top: 2rpx solid $dark-card-bg;
+    background: $dark-card-bg;
+    
+    .dont-show-again {
+      text {
+        color: $dark-text-secondary;
+      }
+    }
+    
+    .announcement-buttons {
+      .confirm-button {
+        background: linear-gradient(135deg, #3c3599, #4F46E5);
+        box-shadow: 0 4rpx 12rpx rgba(63, 63, 70, 0.4);
+        
+        &:active {
+          box-shadow: 0 2rpx 6rpx rgba(63, 63, 70, 0.3);
+        }
+      }
+    }
+  }
+}

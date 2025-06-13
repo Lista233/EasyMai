@@ -166,7 +166,7 @@
 						>每页<input 
                               :value="pageSize" 
                               type="number" 
-                              @confirm="changePageSize"
+                              @blur="changePageSize"
                           ></input>条</view>
 					</view>
 				</view>
@@ -671,7 +671,8 @@ const reverseVersionMap = {
   '(爽煌)-舞萌DX2021': 'maimai でらっくす Splash',
   '(宙星)-舞萌DX2022': 'maimai でらっくす UNiVERSE',
   '(祭祝)-舞萌DX2023': 'maimai でらっくす FESTiVAL',
-  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES'
+  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES',
+  '(镜)-舞萌DX2025':'maimai でらっくす PRiSM'
 }
 
 // 版本列表（使用显示名称）
@@ -694,7 +695,8 @@ const versions = [
 	'(爽煌)-舞萌DX2021',
 	'(宙星)-舞萌DX2022',
 	'(祭祝)-舞萌DX2023',
-	'(双宴)-舞萌DX2024'
+	'(双宴)-舞萌DX2024',
+	'(镜)-舞萌DX2025'
 ]
 
 // 当前统计信息
@@ -716,7 +718,7 @@ const viewMode = ref('grid') // 'grid' 或 'list'
 const gridSize = ref(5) // 默认4列
 
 // 添加图标显示控制
-const iconDisplay = ref('fc') // 'fc', 'fs', 'rate'
+const iconDisplay = ref('rate') // 'fc', 'fs', 'rate'
 
 // 添加达成率筛选相关
 const achievementPopup = ref(null)
@@ -1141,8 +1143,8 @@ onMounted(async () => {
 			console.error('加载数据出错:', error)
 			// 显示错误提示
 			uni.showModal({
-				title: '提示',
-				content: '成绩获取错误',
+				title: '成绩获取错误',
+				content: '请返回首页刷新API,并重新点击Rating卡片获取成绩/点击更新成绩',
 				showCancel: false,
 				success: () => {
 					// 关闭当前页面，返回上一级

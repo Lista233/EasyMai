@@ -1,4 +1,4 @@
-import {remoteRoute,aliasRoute,statsRoute} from '@/static/apiconfig.js'
+import {remoteRoute,aliasRoute,statsRoute,VersionRoute} from '@/static/apiconfig.js'
 import {request} from './customRequest.js'
 
 
@@ -6,7 +6,7 @@ export async function getVersion() {
 	try {
 		console.log("我在更新");
 		let res= await request({
-			url: `${statsRoute}/version`,
+			url: `${VersionRoute}`,
 			method: "GET",
 			
 		});

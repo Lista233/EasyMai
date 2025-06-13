@@ -477,7 +477,8 @@ const versionMap = {
   'maimai でらっくす Splash': '舞萌DX2021',
   'maimai でらっくす UNiVERSE': '舞萌DX2022',
   'maimai でらっくす FESTiVAL': '舞萌DX2023',
-  'maimai でらっくす BUDDiES': '舞萌DX2024'
+  'maimai でらっくす BUDDiES': '舞萌DX2024',
+  'maimai でらっくす PRiSM': '舞萌DX2025'
 }
 
 // 添加格式化版本名称的方法

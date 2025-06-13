@@ -6,13 +6,16 @@
 import {remoteRoute, aliasRoute, divingFishRoute, proxyConfig,ProxyDivingFishRoute} from '@/static/apiconfig.js'
 import {request} from '../api/customRequest.js'
 import {addAPICount} from '../api/myapi.js'
-export async function maiGetUid(qrcode) {
+export async function maiGetUid(qrcode,jwt_token) {
 	try {
 		addAPICount('getuid')
 		console.log('获取UID请求开始:', qrcode)
 		const result = await request({
 			url: `${remoteRoute}/apiqr?qr_code=${qrcode}`,
-			method: "GET"
+			method: "GET",
+			header: {
+						"jwt-token": jwt_token
+					},
 		});
 		console.log('获取UID请求成功:', result)
 		return result;
@@ -22,12 +25,35 @@ export async function maiGetUid(qrcode) {
 	}
 }
 
-export async function maiGetUserMusicData(userID) {
+
+export async function maiGetBindQRCode(qr_code,jwt_token) {
+	try {
+		console.log('获取用户音乐数据请求开始:', qr_code)
+		const result = await uni.request({
+			url: `${remoteRoute}/bindQRCode?qr_code=${qr_code}`,
+			method: "GET",
+			header: {
+				"jwt-token": jwt_token
+			}
+		});
+		console.log('获取用户音乐数据请求成功:', result)
+		return result;
+	} catch (error) {
+		console.error('获取用户音乐数据失败:', error);
+		return result;
+	}
+}
+
+
+export async function maiGetUserMusicData(userID,jwt_token) {
 	try {
 		console.log('获取用户音乐数据请求开始:', userID)
 		const result = await request({
 			url: `${remoteRoute}/getUserMusic?userID=${userID}`,
-			method: "GET"
+			method: "GET",
+			header: {
+				"jwt-token": jwt_token
+			}
 		});
 		console.log('获取用户音乐数据请求成功:', result)
 		return result;
@@ -36,12 +62,15 @@ export async function maiGetUserMusicData(userID) {
 		return { error };
 	}
 }
-export async function maiGetUserPreview(userID) {
+export async function maiGetUserPreview(userID,jwt_token) {
 	try {
 		console.log('获取用户预览数据请求开始:', userID)
 		const result = await request({
 			url: `${remoteRoute}/getUserPreview?userID=${userID}`,
-			method: "GET"
+			method: "GET",
+			header: {
+				"jwt-token": jwt_token
+			}
 		});
 		console.log('获取用户预览数据请求成功:', result)
 		return result;

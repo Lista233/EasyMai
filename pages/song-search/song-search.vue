@@ -393,7 +393,8 @@ const versionMap = {
   'maimai でらっくす Splash': 'DX2021',
   'maimai でらっくす UNiVERSE': 'DX2022',
   'maimai でらっくす FESTiVAL': 'DX2023',
-  'maimai でらっくす BUDDiES': 'DX2024'
+  'maimai でらっくす BUDDiES': 'DX2024',
+  'maimai でらっくす PRiSM':'DX2025'
 }
 
 const reverseVersionMap = {
@@ -415,7 +416,8 @@ const reverseVersionMap = {
   '(爽煌)-舞萌DX2021': 'maimai でらっくす Splash',
   '(宙星)-舞萌DX2022': 'maimai でらっくす UNiVERSE',
   '(祭祝)-舞萌DX2023': 'maimai でらっくす FESTiVAL',
-  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES'
+  '(双宴)-舞萌DX2024': 'maimai でらっくす BUDDiES',
+  '(镜)-舞萌DX2025':'maimai でらっくす PRiSM'
 }
 
 // 版本列表（使用显示名称）
@@ -438,7 +440,8 @@ const versions = [
 	'(爽煌)-舞萌DX2021',
 	'(宙星)-舞萌DX2022',
 	'(祭祝)-舞萌DX2023',
-	'(双宴)-舞萌DX2024'
+	'(双宴)-舞萌DX2024',
+	'(镜)-舞萌DX2025'
 ]
 
 // 歌曲类别列表
@@ -887,8 +890,23 @@ const onSearch = async () => {
 const initData = () => {
   const aliasData = uni.getStorageSync('aliasData')
   const musicData = uni.getStorageSync('musicData')
+  
+  console.log(aliasData)
+  console.log(musicData)
+  // 检查数据是否包含错误信息
+  if ((aliasData.error||aliasData.errMsg )|| (musicData.error||musicData.errMsg)) {
+    uni.showModal({
+      title: '提示',
+      content: '歌曲信息异常，请在联网的状态下返回首页点击刷新API',
+      showCancel: false
+    })
+    console.error('别名数据异常:', aliasData.errMsg)
+    return
+  }
+  
   searcher.value = new SongSearcher(aliasData)
   songService.value = new SongService(musicData)
+
 }
 
 // 格式化别名显示
@@ -908,6 +926,7 @@ onMounted(() => {
   applyTheme();
   updateNativeTabBar(isDarkMode.value); // 这里的调用会根据平台条件编译
   initData()
+  
 })
 
 // 添加跳转方法

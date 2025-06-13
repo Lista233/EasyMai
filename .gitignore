@@ -3,3 +3,4 @@
 .cursorignore
 /api/
 /uni_modules/
+/utils/string_crypto.js

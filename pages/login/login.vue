@@ -350,7 +350,8 @@ const handleLogin = async () => {
     // 保存JWT令牌和用户名到本地存储
     uni.setStorageSync('divingFish_jwt_token', jwt_token.value);
     uni.setStorageSync('divingFish_username', loginForm.username);
-    
+    uni.setStorageSync('divingFish_password', loginForm.password);
+	
     // 如果选择了"记住我"，则保存凭据
     if (rememberMe.value) {
       uni.setStorageSync('remember_credentials', JSON.stringify({

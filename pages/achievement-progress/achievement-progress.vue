@@ -114,13 +114,13 @@
           <text class="close-btn" @click="closeDifficultyFilter">×</text>
         </view>
         <view class="popup-content">
-          <view 
+<!--          <view 
             class="filter-item no-border" 
             :class="{ active: currentDiffIndex === 0 }"
             @click="selectDifficulty(0)"
           >
             <text>所有难度</text>
-          </view>
+          </view> -->
           <view 
             class="filter-item" 
             v-for="(name, index) in difficultiesText.slice(1)" 
@@ -213,7 +213,8 @@ const versionMap = {
   '(爽煌)': 'maimai でらっくす Splash',
   '(宙星)': 'maimai でらっくす UNiVERSE',
   '(祭祝)': 'maimai でらっくす FESTiVAL',
-  '(双宴)': 'maimai でらっくす BUDDiES'
+  '(双宴)': 'maimai でらっくす BUDDiES',
+  '(镜)[未完]':'maimai でらっくす PRiSM'
 }
 
 // 当前筛选状态
@@ -243,7 +244,7 @@ const displayOptions = [
 ]
 
 // 显示模式
-const displayMode = ref('fc') // 默认显示FC/FCP
+const displayMode = ref('rate') // 默认显示FC/FCP
 
 // 成绩筛选相关的状态
 const filters = ref({
@@ -490,6 +491,11 @@ const sortedSongsByLevel = computed(() => {
   
   // 遍历所有歌曲
   songList.value.forEach(song => {
+    // 过滤掉ID大于等于6位的歌曲
+    if (song.id.toString().length >= 6) {
+      return; // 跳过此次循环
+    }
+    
     // 如果是任意难度，显示所有难度
     if (diffIndex === 0) {
       // 遍历所有难度
